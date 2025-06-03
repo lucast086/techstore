@@ -1,0 +1,21 @@
+Presentaicion de proyecto
+
+generacion de cuenta en supabase
+
+guia de mcp de supabase
+
+generar access token supabase
+
+conectar a mcp.
+
+configuracion de dev container
+configuracion de cursor rules.
+
+configuracion proyecto test.
+
+configuracion de pagina login front
+configuraciuon de login back
+
+
+configuracion de auth por supabase
+

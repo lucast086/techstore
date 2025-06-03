@@ -1,0 +1,42 @@
+### version information
+
+```
+pre-commit version: 3.8.0
+git --version: git version 2.39.5
+sys.version:
+    3.11.11 (main, Feb  4 2025, 04:55:09) [GCC 12.2.0]
+sys.executable: /usr/local/bin/python3.11
+os.name: posix
+sys.platform: linux
+```
+
+### error information
+
+```
+An error has occurred: InvalidConfigError: 
+=====> .pre-commit-config.yaml is not a file
+```
+
+```
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/pre_commit/error_handler.py", line 73, in error_handler
+    yield
+  File "/usr/local/lib/python3.11/site-packages/pre_commit/main.py", line 417, in main
+    return run(args.config, store, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/pre_commit/commands/run.py", line 422, in run
+    config = load_config(config_file)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/cfgv.py", line 399, in load_from_filename
+    with reraise_as(exc_tp):
+  File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.11/site-packages/cfgv.py", line 45, in reraise_as
+    raise tp(e).with_traceback(tb) from None
+  File "/usr/local/lib/python3.11/site-packages/cfgv.py", line 42, in reraise_as
+    yield
+  File "/usr/local/lib/python3.11/site-packages/cfgv.py", line 401, in load_from_filename
+    raise ValidationError(f'{display_filename} is not a file')
+pre_commit.clientlib.InvalidConfigError: 
+=====> .pre-commit-config.yaml is not a file
+```

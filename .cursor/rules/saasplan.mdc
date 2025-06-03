@@ -1,0 +1,164 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# PLAN DE DESARROLLO: SISTEMA SAAS PARA GESTIÓN DE COMERCIOS TÉCNICOS
+
+## 1. VISIÓN DEL PRODUCTO
+
+### Definición del producto
+Desarrollaremos un sistema Software as a Service (SaaS) enfocado en la gestión integral de pequeños comercios de servicio técnico y venta de productos tecnológicos. La plataforma permitirá administrar el ciclo completo de operaciones, desde la gestión de clientes y ventas hasta el control de stock y servicio técnico, todo en un único ecosistema integrado y accesible vía web.
+
+### Propuesta de valor
+- **Integración completa**: Unificación de todos los procesos críticos del negocio en una sola plataforma
+- **Escalabilidad**: Adaptable desde micro-emprendimientos hasta pequeñas cadenas
+- **Accesibilidad**: Interfaz intuitiva que no requiere conocimientos técnicos avanzados
+- **Modelo SaaS**: Sin inversión inicial en infraestructura, pago por uso
+- **Especialización**: Diseñado específicamente para comercios de tecnología y servicio técnico
+
+## 2. ARQUITECTURA Y STACK TECNOLÓGICO
+
+### Backend
+- **FastAPI**: Framework Python de alto rendimiento para APIs
+- **Poetry**: Gestión de dependencias y empaquetado
+- **Ruff**: Linter para asegurar calidad del código
+- **Pre-commit**: Hooks de git para controles de calidad automáticos
+- **TestCoverage**: Herramienta para análisis de cobertura de pruebas
+
+### Frontend
+- **Angular 16**: Framework robusto para aplicaciones SPA
+- **PrimeNG**: Biblioteca de componentes UI rico y responsive
+
+### Base de datos
+- **PostgreSQL**: Sistema de base de datos relacional
+- **Modelo multitenant con esquemas compartidos y tenant ID**: Eficiencia y simplicidad en la gestión de datos
+
+### Infraestructura
+- **Heroku**: Despliegue principal para aplicación (alternativa a Railway)
+- **Supabase**: Servicio para base de datos PostgreSQL gestionada
+- **GitHub**: Repositorio de código y gestión de CI/CD
+- **Dev Containers**: Entorno de desarrollo estandarizado
+
+
+## 5. DEFINICIÓN DEL MVP (PRODUCTO MÍNIMO VIABLE)
+
+### Alcance del MVP
+Incluirá las funcionalidades esenciales para la operativa básica de un comercio:
+
+1. **Gestor de usuarios**:
+   - Roles básicos (admin, vendedor, técnico)
+   - Autenticación segura
+
+2. **Gestor de clientes**:
+   - Registro de datos básicos
+   - Historial simplificado
+
+3. **Gestor de stock**:
+   - Alta, baja y modificación de productos
+   - Control básico de inventario
+
+4. **Gestor de servicio técnico**:
+   - Registro de órdenes de servicio
+   - Seguimiento de estado (recibido, en proceso, terminado)
+
+5. **Gestor de ventas**:
+   - Proceso de venta simplificado
+   - Generación de comprobantes básicos
+
+6. **Gestor de cuentas corrientes simple**:
+   - Registro básico de movimientos por cliente
+   - Consulta de saldo actual
+   - Registro de pagos a cuenta
+
+## 6. ROADMAP DE DESARROLLO
+
+### Fase 1: Preparación y fundamentos (1-2 meses)
+- Configuración del entorno de desarrollo con Dev Containers
+- Definición detallada de arquitectura y modelo de datos
+- Test dummy para comprobar funcionamiento de entorno y proyecto.
+- Coneccion con Supabase.
+- Implementación de sistema base multitenant.
+- Desarrollo de sistema de autenticación y autorización
+  -- uso de supabse para auth, desarrollo de pagina login en el front, desarrollo del back para auth y coneccion con supabase.
+
+### Fase 2: Desarrollo del MVP (3-4 meses)
+- Implementación incremental de módulos del MVP:
+  1. Gestor de usuarios (2 semanas)
+  2. Gestor de clientes (3 semanas)
+  3. Gestor de stock (3 semanas)
+  4. Gestor de servicio técnico (4 semanas)
+  5. Gestor de ventas simple (4 semanas)
+  6. Gestor de cuentas corrientes simple (3 semanas)
+- Pruebas de integración continua
+- Validaciones con usuarios potenciales
+
+### Fase 3: Refinamiento y lanzamiento del MVP (1-2 meses)
+- Configuración de CI/CD en GitHub
+- Configuracion de plataforma de deploy.
+- Ajustes basados en feedback de pruebas
+- Optimización de rendimiento
+- Implementación de monitoreo y alertas
+- Documentación de usuario
+- Preparación de onboarding
+- Lanzamiento controlado con clientes beta
+
+### Fase 4: Expansión post-MVP (4-6 meses)
+- Desarrollo de gestor de cajas completo
+- Implementación de cuentas corrientes avanzadas
+- Mejoras en reportes e inteligencia de negocio
+- Implementación de gestión de múltiples sucursales
+- Expansión de integraciones (fiscal, pagos online)
+
+### Fase 5: Producto completo y escalamiento (6+ meses)
+- Desarrollo de módulos avanzados:
+  - Fidelización de clientes
+  - Gestión de compras y proveedores
+  - Módulo de marketing integrado
+  - Planificación de recursos
+- Mejoras continuas basadas en métricas de uso
+- Escalabilidad para mayor número de usuarios
+
+## 7. CONSIDERACIONES ESTRATÉGICAS
+
+### Pruebas y calidad
+- **Enfoque de TDD**: Pruebas desde el inicio del desarrollo
+- **TestCoverage**: Seguimiento riguroso de la cobertura de código con metas de >80%
+- **Pruebas automáticas**: Unitarias, integración, e2e
+- **Control de calidad**: Pre-commit hooks, CI/CD, revisión de código
+- **Revisiones de calidad**: Sesiones periódicas de revisión de métricas de calidad
+
+### Experiencia de usuario
+- Diseño centrado en el flujo de trabajo real de comercios
+- Optimización para dispositivos móviles y tablets
+- Tiempos de respuesta optimizados
+- Offline capabilities para operaciones críticas
+
+### Escalabilidad
+- Arquitectura preparada para crecimiento horizontal
+- Monitoreo de rendimiento por tenant
+- Estrategia para gestionar "tenants problemáticos"
+- Plan de escalado para DB cuando aumente el número de esquemas
+
+### Consideraciones legales
+- Cumplimiento de GDPR/LGPD/regulaciones locales
+- Acuerdos de nivel de servicio (SLA) claros
+- Gestión de responsabilidad sobre datos fiscales
+- Políticas de retención y eliminación de datos
+
+## 8. MÉTRICAS DE ÉXITO
+
+### Métricas técnicas
+- Tiempo de respuesta < 200ms para operaciones comunes
+- Disponibilidad > 99.9%
+- Cobertura de pruebas > 85%
+- Tiempo de recuperación ante fallos < 10 minutos
+
+### Métricas de negocio
+- Tasa de conversión de pruebas gratuitas
+- Retención de clientes > 90% anual
+- NPS > 40
+- Crecimiento mensual de usuarios activos
+
+
+Con un enfoque ágil e iterativo, el sistema podrá evolucionar basándose en feedback real, manteniendo el foco en resolver los problemas específicos de los pequeños comercios del sector tecnológico.

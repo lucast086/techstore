@@ -1,0 +1,53 @@
+{
+  "name": "TechStore SaaS Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "streetsidesoftware.code-spell-checker",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "angular.ng-template",
+        "johnpapa.angular2",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "pkief.material-icon-theme"
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/zsh",
+        "python.pythonPath": "/usr/local/bin/python",
+        "python.formatting.provider": "none",
+        "python.languageServer": "Pylance",
+        "python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
+        "python.testing.pytestPath": "/usr/local/py-utils/bin/pytest",
+        "dev.containers.copyGitConfig": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll": true,
+          "source.organizeImports": true
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[html]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[css]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+  "forwardPorts": [8000, 4200],
+  "postCreateCommand": "/usr/local/bin/init-dev.sh",
+  "remoteUser": "root"
+} 

@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FastAPI",
+            "type": "python",
+            "request": "launch",
+            "module": "app.main",
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "DJ Shell Plus",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/mysite/manage.py",
+            "args": [
+                "shell_plus"
+            ],
+            "django": true,
+            "autoStartBrowser": false,
+            "envFile": "${workspaceFolder}/mysite/.env"
+        },
+        {
+            "name":"Angular build watch (Local)",
+            "type":"node",
+            "request":"launch",
+            "program":"${workspaceFolder}/mysite/angular-frontend/node_modules/@angular/cli/bin/ng",
+            "args":[
+                "build",
+                "--watch"
+            ],
+            "cwd":"${workspaceFolder}/mysite/angular-frontend",
+            "console":"integratedTerminal",
+        }
+    ]
+}
+

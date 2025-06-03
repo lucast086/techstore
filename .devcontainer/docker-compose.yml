@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    networks:
+      - internet
+    environment:
+      - PRE_COMMIT_HOME=/workspace/.pre-commit
+      - GIT_AUTHOR_NAME=lucast086
+      - GIT_AUTHOR_EMAIL=turlettilucasdev@gmail.com
+      - GIT_COMMITTER_NAME=lucast086
+      - GIT_COMMITTER_EMAIL=turlettilucasdev@gmail.com
+    ports:
+      - "8000:8000"  # FastAPI
+      - "4200:4200"  # Angular
+
+volumes:
+  node_modules:
+
+networks:
+  internet:
+    external:
+      name: internet

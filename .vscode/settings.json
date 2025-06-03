@@ -1,0 +1,9 @@
+{
+    "python.testing.pytestArgs": [
+        "${workspaceFolder}/backend/tests/"
+    ],
+    "python.testing.cwd": "${workspaceFolder}/backend",
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestPath": "pytest",
+    "python.testing.pytestEnabled": true,
+}
