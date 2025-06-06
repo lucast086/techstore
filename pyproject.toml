@@ -1,0 +1,61 @@
+[tool.ruff]
+# Habilitar linters específicos
+lint.select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "D",    # pydocstyle
+    "UP",   # pyupgrade
+    "ANN",  # flake8-annotations
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "EM",   # flake8-errmsg
+    "ICN",  # flake8-import-conventions
+    "PT",   # flake8-pytest-style
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "TRY",  # tryceratops
+]
+
+# Ignorar algunos errores específicos
+lint.ignore = [
+    "D203",   # one-blank-line-before-class
+    "D212",   # multi-line-summary-first-line
+    "ANN101", # missing-type-self
+]
+
+# Excluir archivos o directorios
+lint.exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "node_modules",
+    "*.pyc",
+    "dist",
+    "build",
+]
+
+# Configuración de línea máxima
+line-length = 100
+
+# Configuración específica para pydocstyle
+[tool.ruff.lint.pydocstyle]
+convention = "google"  # Usar convención de docstrings de Google
+
+# Configuración para isort
+[tool.ruff.lint.isort]
+known-first-party = ["techstore"]
+combine-as-imports = true
+force-sort-within-sections = true
+
+# Configuración para importaciones
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Permitir importaciones no utilizadas en __init__.py
+
+# Configuración para el formateador
+[tool.ruff.format]
+quote-style = "double"     # Usar comillas dobles
+indent-style = "space"     # Usar espacios para indentación
+line-ending = "auto"       # Autodetectar finales de línea
+docstring-code-format = true  # Formatear código en docstrings 
