@@ -1,0 +1,20 @@
+<div class="status-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Estado del Servidor</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="status-indicator" [ngClass]="backendStatus">
+        <mat-icon *ngIf="backendStatus === 'loading'">sync</mat-icon>
+        <mat-icon *ngIf="backendStatus === 'connected'">check_circle</mat-icon>
+        <mat-icon *ngIf="backendStatus === 'error'">error</mat-icon>
+        <p>{{ statusMessage }}</p>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="checkBackendStatus()">
+        Verificar Conexión
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
