@@ -27,9 +27,9 @@
         "python.testing.pytestPath": "/usr/local/py-utils/bin/pytest",
         "dev.containers.copyGitConfig": false,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.defaultFormatter": "astral-sh.ruff",
         "[python]": {
-          "editor.defaultFormatter": "charliermarsh.ruff"
+          "editor.defaultFormatter": "astral-sh.ruff"
         },
         "[typescript]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
