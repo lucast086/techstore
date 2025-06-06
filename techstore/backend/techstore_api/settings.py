@@ -14,12 +14,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-SECRET_KEY_PLACEHOLDER"
+SECRET_KEY = "django-insecure-w@q5w(e(_6hj9!0@9uj!0oq42#+rw1zfq1g)=yi_k3r_x!#&&6"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]  # En producción, especificar los dominios permitidos
 
 # Application definition
 
@@ -53,9 +53,7 @@ ROOT_URLCONF = "techstore_api.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            os.path.join(BASE_DIR, "../frontend/dist/frontend")
-        ],  # Para integración con Angular
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -103,7 +101,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "es-es"
 
-TIME_ZONE = "Europe/Madrid"
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -112,14 +110,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "../frontend/dist/frontend"),
+    os.path.join(BASE_DIR, "static"),
 ]
 
+# Configuración para servir archivos estáticos en producción
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 # Media files
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
@@ -141,9 +142,7 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",  # Angular dev server
-]
+CORS_ALLOW_ALL_ORIGINS = True  # En producción, especificar dominios
 
 # Para entorno de desarrollo
 if DEBUG:
