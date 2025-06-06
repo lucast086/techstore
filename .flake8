@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 100
+exclude = .git,__pycache__,build,dist,.venv,.pre-commit
+ignore = D203,D212
+docstring-convention = google 
