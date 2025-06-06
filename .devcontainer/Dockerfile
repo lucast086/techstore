@@ -1,11 +1,14 @@
-FROM python:3.11-slim
+ARG VARIANT=3.11
+FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 
 # Evitar mensajes de advertencia
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+USER root
+
 # Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && apt-get -y install --no-install-recommends \
     build-essential \
     curl \
     git \
@@ -13,10 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar Node.js 16 y npm para Angular 16
+# Instalar Node.js 16
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g @angular/cli@16
+    && apt-get install -y nodejs
 
 # Configurar zsh como shell predeterminado
 RUN chsh -s /usr/bin/zsh root
@@ -36,4 +38,4 @@ WORKDIR /workspace
 
 # Script de inicialización para configurar pre-commit
 COPY .devcontainer/init-dev.sh /usr/local/bin/init-dev.sh
-RUN chmod +x /usr/local/bin/init-dev.sh 
+RUN chmod +x /usr/local/bin/init-dev.sh

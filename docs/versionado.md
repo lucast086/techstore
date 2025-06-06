@@ -86,4 +86,4 @@ git push origin --tags
 
 ## Changelog
 
-El historial de cambios se genera automáticamente basado en los commits convencionales y las etiquetas. 
+El historial de cambios se genera automáticamente basado en los commits convencionales y las etiquetas.

@@ -27,10 +27,6 @@
         "python.testing.pytestPath": "/usr/local/py-utils/bin/pytest",
         "dev.containers.copyGitConfig": false,
         "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.fixAll": true,
-          "source.organizeImports": true
-        },
         "editor.defaultFormatter": "charliermarsh.ruff",
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff"
@@ -47,7 +43,7 @@
       }
     }
   },
-  "forwardPorts": [8000, 4200],
+  "forwardPorts": [8000],
   "postCreateCommand": "/usr/local/bin/init-dev.sh",
   "remoteUser": "root"
-} 
+}

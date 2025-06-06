@@ -18,4 +18,3 @@ configuraciuon de login back
 
 
 configuracion de auth por supabase
-
