@@ -16,7 +16,9 @@
         "johnpapa.angular2",
         "esbenp.prettier-vscode",
         "dbaeumer.vscode-eslint",
-        "pkief.material-icon-theme"
+        "pkief.material-icon-theme",
+        "ckolkman.vscode-postgres",
+        "ms-azuretools.vscode-docker"
       ],
       "settings": {
         "terminal.integrated.shell.linux": "/bin/zsh",
@@ -43,7 +45,7 @@
       }
     }
   },
-  "forwardPorts": [8000],
+  "forwardPorts": [8000, 5432],
   "postCreateCommand": "/usr/local/bin/init-dev.sh",
   "remoteUser": "root"
 }
