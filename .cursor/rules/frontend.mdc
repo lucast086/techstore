@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: techstore/frontend/**
 alwaysApply: false
 ---
 # Frontend Development Rules

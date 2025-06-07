@@ -23,7 +23,7 @@ Pequeños comercios y emprendedores del sector tecnológico que:
 ## 2. ARQUITECTURA Y STACK TECNOLÓGICO
 
 ### Backend
-- **FastAPI**: Framework Python de alto rendimiento para APIs
+- **Django rest framework**: Framework Python de alto rendimiento
 - **Poetry**: Gestión de dependencias y empaquetado
 - **Ruff**: Linter para asegurar calidad del código
 - **Pre-commit**: Hooks de git para controles de calidad automáticos
@@ -31,51 +31,19 @@ Pequeños comercios y emprendedores del sector tecnológico que:
 
 ### Frontend
 - **Angular 16**: Framework robusto para aplicaciones SPA
-- **PrimeNG**: Biblioteca de componentes UI rico y responsive
+- **Material**: Biblioteca de componentes UI rico y responsive
 
 ### Base de datos
 - **PostgreSQL**: Sistema de base de datos relacional
-- **Modelo multitenant con esquemas compartidos y tenant ID**: Eficiencia y simplicidad en la gestión de datos
+- **Modelo multitenant con esquemas separados**: Eficiencia y simplicidad en la gestión de datos
 
 ### Infraestructura
 - **Heroku**: Despliegue principal para aplicación (alternativa a Railway)
-- **Supabase**: Servicio para base de datos PostgreSQL gestionada
 - **GitHub**: Repositorio de código y gestión de CI/CD
 - **Dev Containers**: Entorno de desarrollo estandarizado
 
-## 3. CONSIDERACIONES TÉCNICAS CLAVE
 
-### Modelo de datos multitenant con esquema compartido
-El enfoque de esquema compartido con discriminador de tenant (tenant ID) ofrece:
-- **Ventajas**:
-  - Mayor eficiencia en el uso de recursos de base de datos
-  - Simplificación en actualizaciones de esquema (una sola operación)
-  - Mejor rendimiento para operaciones de consulta entre tenants
-  
-- **Desafíos**:
-  - Necesidad de implementar control de acceso riguroso a nivel de aplicación
-  - Diseño cuidadoso para prevenir filtración de datos entre tenants
-  - Estrategias específicas para consultas que atraviesan datos de múltiples tenants
-
-### Estrategia de migraciones
-Implementación de un sistema robusto que:
-- Coordine migraciones a través de múltiples esquemas
-- Permita rollbacks selectivos por tenant
-- Gestione versiones de esquema diferentes por cliente
-
-### Optimización de rendimiento
-- Implementación de caché por tenant
-- Conexiones pooling inteligente
-- Monitoreo específico de rendimiento por esquema
-- Estrategia para "tenants calientes" vs "tenants fríos"
-
-### Seguridad
-- Autenticación multi-factor
-- Aislamiento completo de datos entre tenants
-- Cifrado a nivel de base de datos
-- Auditoría de acciones por usuario y tenant
-
-## 4. MÓDULOS FUNCIONALES
+## 3. MÓDULOS FUNCIONALES
 
 ### Gestor de usuarios
 - Jerarquía de roles (administrador, vendedor, técnico, etc.)
@@ -119,7 +87,7 @@ Implementación de un sistema robusto que:
 - Integración con stock y caja
 - Reportes de rendimiento de ventas
 
-## 5. DEFINICIÓN DEL MVP (PRODUCTO MÍNIMO VIABLE)
+## 4. DEFINICIÓN DEL MVP (PRODUCTO MÍNIMO VIABLE)
 
 ### Alcance del MVP
 Incluirá las funcionalidades esenciales para la operativa básica de un comercio:
@@ -155,14 +123,14 @@ Incluirá las funcionalidades esenciales para la operativa básica de un comerci
 - Reportes complejos
 - Integraciones con sistemas externos
 
-## 6. ROADMAP DE DESARROLLO
+## 5. ROADMAP DE DESARROLLO
 
 ### Fase 1: Preparación y fundamentos (1-2 meses)
-- Configuración del entorno de desarrollo con Dev Containers
-- Definición detallada de arquitectura y modelo de datos
-- Implementación de sistema base multitenant
-- Desarrollo de sistema de autenticación y autorización
-- Configuración de CI/CD en GitHub
+* [] Configuración del entorno de desarrollo con Dev Containers
+* [] Definición detallada de arquitectura y modelo de datos
+* [] Implementación de sistema base multitenant
+* [] Desarrollo de sistema de autenticación y autorización
+* [] Configuración de CI/CD en GitHub
 
 ### Fase 2: Desarrollo del MVP (3-4 meses)
 - Implementación incremental de módulos del MVP:
@@ -199,7 +167,7 @@ Incluirá las funcionalidades esenciales para la operativa básica de un comerci
 - Mejoras continuas basadas en métricas de uso
 - Escalabilidad para mayor número de usuarios
 
-## 7. CONSIDERACIONES ESTRATÉGICAS
+## 6. CONSIDERACIONES ESTRATÉGICAS
 
 ### Pruebas y calidad
 - **Enfoque de TDD**: Pruebas desde el inicio del desarrollo
@@ -226,7 +194,7 @@ Incluirá las funcionalidades esenciales para la operativa básica de un comerci
 - Gestión de responsabilidad sobre datos fiscales
 - Políticas de retención y eliminación de datos
 
-## 8. MÉTRICAS DE ÉXITO
+## 7. MÉTRICAS DE ÉXITO
 
 ### Métricas técnicas
 - Tiempo de respuesta < 200ms para operaciones comunes
@@ -240,7 +208,7 @@ Incluirá las funcionalidades esenciales para la operativa básica de un comerci
 - NPS > 40
 - Crecimiento mensual de usuarios activos
 
-## 9. RIESGOS Y MITIGACIONES
+## 8. RIESGOS Y MITIGACIONES
 
 ### Riesgos técnicos
 - **Escalabilidad del modelo multitenant**: Implementar monitoreo temprano y plan de migración a arquitectura híbrida si necesario
@@ -252,7 +220,7 @@ Incluirá las funcionalidades esenciales para la operativa básica de un comerci
 - **Competencia**: Enfoque en verticales específicas dentro del nicho de servicio técnico
 - **Rentabilidad**: Estructura de costos clara con monitoreo de uso por tenant
 
-## 10. CONCLUSIONES Y PRÓXIMOS PASOS
+## 9. CONCLUSIONES Y PRÓXIMOS PASOS
 
 Este plan establece las bases para el desarrollo incremental de un SaaS especializado para comercios de servicio técnico y venta de productos tecnológicos. El enfoque en un MVP claramente definido permitirá validar el concepto rápidamente, mientras que la arquitectura seleccionada brinda flexibilidad para crecer y adaptarse a las necesidades del mercado.
 

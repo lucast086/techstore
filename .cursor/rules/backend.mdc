@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: techstore/backend/**
 alwaysApply: false
 ---
 # Backend Development Rules
