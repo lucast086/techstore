@@ -1,0 +1,57 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# General Rules
+
+## CORE PRINCIPLES
+These rules define the foundation of code development in this project:
+
+### R1: CLEAN AND CONCISE CODE
+- **No unnecessary comments**
+  - Code should be self-explanatory
+  - Only document complex decisions or non-obvious logic
+  - Avoid comments that repeat what the code already says
+
+### R2: PROGRESSIVE DEVELOPMENT
+- **No placeholder functionalities**
+  - Implement complete and usable features
+  - Avoid code marked "to be completed later"
+  - Each commit should add real value to the project
+
+### R3: STANDARDS AND DOCUMENTATION
+- **Follow official rules and documentation**
+  - Follow language-specific style guides
+  - Consult official documentation before implementing custom solutions
+  - Use standard patterns when available
+
+### R4: ATOMIC DEVELOPMENT
+- **Develop in atomic steps**
+  - Small and verifiable changes
+  - One change = one specific functionality
+  - Facilitate code review and testing
+
+### R5: VERSIONING
+- **Document changes by version**
+  - Use Git Flow for branch management
+  - Keep CHANGELOG.md updated
+  - Version following Semantic Versioning (SemVer)
+
+## IMPLEMENTATION PROCESS
+For each implementation request:
+1. **IMPLEMENT** in micro-steps (max 15 lines)
+2. **EXPLAIN** what it does and how it works
+3. **JUSTIFY** why this solution was chosen
+
+## RESPONSE FORMAT
+```
+CODE:
+[specific implementation]
+EXPLANATION:
+[what it does + how it works]
+JUSTIFICATION:
+[why this solution + alternatives discarded]
+VERIFY:
+[command/test to validate]
+```
