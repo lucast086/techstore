@@ -21,9 +21,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]  # En producción, especificar los dominios permitidos
 
-# Application definition
+# Configuración de django-tenants
+DATABASE_ROUTERS = ["django_tenants.routers.TenantSyncRouter"]
 
-INSTALLED_APPS = [
+TENANT_MODEL = "tenants.Tenant"
+TENANT_DOMAIN_MODEL = "tenants.Domain"
+
+# Aplicaciones compartidas (schema public)
+SHARED_APPS = [
+    "django_tenants",  # Requerido para multitenancy
+    "tenants",  # App que contiene los modelos Tenant y Domain
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -33,10 +40,22 @@ INSTALLED_APPS = [
     # Third party apps
     "rest_framework",
     "corsheaders",
-    # Local apps
 ]
 
+# Aplicaciones específicas de tenant (schema privado)
+TENANT_APPS = [
+    "django.contrib.contenttypes",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+]
+
+# Application definition
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+
 MIDDLEWARE = [
+    "django_tenants.middleware.main.TenantMainMiddleware",  # Debe ser el primero
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Para servir archivos estáticos
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -48,6 +67,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# Temporalmente usamos el mismo archivo de URLs para simplificar la configuración inicial
 ROOT_URLCONF = "techstore_api.urls"
 
 TEMPLATES = [
@@ -73,8 +93,12 @@ WSGI_APPLICATION = "techstore_api.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django_tenants.postgresql_backend",
+        "NAME": "techstore_db",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "db",  # Nombre del servicio en docker-compose
+        "PORT": "5432",
     }
 }
 

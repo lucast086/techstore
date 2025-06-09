@@ -126,9 +126,9 @@ Incluirá las funcionalidades esenciales para la operativa básica de un comerci
 ## 5. ROADMAP DE DESARROLLO
 
 ### Fase 1: Preparación y fundamentos (1-2 meses)
-* [] Configuración del entorno de desarrollo con Dev Containers
+* [x] Configuración del entorno de desarrollo con Dev Containers
 * [] Definición detallada de arquitectura y modelo de datos
-* [] Implementación de sistema base multitenant
+* [x] Implementación de sistema base multitenant
 * [] Desarrollo de sistema de autenticación y autorización
 * [] Configuración de CI/CD en GitHub
 
