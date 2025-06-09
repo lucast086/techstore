@@ -58,4 +58,15 @@ force-sort-within-sections = true
 quote-style = "double"     # Usar comillas dobles
 indent-style = "space"     # Usar espacios para indentación
 line-ending = "auto"       # Autodetectar finales de línea
-docstring-code-format = true  # Formatear código en docstrings 
+docstring-code-format = true  # Formatear código en docstrings
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "techstore_api.settings"
+python_files = "test_*.py"
+testpaths = ["tests"]
+django_find_project = false
+pythonpath = ["."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
