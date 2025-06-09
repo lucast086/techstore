@@ -1,8 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
 # General Rules
 
 ## CORE PRINCIPLES
@@ -37,7 +32,9 @@ These rules define the foundation of code development in this project:
   - Keep CHANGELOG.md updated
   - Version following Semantic Versioning (SemVer)
 
-  ### R6: DOCUMENTATION LOCATION
+## DOCUMENTATION GUIDELINES
+
+### R6: DOCUMENTATION LOCATION
 - **All documentation in /workspace/docs**
   - Technical documentation
   - Development plans
@@ -71,5 +68,5 @@ These rules define the foundation of code development in this project:
 - **English as primary language for documentation**
   - Technical documentation in English
   - API documentation in English
-  - UI text in Spanish with internationalization support
+  - UI text may be in Spanish with internationalization support
   - Code, variables, and comments in English 
