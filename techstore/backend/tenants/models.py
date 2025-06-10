@@ -1,9 +1,8 @@
-"""
-Modelos para la gestión de tenants.
+"""Models for tenant management.
 
-Este módulo define los modelos principales para la arquitectura multitenant:
-- Tenant: Representa un inquilino/negocio en el sistema
-- Domain: Representa un dominio asociado a un tenant
+This module defines the main models for the multitenant architecture:
+- Tenant: Represents a tenant/business in the system
+- Domain: Represents a domain associated with a tenant
 """
 
 from django.db import models
@@ -11,89 +10,97 @@ from django_tenants.models import DomainMixin, TenantMixin
 
 
 class Tenant(TenantMixin):
-    """
-    Modelo que representa un inquilino en el sistema.
+    """Model representing a tenant in the system.
 
-    Un inquilino (tenant) es una instancia separada de la aplicación con sus propios
-    datos, usuarios y configuración. Hereda de TenantMixin que proporciona los campos
-    y métodos base para la funcionalidad multitenant.
+    A tenant is a separate instance of the application with its own
+    data, users and configuration. Inherits from TenantMixin which provides
+    the base fields and methods for multitenant functionality.
     """
 
-    # Información básica del tenant
+    # Basic tenant information
     name = models.CharField(
-        max_length=100, verbose_name="Nombre", help_text="Nombre comercial del negocio"
+        max_length=100,
+        verbose_name="Name",
+        help_text="Business name",
     )
-    created_on = models.DateField(auto_now_add=True, verbose_name="Fecha de creación")
+    created_on = models.DateField(
+        auto_now_add=True,
+        verbose_name="Creation date",
+    )
 
-    # Información de contacto
-    email = models.EmailField(verbose_name="Email", help_text="Email de contacto principal")
+    # Contact information
+    email = models.EmailField(
+        verbose_name="Email",
+        help_text="Primary contact email",
+    )
     phone = models.CharField(
         max_length=20,
         null=True,
         blank=True,
-        verbose_name="Teléfono",
-        help_text="Teléfono de contacto",
+        verbose_name="Phone",
+        help_text="Contact phone number",
     )
 
-    # Metadatos y configuración
+    # Metadata and configuration
     is_active = models.BooleanField(
-        default=True, verbose_name="Activo", help_text="Indica si el tenant está activo"
+        default=True,
+        verbose_name="Active",
+        help_text="Indicates if the tenant is active",
     )
     on_trial = models.BooleanField(
         default=True,
-        verbose_name="En prueba",
-        help_text="Indica si el tenant está en período de prueba",
+        verbose_name="On trial",
+        help_text="Indicates if the tenant is in trial period",
     )
     trial_end_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name="Fin de prueba",
-        help_text="Fecha en que termina el período de prueba",
+        verbose_name="Trial end date",
+        help_text="Date when the trial period ends",
     )
     paid_until = models.DateField(
         null=True,
         blank=True,
-        verbose_name="Pagado hasta",
-        help_text="Fecha hasta la que el tenant ha pagado",
+        verbose_name="Paid until",
+        help_text="Date until which the tenant has paid",
     )
 
-    # Configuración del schema
+    # Schema configuration
     auto_create_schema = True
     auto_drop_schema = True
 
     class Meta:
-        """Metadatos del modelo Tenant."""
+        """Meta options for Tenant model."""
 
-        verbose_name = "Inquilino"
-        verbose_name_plural = "Inquilinos"
+        verbose_name = "Tenant"
+        verbose_name_plural = "Tenants"
         ordering = ["name"]
 
-    def __str__(self):
-        """Representación en string del tenant."""
+    def __str__(self) -> str:
+        """Return string representation of tenant."""
         return self.name
 
 
 class Domain(DomainMixin):
-    """
-    Modelo que representa un dominio asociado a un tenant.
+    """Model representing a domain associated with a tenant.
 
-    Cada tenant puede tener múltiples dominios que apuntan a él.
-    Hereda de DomainMixin que proporciona los campos base para dominios en multitenancy.
+    Each tenant can have multiple domains pointing to it.
+    Inherits from DomainMixin which provides the base fields for domains in multitenancy.
     """
 
     is_primary = models.BooleanField(
         default=False,
-        verbose_name="Dominio principal",
-        help_text="Indica si este es el dominio principal para el tenant",
+        verbose_name="Primary domain",
+        help_text="Indicates if this is the primary domain for the tenant",
     )
 
     class Meta:
-        """Metadatos del modelo Domain."""
+        """Meta options for Domain model."""
 
-        verbose_name = "Dominio"
-        verbose_name_plural = "Dominios"
+        verbose_name = "Domain"
+        verbose_name_plural = "Domains"
         ordering = ["domain"]
 
-    def __str__(self):
-        """Representación en string del dominio."""
+    def __str__(self) -> str:
+        """Return string representation of domain."""
         return self.domain
