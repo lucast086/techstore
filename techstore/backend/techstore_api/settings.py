@@ -31,6 +31,7 @@ TENANT_DOMAIN_MODEL = "tenants.Domain"
 SHARED_APPS = [
     "django_tenants",  # Requerido para multitenancy
     "tenants",  # App que contiene los modelos Tenant y Domain
+    "users",  # Custom user model app
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -53,6 +54,9 @@ TENANT_APPS = [
 
 # Application definition
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+
+# Custom user model
+AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     "django_tenants.middleware.main.TenantMainMiddleware",  # Debe ser el primero
