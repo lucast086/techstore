@@ -69,4 +69,15 @@ These rules define the foundation of code development in this project:
   - Technical documentation in English
   - API documentation in English
   - UI text may be in Spanish with internationalization support
-  - Code, variables, and comments in English 
+  - Code, variables, and comments in English
+
+### R11: PRE-COMMIT COMPLIANCE RULES
+
+- Every Python file must have a module docstring and docstrings for all public classes.
+- Maximum line length: 100 characters (Python and scripts).
+- Use isort (Black profile) to order imports.
+- No trailing whitespace at the end of any line.
+- All files must end with a single blank line.
+- Do not add files larger than 10MB.
+- Use Prettier for JS, TS, JSON, CSS, YAML files.
+- All YAML files must be valid. 
