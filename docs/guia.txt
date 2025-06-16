@@ -21,14 +21,14 @@ configuraciuon de login back
 configuracion de auth por supabase
 
 1- some aclarations:
-  *  i have version here in @versionado.md modify the code if needed to reflec the versioning
-  * i dont want to add payments now.
+
   *  guide me trough  -- No clear data migration strategy for schema updates across tenants
                       -- Limited discussion of security measures (rate limiting, API authentication)
 
 4- Implement the following things:
    COMPLETE a- simplify the auth with Django's built-in system
     b- Create a simple API endpoint for user login/logout
+      tests
     c- Build a basic frontend login screen
     
 go one step at the time.
