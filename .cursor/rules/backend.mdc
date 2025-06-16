@@ -1,0 +1,103 @@
+---
+description: 
+globs: techstore/backend/**
+alwaysApply: false
+---
+# Backend Development Rules
+
+## DJANGO & PYTHON BEST PRACTICES
+
+Write clean, maintainable code following Django and Python best practices:
+
+### ARCHITECTURE & ORGANIZATION
+- Use Django's app-based structure for modularity
+- Follow RESTful API design principles
+- Keep views slim, models fat
+- Separate business logic into services/utilities
+- Create reusable abstractions when patterns repeat
+
+### MODELS & DATABASE
+- Define proper model relationships
+- Use Django model managers for query encapsulation
+- Add appropriate indexes to optimize queries
+- Keep migrations clean and purposeful
+- Use descriptive field names
+
+### API ENDPOINTS
+- Use Django REST Framework serializers for validation
+- Implement proper permissions and authentication
+- Use viewsets for CRUD operations
+- Include pagination for list endpoints
+- Document APIs with docstrings or OpenAPI/Swagger
+
+### CODE QUALITY
+- Follow Google docstring style for Python
+- Comply with PEP 8 standards
+- Apply SOLID principles to class design
+- Use meaningful variable and function names
+- Keep functions small and focused on single responsibility
+
+### PERFORMANCE & SECURITY
+- Use select_related() and prefetch_related() to minimize queries
+- Implement caching for expensive operations
+- Validate all inputs, especially from external sources
+- Apply proper CSRF and CORS protection
+- Use Django's security features (XSS protection, etc.)
+
+## MULTITENANT RULES (django-tenants + Schema Separation)
+
+### TENANT ARCHITECTURE
+- Use django-tenants for schema separation approach
+- Each tenant has its own PostgreSQL schema
+- Public schema contains shared data (Tenant model, shared apps)
+- Tenant schemas contain tenant-specific data
+- Never mix tenant and shared models in the same app
+
+### MODEL DESIGN
+- Separate models into shared and tenant-specific apps
+- Shared models go in public schema (tenant management, billing)
+- Tenant models go in tenant schemas (products, orders, users)
+- Use TenantMixin for tenant model definition
+- Avoid foreign keys between shared and tenant models
+
+### DOMAIN AND ROUTING
+- Use subdomain-based tenant routing (tenant.domain.com)
+- Configure TENANT_MODEL and TENANT_DOMAIN_MODEL
+- Implement proper domain validation
+- Use unique subdomains for each tenant
+- Handle www and root domain redirections
+
+### MIGRATIONS AND DEPLOYMENT
+- Run shared migrations on public schema
+- Run tenant migrations on all tenant schemas
+- Use management commands for tenant-specific operations
+- Test migrations with multiple tenants
+- Implement proper rollback strategies
+
+### SECURITY MEASURES
+- Validate tenant access through middleware
+- Never expose tenant schema names publicly
+- Implement proper subdomain validation
+- Use HTTPS for all tenant domains
+- Log tenant switching and access patterns
+
+### TESTING REQUIREMENTS
+- Use TenantTestCase for tenant-specific tests
+- Test with multiple tenants in parallel
+- Verify schema isolation between tenants
+- Test shared models in public schema
+- Include performance tests with multiple schemas
+
+### DATABASE OPTIMIZATION
+- Monitor schema creation and deletion performance
+- Use connection pooling for multiple schemas
+- Implement proper indexing per tenant schema
+- Monitor disk usage across tenant schemas
+- Plan for schema backup and restore strategies
+
+### DEVELOPMENT WORKFLOW
+- Use tenant-aware management commands
+- Implement proper local development setup
+- Create test tenants for development
+- Use schema-aware database inspection tools
+- Document tenant onboarding and offboarding processes

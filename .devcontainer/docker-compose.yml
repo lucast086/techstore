@@ -16,9 +16,27 @@ services:
       - GIT_AUTHOR_EMAIL=turlettilucasdev@gmail.com
       - GIT_COMMITTER_NAME=lucast086
       - GIT_COMMITTER_EMAIL=turlettilucasdev@gmail.com
+    depends_on:
+      - db
+
+  # Servicio PostgreSQL para multitenancy
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: techstore_db
+    ports:
+      - "5433:5432"
+    networks:
+      - internet
 
 volumes:
   node_modules:
+  postgres-data: # Volumen persistente para los datos de PostgreSQL
 
 networks:
   internet:
