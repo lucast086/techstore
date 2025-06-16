@@ -2,17 +2,18 @@
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.test import TestCase
+from django_tenants.test.cases import TenantTestCase
 from users.models import UserAuditLog
 
 User = get_user_model()
 
 
-class TestUserModel(TestCase):
+class TestUserModel(TenantTestCase):
     """Test cases for the User model."""
 
     def setUp(self):
         """Set up test data."""
+        super().setUp()
         self.user_data = {
             "username": "testuser",
             "email": "test@example.com",
@@ -98,11 +99,12 @@ class TestUserModel(TestCase):
         self.assertEqual(user2.get_full_name(), "noname")
 
 
-class TestUserAuditLog(TestCase):
+class TestUserAuditLog(TenantTestCase):
     """Test cases for the UserAuditLog model."""
 
     def setUp(self):
         """Set up test data."""
+        super().setUp()
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
         )

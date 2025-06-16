@@ -4,13 +4,13 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django_tenants.test.client import TenantClient
-from tenants.models import Domain, Tenant
+from tenants.models import Domain, Store
 
 
 @pytest.fixture(scope="function")
 def tenant_test():
     """Create a test tenant for testing."""
-    tenant = Tenant(
+    tenant = Store(
         schema_name="test",
         name="Test Tenant",
         email="test@example.com",

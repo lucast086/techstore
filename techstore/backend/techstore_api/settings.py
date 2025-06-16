@@ -31,7 +31,6 @@ TENANT_DOMAIN_MODEL = "tenants.Domain"
 SHARED_APPS = [
     "django_tenants",  # Requerido para multitenancy
     "tenants",  # App que contiene los modelos Tenant y Domain
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
