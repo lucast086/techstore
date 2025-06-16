@@ -232,3 +232,134 @@ Los próximos pasos inmediatos incluyen:
 4. Comenzar el desarrollo del primer módulo del MVP: Gestor de usuarios
 
 Con un enfoque ágil e iterativo, el sistema podrá evolucionar basándose en feedback real, manteniendo el foco en resolver los problemas específicos de los pequeños comercios del sector tecnológico.
+
+## 10. REGLAS ARQUITECTÓNICAS Y MEJORES PRÁCTICAS
+
+### Principios de Desarrollo
+
+#### Simplicidad sobre Complejidad
+- **Usar soluciones probadas**: Aprovechar las funcionalidades integradas de Django antes de crear soluciones personalizadas
+- **Evitar optimización prematura**: Implementar soluciones simples primero, optimizar basándose en métricas reales
+- **Código autodocumentado**: El código debe ser claro y expresivo, minimizando la necesidad de comentarios extensivos
+
+#### Seguridad desde el Diseño
+- **Autenticación y Autorización**: Usar el sistema integrado de Django con grupos y permisos
+- **Validación de datos**: Toda entrada debe ser validada tanto en frontend como backend
+- **Principio de menor privilegio**: Los usuarios solo deben tener acceso a lo estrictamente necesario
+- **Auditoría completa**: Registrar todas las acciones críticas del sistema
+
+### Arquitectura Multi-tenant
+
+#### Aislamiento de Datos
+- **Un esquema por tenant**: Cada tienda tiene su propio esquema PostgreSQL
+- **Sin referencias cruzadas**: Nunca crear foreign keys entre esquemas
+- **Validación de contexto**: Siempre verificar que el usuario pertenece al tenant actual
+
+#### Gestión de Migraciones
+- **Estrategia de migración por fases**:
+  1. Probar en tenant de desarrollo
+  2. Aplicar a un subconjunto de tenants beta
+  3. Desplegar a todos los tenants en horarios de baja actividad
+- **Rollback preparado**: Siempre tener un plan de reversión para cada migración
+- **Monitoreo post-migración**: Verificar el rendimiento después de cada actualización
+
+### API y Servicios
+
+#### Diseño de API RESTful
+- **Versionado desde el inicio**: Todas las APIs deben incluir versión (ej: `/api/v1/`)
+- **Paginación obligatoria**: Todos los endpoints de listado deben paginar resultados
+- **Rate limiting**: Implementar límites de tasa desde el MVP
+- **Respuestas consistentes**: Usar el mismo formato de respuesta en toda la API
+
+#### Autenticación de API
+- **Token-based authentication**: Usar JWT o Django REST Framework tokens
+- **API keys para integraciones**: Cada integración externa debe tener su propia API key
+- **Refresh tokens**: Implementar renovación automática de tokens
+
+### Gestión de Datos
+
+#### Estrategia de Caché
+- **Cache progresivo**: Comenzar con cache de base de datos, migrar a Redis cuando sea necesario
+- **Cache por tenant**: Aislar los datos en caché por tenant
+- **Invalidación inteligente**: Implementar estrategias claras de invalidación de caché
+
+#### Respaldos y Recuperación
+- **Backups automáticos diarios**: Por tenant y del sistema completo
+- **Pruebas de recuperación**: Realizar pruebas mensuales de restauración
+- **Retención escalonada**: 7 días completos, 4 semanas semanales, 12 meses mensuales
+
+### Monitoreo y Observabilidad
+
+#### Métricas Clave
+- **Por tenant**: Uso de recursos, transacciones, errores
+- **Sistema global**: CPU, memoria, espacio en disco, latencia de red
+- **Negocio**: Usuarios activos, transacciones por hora, tiempo de respuesta
+
+#### Alertas Proactivas
+- **Umbrales por tenant**: Alertar cuando un tenant excede límites normales
+- **Degradación de rendimiento**: Notificar antes de que afecte a usuarios
+- **Errores críticos**: Alertas inmediatas para errores de autenticación o pérdida de datos
+
+### Desarrollo y Despliegue
+
+#### Flujo de Desarrollo
+- **Feature flags**: Usar banderas de características para despliegues graduales
+- **Ambientes separados**: Development → Staging → Production
+- **Code review obligatorio**: Todo código debe ser revisado antes de merge
+- **Tests automatizados**: No se permite merge sin tests pasando
+
+#### CI/CD Pipeline
+```yaml
+# Ejemplo de pipeline
+1. Linting (Ruff)
+2. Tests unitarios
+3. Tests de integración
+4. Análisis de seguridad
+5. Build
+6. Deploy a staging
+7. Tests e2e
+8. Deploy a producción (manual)
+```
+
+### Estándares de Código
+
+#### Python/Django
+- **PEP 8 compliance**: Enforced by Ruff
+- **Type hints**: Usar anotaciones de tipo en funciones públicas
+- **Docstrings**: Estilo Google para toda función/clase pública
+- **DRY principle**: No repetir lógica, crear utilidades reutilizables
+
+#### Frontend
+- **Component-based**: Componentes pequeños y reutilizables
+- **State management**: Usar un patrón consistente (ej: NgRx para Angular)
+- **Lazy loading**: Cargar módulos bajo demanda
+- **Accesibilidad**: WCAG 2.1 AA compliance mínimo
+
+### Gestión de Errores
+
+#### Manejo de Excepciones
+- **Errores específicos**: Capturar y manejar excepciones específicas
+- **Logging estructurado**: Usar formato JSON para logs
+- **User-friendly messages**: Nunca exponer detalles técnicos a usuarios finales
+- **Error tracking**: Integrar herramienta de tracking (ej: Sentry)
+
+#### Recuperación Graceful
+- **Retry logic**: Implementar reintentos para operaciones de red
+- **Circuit breakers**: Prevenir cascadas de fallos
+- **Fallbacks**: Tener comportamientos alternativos para servicios críticos
+
+### Documentación
+
+#### Documentación Técnica
+- **API documentation**: OpenAPI/Swagger actualizado automáticamente
+- **Architecture Decision Records (ADRs)**: Documentar decisiones importantes
+- **Runbooks**: Procedimientos para situaciones comunes
+- **Onboarding guide**: Guía para nuevos desarrolladores
+
+#### Documentación de Usuario
+- **In-app help**: Ayuda contextual en la aplicación
+- **Video tutorials**: Para procesos complejos
+- **FAQ actualizado**: Basado en tickets de soporte
+- **Release notes**: Comunicar cambios en cada versión
+
+Estas reglas y mejores prácticas deben ser revisadas y actualizadas trimestralmente basándose en la experiencia del equipo y la evolución del proyecto.
