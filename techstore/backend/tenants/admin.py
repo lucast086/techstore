@@ -1,23 +1,23 @@
 """
-Configuración del admin para los modelos de tenants.
+Configuración del admin para los modelos de stores.
 
 Este módulo registra y personaliza la interfaz de administración de Django
-para los modelos Tenant y Domain.
+para los modelos Store y Domain.
 """
 
 from django.contrib import admin
 from django_tenants.admin import TenantAdminMixin
 
-from .models import Domain, Tenant
+from .models import Domain, Store
 
 
-@admin.register(Tenant)
-class TenantAdmin(TenantAdminMixin, admin.ModelAdmin):
+@admin.register(Store)
+class StoreAdmin(TenantAdminMixin, admin.ModelAdmin):
     """
-    Admin para el modelo Tenant.
+    Admin para el modelo Store.
 
     Extiende TenantAdminMixin para proporcionar funcionalidad adicional
-    específica para la administración de tenants.
+    específica para la administración de stores.
     """
 
     list_display = ("name", "schema_name", "created_on", "is_active", "on_trial")

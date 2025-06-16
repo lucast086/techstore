@@ -6,7 +6,7 @@ Este comando crea el tenant público necesario para la arquitectura multitenant.
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from tenants.models import Domain, Tenant
+from tenants.models import Domain, Store
 
 
 class Command(BaseCommand):
@@ -26,14 +26,14 @@ class Command(BaseCommand):
         Crea un tenant con schema_name='public' y un dominio asociado.
         """
         # Verificar si ya existe un tenant público
-        if Tenant.objects.filter(schema_name="public").exists():
+        if Store.objects.filter(schema_name="public").exists():
             self.stdout.write(
                 self.style.WARNING("El tenant público ya existe. No se realizaron cambios.")
             )
             return
 
         # Crear el tenant público
-        public_tenant = Tenant(
+        public_tenant = Store(
             schema_name="public",
             name="TechStore",
             email="techstore.softsolutions@gmail.com",

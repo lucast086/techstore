@@ -24,14 +24,13 @@ ALLOWED_HOSTS = ["*"]  # En producción, especificar los dominios permitidos
 # Configuración de django-tenants
 DATABASE_ROUTERS = ["django_tenants.routers.TenantSyncRouter"]
 
-TENANT_MODEL = "tenants.Tenant"
+TENANT_MODEL = "tenants.Store"
 TENANT_DOMAIN_MODEL = "tenants.Domain"
 
 # Aplicaciones compartidas (schema public)
 SHARED_APPS = [
     "django_tenants",  # Requerido para multitenancy
     "tenants",  # App que contiene los modelos Tenant y Domain
-    "users",  # Custom user model app
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -50,6 +49,7 @@ TENANT_APPS = [
     "django.contrib.auth",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "users",  # Custom user model app
 ]
 
 # Application definition
@@ -59,16 +59,16 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
-    "django_tenants.middleware.main.TenantMainMiddleware",  # Debe ser el primero
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Para servir archivos estáticos
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # CORS middleware
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_tenants.middleware.main.TenantMainMiddleware",
+    "tenants.middleware.StoreMiddleware",
 ]
 
 # Temporalmente usamos el mismo archivo de URLs para simplificar la configuración inicial
@@ -178,3 +178,14 @@ if DEBUG:
     REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = [
         "rest_framework.permissions.AllowAny",
     ]
+
+# Cache settings
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "techstore_cache_table",
+    }
+}
+
+# Cache timeout settings
+CACHE_TTL = 3600  # 1 hour in seconds
