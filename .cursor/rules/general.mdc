@@ -37,7 +37,9 @@ These rules define the foundation of code development in this project:
   - Keep CHANGELOG.md updated
   - Version following Semantic Versioning (SemVer)
 
-  ### R6: DOCUMENTATION LOCATION
+## DOCUMENTATION GUIDELINES
+
+### R6: DOCUMENTATION LOCATION
 - **All documentation in /workspace/docs**
   - Technical documentation
   - Development plans
@@ -88,3 +90,39 @@ These rules define the foundation of code development in this project:
 ### R12: DEVELOPMENT PATH
 - **TDD method**
     - Use TDD method to all the python code development
+
+### R13: MULTITENANT DEVELOPMENT RULES
+- **Always consider tenant context**
+    - Every database operation must be tenant-aware
+    - Use `schema_context` for explicit tenant operations
+    - Never assume global context for tenant-specific data
+
+- **Tenant Isolation**
+    - Always verify tenant context in requests
+    - Never mix data between tenants
+    - Use tenant-specific models appropriately
+    - Implement proper tenant validation in all endpoints
+
+- **Testing Requirements**
+    - Use `TenantTestCase` for tenant-specific tests
+    - Test cross-tenant isolation
+    - Verify tenant context in all API endpoints
+    - Include tenant validation in security tests
+
+- **API Development**
+    - All endpoints must be tenant-aware
+    - Include tenant validation in serializers
+    - Use proper tenant middleware
+    - Document tenant-specific behavior
+
+- **Security Considerations**
+    - Validate tenant access in all operations
+    - Prevent cross-tenant data access
+    - Implement proper tenant-based permissions
+    - Log tenant-specific actions
+
+- **Code Review Checklist**
+    - Verify tenant context handling
+    - Check for proper schema usage
+    - Ensure tenant isolation
+    - Validate tenant-specific security 

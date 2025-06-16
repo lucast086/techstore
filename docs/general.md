@@ -68,7 +68,7 @@ These rules define the foundation of code development in this project:
 - **English as primary language for documentation**
   - Technical documentation in English
   - API documentation in English
-  - UI text may be in Spanish with internationalization support
+  - UI text in Spanish with internationalization support
   - Code, variables, and comments in English
 
 ### R11: PRE-COMMIT COMPLIANCE RULES
@@ -80,4 +80,44 @@ These rules define the foundation of code development in this project:
 - All files must end with a single blank line.
 - Do not add files larger than 10MB.
 - Use Prettier for JS, TS, JSON, CSS, YAML files.
-- All YAML files must be valid. 
+- All YAML files must be valid.
+
+### R12: DEVELOPMENT PATH
+- **TDD method**
+    - Use TDD method to all the python code development
+
+### R13: MULTITENANT DEVELOPMENT RULES
+- **Always consider tenant context**
+    - Every database operation must be tenant-aware
+    - Use `schema_context` for explicit tenant operations
+    - Never assume global context for tenant-specific data
+
+- **Tenant Isolation**
+    - Always verify tenant context in requests
+    - Never mix data between tenants
+    - Use tenant-specific models appropriately
+    - Implement proper tenant validation in all endpoints
+
+- **Testing Requirements**
+    - Use `TenantTestCase` for tenant-specific tests
+    - Test cross-tenant isolation
+    - Verify tenant context in all API endpoints
+    - Include tenant validation in security tests
+
+- **API Development**
+    - All endpoints must be tenant-aware
+    - Include tenant validation in serializers
+    - Use proper tenant middleware
+    - Document tenant-specific behavior
+
+- **Security Considerations**
+    - Validate tenant access in all operations
+    - Prevent cross-tenant data access
+    - Implement proper tenant-based permissions
+    - Log tenant-specific actions
+
+- **Code Review Checklist**
+    - Verify tenant context handling
+    - Check for proper schema usage
+    - Ensure tenant isolation
+    - Validate tenant-specific security 

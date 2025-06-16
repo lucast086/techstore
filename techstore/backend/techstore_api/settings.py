@@ -27,6 +27,10 @@ DATABASE_ROUTERS = ["django_tenants.routers.TenantSyncRouter"]
 TENANT_MODEL = "tenants.Store"
 TENANT_DOMAIN_MODEL = "tenants.Domain"
 
+# Configuración de URLs para multitenancy
+PUBLIC_SCHEMA_URLCONF = "techstore_api.urls_public"
+ROOT_URLCONF = "techstore_api.urls_tenant"
+
 # Aplicaciones compartidas (schema public)
 SHARED_APPS = [
     "django_tenants",  # Requerido para multitenancy
@@ -58,6 +62,7 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
+    "django_tenants.middleware.main.TenantMainMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -66,12 +71,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_tenants.middleware.main.TenantMainMiddleware",
     "tenants.middleware.StoreMiddleware",
 ]
 
-# Temporalmente usamos el mismo archivo de URLs para simplificar la configuración inicial
-ROOT_URLCONF = "techstore_api.urls"
 
 TEMPLATES = [
     {
@@ -188,3 +190,22 @@ CACHES = {
 
 # Cache timeout settings
 CACHE_TTL = 3600  # 1 hour in seconds
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+        },
+    },
+    "loggers": {
+        "tenants.middleware": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}

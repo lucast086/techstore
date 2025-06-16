@@ -33,6 +33,9 @@ urlpatterns = [
     # API URLs
     path("api/", tenant_api_root),  # Endpoint para verificar estado
     path("api/v1/", include(router.urls)),
+    path(
+        "api/v1/users/", include("users.urls", namespace="users")
+    ),  # Incluir URLs de usuarios con namespace
     path("api-auth/", include("rest_framework.urls")),
     # Servir archivos estáticos
     *static(settings.STATIC_URL, document_root=settings.STATIC_ROOT),
