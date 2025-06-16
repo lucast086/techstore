@@ -3,7 +3,7 @@
 import pytest
 from django.db import transaction
 from django_tenants.test.cases import TenantTestCase
-from tenants.models import Domain, Tenant
+from tenants.models import Domain, Store
 
 
 @pytest.mark.django_db
@@ -12,7 +12,7 @@ class TestTenantModel:
 
     def test_tenant_creation(self):
         """Test that a tenant can be created."""
-        tenant = Tenant(
+        tenant = Store(
             schema_name="test",
             name="Test Tenant",
             email="test@example.com",
@@ -20,14 +20,14 @@ class TestTenantModel:
         )
         tenant.save()
 
-        assert Tenant.objects.filter(schema_name="test").exists()
+        assert Store.objects.filter(schema_name="test").exists()
         assert tenant.name == "Test Tenant"
         assert tenant.email == "test@example.com"
         assert tenant.is_active is True
 
     def test_tenant_str_representation(self):
         """Test the string representation of a tenant."""
-        tenant = Tenant(
+        tenant = Store(
             schema_name="test",
             name="Test Tenant",
             email="test@example.com",
@@ -43,7 +43,7 @@ class TestDomainModel:
 
     def test_domain_creation(self):
         """Test that a domain can be created and linked to a tenant."""
-        tenant = Tenant(
+        tenant = Store(
             schema_name="test",
             name="Test Tenant",
             email="test@example.com",
@@ -63,7 +63,7 @@ class TestDomainModel:
 
     def test_domain_str_representation(self):
         """Test the string representation of a domain."""
-        tenant = Tenant(
+        tenant = Store(
             schema_name="test",
             name="Test Tenant",
             email="test@example.com",

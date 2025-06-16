@@ -1,27 +1,27 @@
-"""Models for tenant management.
+"""Models for store management.
 
 This module defines the main models for the multitenant architecture:
-- Tenant: Represents a tenant/business in the system
-- Domain: Represents a domain associated with a tenant
+- Store: Represents a store/business in the system
+- Domain: Represents a domain associated with a store
 """
 
 from django.db import models
 from django_tenants.models import DomainMixin, TenantMixin
 
 
-class Tenant(TenantMixin):
-    """Model representing a tenant in the system.
+class Store(TenantMixin):
+    """Model representing a store in the system.
 
-    A tenant is a separate instance of the application with its own
+    A store is a separate instance of the application with its own
     data, users and configuration. Inherits from TenantMixin which provides
     the base fields and methods for multitenant functionality.
     """
 
-    # Basic tenant information
+    # Basic store information
     name = models.CharField(
         max_length=100,
         verbose_name="Name",
-        help_text="Business name",
+        help_text="Store name",
     )
     created_on = models.DateField(
         auto_now_add=True,
@@ -45,12 +45,12 @@ class Tenant(TenantMixin):
     is_active = models.BooleanField(
         default=True,
         verbose_name="Active",
-        help_text="Indicates if the tenant is active",
+        help_text="Indicates if the store is active",
     )
     on_trial = models.BooleanField(
         default=True,
         verbose_name="On trial",
-        help_text="Indicates if the tenant is in trial period",
+        help_text="Indicates if the store is in trial period",
     )
     trial_end_date = models.DateField(
         null=True,
@@ -62,7 +62,7 @@ class Tenant(TenantMixin):
         null=True,
         blank=True,
         verbose_name="Paid until",
-        help_text="Date until which the tenant has paid",
+        help_text="Date until which the store has paid",
     )
 
     # Schema configuration
@@ -70,28 +70,28 @@ class Tenant(TenantMixin):
     auto_drop_schema = True
 
     class Meta:
-        """Meta options for Tenant model."""
+        """Meta options for Store model."""
 
-        verbose_name = "Tenant"
-        verbose_name_plural = "Tenants"
+        verbose_name = "Store"
+        verbose_name_plural = "Stores"
         ordering = ["name"]
 
     def __str__(self) -> str:
-        """Return string representation of tenant."""
+        """Return string representation of store."""
         return self.name
 
 
 class Domain(DomainMixin):
-    """Model representing a domain associated with a tenant.
+    """Model representing a domain associated with a store.
 
-    Each tenant can have multiple domains pointing to it.
+    Each store can have multiple domains pointing to it.
     Inherits from DomainMixin which provides the base fields for domains in multitenancy.
     """
 
     is_primary = models.BooleanField(
         default=False,
         verbose_name="Primary domain",
-        help_text="Indicates if this is the primary domain for the tenant",
+        help_text="Indicates if this is the primary domain for the store",
     )
 
     class Meta:
