@@ -88,8 +88,13 @@ These rules define the foundation of code development in this project:
 - All YAML files must be valid.
 
 ### R12: DEVELOPMENT PATH
-- **TDD method**
-    - Use TDD method to all the python code development
+- **Test-Driven Development Workflow**
+    
+1. Write a failing test for the first step of the feature you want to implement
+2. Run the test to verify it fails for the expected reason
+3. Implement the minimum code necessary to make the test pass
+4. Run the test to verify it passes
+5. Refactor the code while ensuring the tests continue to pass
 
 ### R13: MULTITENANT DEVELOPMENT RULES
 - **Always consider tenant context**

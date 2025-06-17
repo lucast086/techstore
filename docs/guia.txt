@@ -32,3 +32,24 @@ configuracion de auth por supabase
     c- Build a basic frontend login screen
     
 go one step at the time.
+
+
+
+
+
+
+
+
+python manage.py makemigrations
+
+psql -h db -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'techstore_db';" && psql -h db -U postgres -c "DROP DATABASE techstore_db;" && psql -h db -U postgres -c "CREATE DATABASE techstore_db;"
+
+python manage.py migrate tenants
+
+python manage.py init_public_tenant
+
+python manage.py migrate_schemas --shared
+
+python manage.py migrate users     
+
+python manage.py create_test_tenant

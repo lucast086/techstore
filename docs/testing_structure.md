@@ -76,7 +76,7 @@ Common test fixtures are defined in `conftest.py`:
 
 ## Test-Driven Development Workflow
 
-1. Write a failing test for the feature you want to implement
+1. Write a failing test for the first step of the feature you want to implement
 2. Run the test to verify it fails for the expected reason
 3. Implement the minimum code necessary to make the test pass
 4. Run the test to verify it passes
