@@ -8,7 +8,8 @@
       "Bash(poetry install:*)",
       "Bash(uvicorn:*)",
       "Bash(python:*)",
-      "Bash(poetry run ruff:*)"
+      "Bash(poetry run ruff:*)",
+      "Bash(poetry run pytest:*)"
     ],
     "deny": []
   }

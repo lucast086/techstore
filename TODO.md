@@ -14,14 +14,14 @@
 ### 🏗️ **Setup Inicial del Proyecto (Prioridad Alta)**
 
 #### 1. Estructura Básica FastAPI
-- [ ] Crear `app/main.py` con FastAPI app inicial
-- [ ] Crear `app/__init__.py`
-- [ ] Crear `app/config.py` con settings y variables de entorno
-- [ ] Crear `app/database.py` con configuración SQLAlchemy
-- [ ] Crear `app/dependencies.py` con dependency injection básico
+- [x] Crear `app/main.py` con FastAPI app inicial
+- [x] Crear `app/__init__.py`
+- [x] Crear `app/config.py` con settings y variables de entorno
+- [x] Crear `app/database.py` con configuración SQLAlchemy
+- [x] Crear `app/dependencies.py` con dependency injection básico
 
 #### 2. Variables de Entorno
-- [ ] Crear `.env.template` con variables requeridas:
+- [x] Crear `.env.template` con variables requeridas:
   ```
   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/techstore_db
   SECRET_KEY=your-secret-key-here
@@ -29,48 +29,27 @@
   ENVIRONMENT=development
   ```
 - [ ] Crear `.env` real (no commitear)
-- [ ] Agregar `.env` a `.gitignore`
+- [x] Agregar `.env` a `.gitignore`
 
 #### 3. Configuración Base de Datos
-- [ ] Inicializar Alembic: `alembic init alembic`
-- [ ] Configurar `alembic.ini` con DATABASE_URL
-- [ ] Crear `app/models/__init__.py`
+- [x] Inicializar Alembic: `alembic init alembic`
+- [x] Configurar `alembic.ini` con DATABASE_URL
+- [x] Crear `app/models/__init__.py`
 - [ ] Crear `app/models/base.py` con base model class
 
-#### 4. Pre-commit Hooks
-- [ ] Crear `.pre-commit-config.yaml`:
-  ```yaml
-  repos:
-    - repo: https://github.com/astral-sh/ruff-pre-commit
-      rev: v0.1.6
-      hooks:
-        - id: ruff
-    - repo: https://github.com/psf/black
-      rev: 23.11.0
-      hooks:
-        - id: black
-    - repo: local
-      hooks:
-        - id: pytest
-          name: pytest
-          entry: poetry run pytest
-          language: system
-          pass_filenames: false
-  ```
-- [ ] Instalar hooks: `pre-commit install`
 
-#### 5. Testing Setup
-- [ ] Crear `tests/conftest.py` con configuración básica
-- [ ] Crear `tests/test_main.py` con test básico de health check
-- [ ] Verificar que `pytest` funciona
+#### 4. Testing Setup
+- [x] Crear `tests/conftest.py` con configuración básica
+- [x] Crear `tests/test_main.py` con test básico de health check
+- [x] Verificar que `pytest` funciona
 
-#### 6. Documentación Técnica
+#### 5. Documentación Técnica
 - [ ] Crear `README.md` con:
   - Descripción del proyecto
   - Instrucciones de setup local
   - Comandos básicos (run, test, migrate)
   - Estructura del proyecto
-- [ ] Actualizar `.gitignore` para FastAPI
+- [x] Actualizar `.gitignore` para FastAPI
 
 ---
 

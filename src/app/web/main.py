@@ -1,7 +1,7 @@
 """Web routes for TechStore SaaS HTMX interface."""
 
 from fastapi import APIRouter, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter()
@@ -29,7 +29,7 @@ async def welcome_page(request: Request):
     return templates.TemplateResponse("welcome.html", {"request": request})
 
 
-@router.post("/demo/increment")
+@router.post("/demo/increment", response_class=PlainTextResponse)
 async def increment_counter():
     """Demo HTMX: Incrementar contador."""
     global counter_value
@@ -37,7 +37,7 @@ async def increment_counter():
     return str(counter_value)
 
 
-@router.post("/demo/decrement")
+@router.post("/demo/decrement", response_class=PlainTextResponse)
 async def decrement_counter():
     """Demo HTMX: Decrementar contador."""
     global counter_value
@@ -45,7 +45,7 @@ async def decrement_counter():
     return str(counter_value)
 
 
-@router.post("/demo/search")
+@router.post("/demo/search", response_class=HTMLResponse)
 async def search_demo(search_term: str = Form(...)):
     """Demo HTMX: Búsqueda en tiempo real."""
     if not search_term.strip():
@@ -61,16 +61,12 @@ async def search_demo(search_term: str = Form(...)):
 
     html = ""
     for product in results:
-        html += f"""
-        <div class="result-item">
-            <i class="fas fa-mobile-alt text-primary"></i> {product}
-        </div>
-        """
+        html += f'<div class="result-item"><i class="fas fa-mobile-alt text-primary"></i> {product}</div>'
 
     return html
 
 
-@router.get("/demo/status")
+@router.get("/demo/status", response_class=HTMLResponse)
 async def system_status():
     """Demo HTMX: Estado del sistema."""
     import random
@@ -102,18 +98,4 @@ async def system_status():
 
     current_status = random.choice(statuses)
 
-    return f"""
-    <div class="alert alert-{current_status['status']}" role="alert">
-        <i class="{current_status['icon']} {current_status['class']}"></i>
-        <strong>Estado:</strong> {current_status['message']}
-        <br>
-        <small class="text-muted">Última verificación: {time.strftime('%H:%M:%S')}</small>
-    </div>
-    <button
-        class="btn btn-outline-primary btn-sm"
-        hx-get="/demo/status"
-        hx-target="#system-status"
-        hx-swap="innerHTML">
-        <i class="fas fa-refresh"></i> Verificar Nuevamente
-    </button>
-    """
+    return f'<div class="alert alert-{current_status["status"]}" role="alert"><i class="{current_status["icon"]} {current_status["class"]}"></i> <strong>Estado:</strong> {current_status["message"]}<br><small class="text-muted">Última verificación: {time.strftime("%H:%M:%S")}</small></div><button class="btn btn-outline-primary btn-sm" hx-get="/demo/status" hx-target="#system-status" hx-swap="innerHTML"><i class="fas fa-refresh"></i> Verificar Nuevamente</button>'

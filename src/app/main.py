@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.api.v1.search import router as search_api_router
 from app.web.main import router as web_router
+from app.web.search import router as search_web_router
 
 app = FastAPI(
     title="TechStore SaaS",
@@ -36,11 +38,12 @@ def health_check():
     return {"status": "ok", "message": "TechStore API is running"}
 
 
-# API routes will be added here
-# app.include_router(api_router, prefix="/api/v1")
+# API routes (JSON)
+app.include_router(search_api_router, prefix="/api/v1")
 
-# Web routes
+# Web routes (HTMX)
 app.include_router(web_router)
+app.include_router(search_web_router, prefix="/htmx")
 
 if __name__ == "__main__":
     import uvicorn

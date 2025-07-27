@@ -103,6 +103,23 @@ app/
 - **Docstrings**: Add docstrings for modules, classes, and functions when required by linting
 - **Comments**: NEVER add inline comments unless explicitly requested by the user
 
+### Feature Implementation
+- **ALWAYS follow TDD approach**: See `docs/feature-implementation-guide.md`
+- **4-Layer Architecture**: Service → Schema → API → Web
+- **Test-First Development**: Write tests before implementation
+- **Outside-In Development**: Start with Web/API tests, work inward
+
+### Session Workflow for Features
+**In every session, follow this process:**
+1. **Choose User Stories**: From `docs/user-stories.md` or write new ones
+2. **Apply TDD Process**: Follow `docs/feature-implementation-guide.md` exactly
+3. **Implementation Order**: 
+   - Red Phase: Write failing tests (Web → API → Service → Model)
+   - Green Phase: Implement to pass tests (Model → Service → API → Web)
+   - Refactor Phase: Improve code while keeping tests green
+4. **Always use TodoWrite**: Track progress through each phase
+5. **Complete Features**: Don't leave half-implemented features
+
 ### Git Workflow
 - **Main Branch**: `main` (production-ready code only)
 - **Development Branch**: `development` (integration branch)
