@@ -9,7 +9,8 @@
       "Bash(uvicorn:*)",
       "Bash(python:*)",
       "Bash(poetry run ruff:*)",
-      "Bash(poetry run pytest:*)"
+      "Bash(poetry run pytest:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

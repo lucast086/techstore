@@ -2,15 +2,30 @@
 
 ## 🎯 Objetivo del MVP
 
-Crear una versión funcional de TechStore que permita a un comercio técnico gestionar las **4 operaciones fundamentales**:
-1. Gestionar clientes y cuentas corrientes
-2. Realizar ventas de productos/servicios
-3. Gestionar órdenes de reparación
-4. Administrar inventario de productos
+Crear una versión funcional de TechStore que permita a un comercio técnico gestionar las **5 operaciones fundamentales**:
+1. Autenticación y control de acceso
+2. Gestionar clientes y cuentas corrientes
+3. Realizar ventas de productos/servicios
+4. Gestionar órdenes de reparación
+5. Administrar inventario de productos
 
 ## 📦 Módulos del MVP
 
-### 1. 👤 Módulo Cliente
+### 1. 🔐 Módulo Autenticación
+**Funcionalidad principal**: Control de acceso y gestión básica de usuarios
+
+#### Características:
+- **Login/Logout**: Autenticación con email y contraseña
+- **Gestión de usuarios**: CRUD básico de usuarios (solo admin)
+- **Roles simples**: Dos roles (admin y user)
+- **Sesiones seguras**: Control de sesiones con expiración
+- **Protección de rutas**: Middleware para verificar permisos
+
+#### Entidades principales:
+- `Usuario` (id, nombre, email, password_hash, rol_id, activo, created_at, updated_at)
+- `Rol` (id, nombre, descripcion)
+
+### 2. 👤 Módulo Cliente
 **Funcionalidad principal**: Alta de clientes y gestión de cuenta corriente
 
 #### Características:
@@ -20,10 +35,10 @@ Crear una versión funcional de TechStore que permita a un comercio técnico ges
 - **Estado de cuenta**: Balance actual sin generación de comprobantes complejos
 
 #### Entidades principales:
-- `Cliente` (id, nombre, email, teléfono, dirección, fecha_creación)
-- `MovimientoCuentaCorriente` (id, cliente_id, tipo, monto, descripción, fecha)
+- `Cliente` (id, nombre, email, telefono, direccion, created_at, updated_at)
+- `MovimientoCuentaCorriente` (id, cliente_id, tipo, monto, descripcion, fecha, created_at)
 
-### 2. 💰 Módulo Venta
+### 3. 💰 Módulo Venta
 **Funcionalidad principal**: Generar ventas y asignarlas a cuenta corriente
 
 #### Características:
@@ -33,10 +48,10 @@ Crear una versión funcional de TechStore que permita a un comercio técnico ges
 - **Registro en cuenta corriente**: Impacto automático en balance del cliente
 
 #### Entidades principales:
-- `Venta` (id, cliente_id, total, fecha, estado)
+- `Venta` (id, cliente_id, usuario_id, total, fecha, estado, created_at, updated_at)
 - `ItemVenta` (id, venta_id, producto_id, cantidad, precio_unitario)
 
-### 3. 🔧 Módulo Reparación
+### 4. 🔧 Módulo Reparación
 **Funcionalidad principal**: Gestión básica de órdenes de trabajo
 
 #### Características:
@@ -46,7 +61,7 @@ Crear una versión funcional de TechStore que permita a un comercio técnico ges
 - **Status tracking**: Estados simples (Recibido → Diagnosticado → En Reparación → Listo → Entregado)
 
 #### Entidades principales:
-- `OrdenReparacion` (id, cliente_id, equipo, problema_reportado, diagnostico, precio, status, fecha_recepcion, fecha_entrega)
+- `OrdenReparacion` (id, cliente_id, usuario_id, equipo, problema_reportado, diagnostico, precio, estado, fecha_recepcion, fecha_entrega, created_at, updated_at)
 
 #### Estados del MVP:
 1. **Recibido**: Equipo ingresó al taller
@@ -55,7 +70,7 @@ Crear una versión funcional de TechStore que permita a un comercio técnico ges
 4. **Listo**: Reparación completada, esperando retiro
 5. **Entregado**: Cliente retiró el equipo
 
-### 4. 📦 Módulo Productos
+### 5. 📦 Módulo Productos
 **Funcionalidad principal**: CRUD de productos con categorías y precios
 
 #### Características:
@@ -65,8 +80,33 @@ Crear una versión funcional de TechStore que permita a un comercio técnico ges
 - **Información básica**: Nombre, descripción, código/SKU
 
 #### Entidades principales:
-- `Categoria` (id, nombre, descripción)
-- `Producto` (id, nombre, descripción, codigo_sku, categoria_id, precio_compra, precio_venta, fecha_creación)
+- `Categoria` (id, nombre, descripcion)
+- `Producto` (id, nombre, descripcion, codigo_sku, categoria_id, precio_compra, precio_venta, created_at, updated_at)
+
+## 📊 Resumen de Modelos de Datos del MVP
+
+### Modelos Completos para Implementar:
+
+1. **Autenticación**:
+   - `Usuario` (id, nombre, email, password_hash, rol_id, activo, created_at, updated_at)
+   - `Rol` (id, nombre, descripcion)
+
+2. **Clientes**:
+   - `Cliente` (id, nombre, email, telefono, direccion, created_at, updated_at)
+   - `MovimientoCuentaCorriente` (id, cliente_id, tipo, monto, descripcion, fecha, created_at)
+
+3. **Productos**:
+   - `Categoria` (id, nombre, descripcion)
+   - `Producto` (id, nombre, descripcion, codigo_sku, categoria_id, precio_compra, precio_venta, created_at, updated_at)
+
+4. **Ventas**:
+   - `Venta` (id, cliente_id, usuario_id, total, fecha, estado, created_at, updated_at)
+   - `ItemVenta` (id, venta_id, producto_id, cantidad, precio_unitario)
+
+5. **Reparaciones**:
+   - `OrdenReparacion` (id, cliente_id, usuario_id, equipo, problema_reportado, diagnostico, precio, estado, fecha_recepcion, fecha_entrega, created_at, updated_at)
+
+**Nota**: Todos los modelos heredan de `BaseModel` que incluye los campos `created_at` y `updated_at` automáticamente.
 
 ## 🛤️ User Journeys del MVP
 
@@ -114,19 +154,24 @@ Finaliza transacción
 - **Portal del cliente**: Sin acceso web para clientes
 - **Reportes avanzados**: Solo vistas básicas
 - **Gestión de stock**: Sin control de inventario automático
-- **Múltiples usuarios**: Un solo usuario administrador
-- **Roles y permisos**: Sin sistema de roles
+- **Roles avanzados**: Solo admin y user básicos
+- **Multi-tenant**: Sin soporte para múltiples empresas
 - **Backup automático**: Solo base de datos local
 - **API externa**: Sin integraciones de terceros
+- **SSO/OAuth**: Solo autenticación local
 
 ## ✅ Criterios de Éxito del MVP
 
+**Estado Actual**: Proyecto en Fase 1 (Fundación) - Solo existe código de ejemplo que debe ser limpiado antes de comenzar la implementación real.
+
 ### Funcional
-- [x] Un cliente puede ser registrado
-- [x] Se puede crear una venta con productos
-- [x] Se puede recibir una reparación y cambiar su estado
-- [x] Se pueden gestionar productos básicos
-- [x] La cuenta corriente refleja movimientos
+- [ ] Sistema de login/logout funcional
+- [ ] Control de acceso por roles (admin/user)
+- [ ] Un cliente puede ser registrado
+- [ ] Se puede crear una venta con productos
+- [ ] Se puede recibir una reparación y cambiar su estado
+- [ ] Se pueden gestionar productos básicos
+- [ ] La cuenta corriente refleja movimientos
 
 ### Técnico
 - [x] Deploy exitoso en Railway
@@ -144,10 +189,16 @@ Finaliza transacción
 
 ### Fase de Desarrollo MVP: 4-6 semanas
 
-**Semana 1-2**: Setup y Módulo Cliente + Productos
+**Semana 1**: Setup y Módulo Autenticación
 - Configuración proyecto FastAPI
-- Base de datos y modelos
-- CRUD básico clientes y productos
+- Base de datos y modelos base
+- Sistema de autenticación completo
+- Gestión de usuarios y roles
+
+**Semana 2**: Módulo Cliente + Productos
+- CRUD básico clientes
+- CRUD básico productos
+- Integración con sistema de permisos
 
 **Semana 3-4**: Módulo Venta + Reparación  
 - Sistema de ventas

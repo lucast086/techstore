@@ -1,5 +1,26 @@
 # TechStore - Roadmap de Desarrollo
 
+## 📍 Estado Actual del Proyecto
+
+**Fecha de actualización**: 27 de Julio, 2025  
+**Estado**: Fase 1 - Fundación (Pre-desarrollo)  
+**Semana actual**: 0 (Preparación)  
+
+### ✅ Completado:
+- Documentación inicial (visión, MVP, arquitectura)
+- Configuración del entorno de desarrollo
+- Estructura base del proyecto FastAPI
+- Definición de 5 módulos core (incluyendo Autenticación)
+
+### 🔄 En Progreso:
+- Limpieza de código de ejemplo
+- Resolución de discrepancias en documentación
+
+### ⏭️ Próximos Pasos Inmediatos:
+1. Ejecutar Historia #18: Limpiar base de código
+2. Implementar módulo de Autenticación (Historias #19-#26)
+3. Comenzar con módulos Cliente y Productos
+
 ## 🎯 Metodología: Enfoque Híbrido
 
 TechStore sigue un **enfoque híbrido** que combina la planificación estratégica del modelo tradicional con la agilidad y flexibilidad del desarrollo iterativo.
@@ -14,6 +35,7 @@ TechStore sigue un **enfoque híbrido** que combina la planificación estratégi
 
 ### 📋 Fase 1: Fundación (antes del MVP)
 *Duración estimada: 1-2 semanas*
+**Estado: EN CURSO - Semana 0**
 
 #### Objetivos
 Establecer bases sólidas del proyecto antes de comenzar desarrollo
@@ -43,6 +65,7 @@ Establecer bases sólidas del proyecto antes de comenzar desarrollo
 
 ### 🚀 Fase 2: MVP (el corazón del proceso)
 *Duración estimada: 4-6 semanas*
+**Estado: PENDIENTE - Comenzará en Semana 1**
 
 #### Objetivos
 Crear versión funcional mínima que valide hipótesis principales del negocio
@@ -50,11 +73,12 @@ Crear versión funcional mínima que valide hipótesis principales del negocio
 #### Actividades Principales
 
 **🔹 Feature Prioritization (Semana 1)**
-- Refinamiento de los 4 módulos core
+- Refinamiento de los 5 módulos core
 - Definición de historias de usuario específicas
 - Priorización por valor de negocio
 
 **🔹 Working Prototype (Semanas 2-4)**
+- **Módulo Autenticación**: Login/logout + gestión básica de usuarios
 - **Módulo Cliente**: Alta de clientes + cuenta corriente básica
 - **Módulo Productos**: CRUD de productos con categorías y precios
 - **Módulo Venta**: Sistema de ventas vinculado a cuenta corriente
@@ -77,7 +101,7 @@ Crear versión funcional mínima que valide hipótesis principales del negocio
 - Preparación para usuarios piloto
 
 #### Entregables
-- [ ] Aplicación web funcional con 4 módulos
+- [ ] Aplicación web funcional con 5 módulos
 - [ ] Base de datos operativa en PostgreSQL
 - [ ] Deploy automatizado en Railway
 - [ ] Documentación de usuario básica
@@ -93,6 +117,7 @@ Crear versión funcional mínima que valide hipótesis principales del negocio
 
 ### 🔄 Fase 3: Post-MVP (iteración)
 *Duración: Iteraciones de 2-3 semanas*
+**Estado: FUTURO - Comenzará en Semana 7+**
 
 #### Objetivos
 Evolucionar el producto basado en feedback real y datos de uso
@@ -165,16 +190,18 @@ Evolucionar el producto basado en feedback real y datos de uso
 - **Feature adoption**: > 60% uso de nuevas features
 - **Bug rate**: < 5% de issues críticos por release
 
-## 🎯 Hitos Importantes
+## 🎯 Hitos Importantes (Timeline Actualizado)
 
-| Hito | Fecha Target | Criterio de Éxito |
-|------|-------------|-------------------|
-| **Documentación Completa** | Semana 2 | Visión clara y tech stack validado |
-| **MVP Core Ready** | Semana 6 | 4 módulos funcionando localmente |
-| **MVP Deployed** | Semana 8 | Deploy estable en Railway |
-| **Piloto Launch** | Semana 10 | 3 empresas usando activamente |
-| **Primera Iteración** | Semana 13 | Features post-MVP en producción |
-| **Product-Market Fit** | Semana 20 | 10+ empresas, métricas positivas |
+| Hito | Fecha Target | Criterio de Éxito | Estado |
+|------|-------------|-------------------|---------|
+| **Documentación Completa** | Semana 0 | Visión clara y tech stack validado | ✅ Completado |
+| **Código Limpio** | Semana 1 - Día 1 | Eliminado código de ejemplo | 🔄 Pendiente |
+| **MVP Core Ready** | Semana 6 | 5 módulos funcionando localmente | ⏳ Futuro |
+| **Autenticación Ready** | Semana 1 | Login y gestión usuarios funcionando | ⏳ Próximo |
+| **MVP Deployed** | Semana 8 | Deploy estable en Railway | ⏳ Futuro |
+| **Piloto Launch** | Semana 10 | 3 empresas usando activamente | ⏳ Futuro |
+| **Primera Iteración** | Semana 13 | Features post-MVP en producción | ⏳ Futuro |
+| **Product-Market Fit** | Semana 20 | 10+ empresas, métricas positivas | ⏳ Futuro |
 
 ## 🔄 Proceso de Toma de Decisiones
 

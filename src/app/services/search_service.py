@@ -50,9 +50,7 @@ class SearchService:
 
         # Filter by search term
         filtered_products = [
-            product
-            for product in cls.DEMO_PRODUCTS
-            if search_term in product["name"].lower()
+            product for product in cls.DEMO_PRODUCTS if search_term in product["name"].lower()
         ]
 
         # Filter by category if provided

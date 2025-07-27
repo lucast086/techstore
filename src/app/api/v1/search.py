@@ -25,9 +25,7 @@ async def search_products_api(
     - External integrations
     - Admin dashboards
     """
-    result = SearchService.search_products(
-        search_term=q, category=category, max_results=limit
-    )
+    result = SearchService.search_products(search_term=q, category=category, max_results=limit)
 
     return SearchResponse(**result)
 

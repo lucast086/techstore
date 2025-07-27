@@ -62,8 +62,12 @@ poetry run pytest tests/test_models/test_cliente.py
 
 ### Technology Stack
 - **Backend**: FastAPI + Python 3.11
-- **Database**: PostgreSQL 15 
-- **Frontend**: HTMX + Jinja2 Templates
+- **Database**: PostgreSQL 15 with SQLAlchemy ORM
+- **Frontend**: HTMX + Jinja2 Templates + Tailwind CSS
+- **Dependency Management**: Poetry
+- **Database Migrations**: Alembic
+- **Code Quality**: Ruff (linting + formatting)
+- **Testing**: Pytest with coverage
 - **Deployment**: Railway (Production), Docker (Development)
 
 ### Project Structure

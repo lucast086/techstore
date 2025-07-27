@@ -34,6 +34,7 @@ Las empresas que combinan venta de productos con servicios técnicos enfrentan e
 TechStore ofrece una **solución integral** que unifica todos los aspectos del negocio en una sola plataforma:
 
 ### Funcionalidades Core
+- **Sistema de autenticación y control de acceso** para seguridad
 - **Gestión completa de clientes** con cuenta corriente integrada
 - **Módulo de ventas** para productos y servicios
 - **Sistema de servicio técnico** con seguimiento completo
@@ -82,7 +83,7 @@ TechStore ofrece una **solución integral** que unifica todos los aspectos del n
 ## 📊 Métricas de Éxito
 
 ### MVP (Corto plazo)
-- 10 empresas usando los 4 módulos core
+- 10 empresas usando los 5 módulos core
 - 90% de satisfacción en usabilidad básica
 - Tiempo de implementación < 1 semana
 

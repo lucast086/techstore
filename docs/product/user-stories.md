@@ -291,9 +291,170 @@
 
 ---
 
+## 🔐 Módulo Autenticación
+
+### Epic: Autenticación y Control de Acceso
+*Como administrador del sistema, necesito controlar quién puede acceder al sistema y qué puede hacer cada usuario para mantener la seguridad y organización del negocio.*
+
+#### 📝 Historia de Usuario #18: Limpiar Base de Código
+**Como** desarrollador del sistema  
+**Quiero** eliminar todo el código de ejemplo y datos dummy  
+**Para** tener una base limpia para implementar las funcionalidades reales
+
+**Criterios de Aceptación:**
+- [ ] Se eliminan todas las APIs de búsqueda de productos de ejemplo
+- [ ] Se eliminan los datos DEMO_PRODUCTS del SearchService
+- [ ] Se eliminan los schemas de SearchResponse y CategoryResponse
+- [ ] Se eliminan las rutas web de búsqueda HTMX
+- [ ] Se mantiene la estructura base: main.py, config.py, database.py, dependencies.py
+- [ ] Se mantiene el template base.html como foundation para layouts
+- [ ] El servidor FastAPI arranca sin errores después de la limpieza
+- [ ] No quedan referencias a funcionalidades de ejemplo en el código
+
+**Definición de Terminado:**
+- Código de ejemplo completamente removido
+- Servidor funciona sin errores
+- Base limpia lista para nuevas funcionalidades
+- Arquitectura de carpetas intacta
+
+---
+
+#### 📝 Historia de Usuario #19: Login en Página Principal
+**Como** María (administradora) o Carlos (técnico)  
+**Quiero** ver un formulario de login al entrar a la página principal  
+**Para** poder autenticarme y acceder al sistema de manera segura
+
+**Criterios de Aceptación:**
+- [ ] Al acceder a la URL raíz ("/") aparece un formulario de login
+- [ ] El formulario tiene campos para email/usuario y contraseña
+- [ ] Los campos tienen validación visual (requeridos)
+- [ ] Hay un botón "Iniciar Sesión" para enviar el formulario
+- [ ] El diseño es responsive y funciona en dispositivos móviles
+- [ ] Se muestra el logo/nombre de TechStore en la página
+- [ ] Si ya hay una sesión activa, redirige directamente al dashboard
+
+---
+
+#### 📝 Historia de Usuario #20: Sistema de Autenticación
+**Como** usuario del sistema  
+**Quiero** que mis credenciales sean validadas correctamente  
+**Para** acceder solo con permisos válidos y mantener mi sesión segura
+
+**Criterios de Aceptación:**
+- [ ] El sistema valida email y contraseña contra la base de datos
+- [ ] Las contraseñas se almacenan encriptadas (no en texto plano)
+- [ ] Se genera una sesión/token válido tras login exitoso
+- [ ] Se muestra mensaje de error claro si las credenciales son incorrectas
+- [ ] Las sesiones expiran después de un tiempo determinado
+- [ ] Se previenen ataques de fuerza bruta (rate limiting)
+- [ ] Logout invalida la sesión/token correctamente
+
+---
+
+#### 📝 Historia de Usuario #21: Panel de Administración
+**Como** María (administradora)  
+**Quiero** acceder a un panel de administración exclusivo  
+**Para** gestionar usuarios y configuraciones del sistema
+
+**Criterios de Aceptación:**
+- [ ] Solo usuarios con rol "admin" pueden acceder al panel
+- [ ] El panel está disponible en una ruta protegida (/admin)
+- [ ] Si un usuario no-admin intenta acceder, se muestra error 403
+- [ ] El panel tiene navegación hacia gestión de usuarios y roles
+- [ ] Se muestra información del usuario logueado (nombre, rol)
+- [ ] Hay opción para regresar al dashboard principal
+- [ ] El diseño es consistente con el resto del sistema
+
+---
+
+#### 📝 Historia de Usuario #22: Gestión de Roles
+**Como** María (administradora)  
+**Quiero** crear y gestionar roles de usuario  
+**Para** controlar qué permisos tiene cada tipo de usuario
+
+**Criterios de Aceptación:**
+- [ ] Puedo ver una lista de roles existentes (admin, user)
+- [ ] Puedo crear nuevos roles con nombre y descripción
+- [ ] Puedo editar roles existentes (nombre y descripción)
+- [ ] No puedo eliminar roles que tienen usuarios asignados
+- [ ] Cada rol muestra cuántos usuarios lo tienen asignado
+- [ ] Los roles "admin" y "user" vienen pre-configurados en el sistema
+- [ ] Solo administradores pueden gestionar roles
+
+---
+
+#### 📝 Historia de Usuario #23: Gestión de Usuarios
+**Como** María (administradora)  
+**Quiero** crear y gestionar usuarios del sistema  
+**Para** controlar quién puede acceder y con qué permisos
+
+**Criterios de Aceptación:**
+- [ ] Puedo crear nuevos usuarios con: nombre, email, contraseña, rol
+- [ ] Puedo ver lista de todos los usuarios con su información básica
+- [ ] Puedo editar información de usuarios existentes
+- [ ] Puedo cambiar el rol asignado a un usuario
+- [ ] Puedo desactivar usuarios (sin eliminarlos)
+- [ ] No puedo eliminar mi propio usuario administrador
+- [ ] Las contraseñas se generan de forma segura
+- [ ] Se valida que los emails sean únicos en el sistema
+
+---
+
+#### 📝 Historia de Usuario #24: Control de Acceso por Rol
+**Como** usuario del sistema  
+**Quiero** que el sistema restrinja mi acceso según mi rol  
+**Para** mantener la seguridad y organización
+
+**Criterios de Aceptación:**
+- [ ] Usuarios con rol "admin" pueden acceder a todo el sistema
+- [ ] Usuarios con rol "user" no pueden acceder al panel de administración
+- [ ] Se verifica el rol en cada request a rutas protegidas
+- [ ] Se muestran mensajes claros cuando no hay permisos
+- [ ] El menú de navegación se adapta según el rol del usuario
+- [ ] Los usuarios no pueden cambiar su propio rol
+- [ ] Las restricciones funcionan tanto en API como en web interface
+
+---
+
+#### 📝 Historia de Usuario #25: Dashboard Personalizado
+**Como** usuario logueado  
+**Quiero** ver un dashboard adaptado a mi rol  
+**Para** acceder rápidamente a las funciones que puedo usar
+
+**Criterios de Aceptación:**
+- [ ] Dashboard muestra bienvenida personalizada con nombre del usuario
+- [ ] Administradores ven acceso al Panel de Administración
+- [ ] Usuarios comunes NO ven el acceso al Panel de Administración
+- [ ] Se muestra el rol actual del usuario claramente
+- [ ] Hay botón de Logout visible en el dashboard
+- [ ] El dashboard es la página por defecto después del login
+- [ ] Se prepara estructura para agregar módulos futuros (placeholders)
+
+---
+
+#### 📝 Historia de Usuario #26: Logout Seguro
+**Como** usuario logueado  
+**Quiero** cerrar sesión de forma segura  
+**Para** proteger mi cuenta cuando termino de usar el sistema
+
+**Criterios de Aceptación:**
+- [ ] Hay botón/enlace de "Cerrar Sesión" visible en dashboard
+- [ ] Al hacer logout se invalida la sesión/token inmediatamente
+- [ ] Después del logout redirije a la página de login
+- [ ] No se puede acceder a páginas protegidas después del logout
+- [ ] Se muestra confirmación de que la sesión se cerró correctamente
+- [ ] El logout funciona desde cualquier página del sistema
+- [ ] Se limpia cualquier información de sesión del navegador
+
+---
+
 ## 📊 Métricas de Historias de Usuario
 
 ### Priorización para MVP
+**PRIORIDAD MÁXIMA (Sprint 0 - Prerequisito):**
+- Historia #18 (Limpiar base de código)
+- Historias #19-#26 (Sistema de autenticación completo)
+
 **Debe tener (Sprint 1-2):**
 - Historias #1, #2, #3 (Cliente básico)
 - Historia #12, #13 (Productos básicos)

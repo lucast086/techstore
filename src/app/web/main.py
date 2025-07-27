@@ -52,9 +52,7 @@ async def search_demo(search_term: str = Form(...)):
         return "<p class='text-muted'>Escribe algo para buscar...</p>"
 
     # Filtrar productos que coincidan con el término de búsqueda
-    results = [
-        product for product in demo_products if search_term.lower() in product.lower()
-    ]
+    results = [product for product in demo_products if search_term.lower() in product.lower()]
 
     if not results:
         return "<p class='text-warning'>No se encontraron productos.</p>"

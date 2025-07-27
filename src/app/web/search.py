@@ -73,9 +73,7 @@ async def search_products_htmx(
 
 
 @router.get("/categories", response_class=HTMLResponse)
-async def get_categories_htmx(
-    request: Request, search_service: SearchService = SearchServiceDep
-):
+async def get_categories_htmx(request: Request, search_service: SearchService = SearchServiceDep):
     """Get categories as HTML options for select dropdown."""
     try:
         # Try API call first (production path)

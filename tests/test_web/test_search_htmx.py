@@ -35,9 +35,7 @@ def test_search_htmx_endpoint_returns_html(client: TestClient):
 def test_search_htmx_endpoint_empty_query(client: TestClient):
     """Test HTMX search endpoint with empty query returns proper message."""
     # Test with completely empty query
-    response = client.post(
-        "/htmx/search/products", data={"q": " "}
-    )  # Space instead of empty
+    response = client.post("/htmx/search/products", data={"q": " "})  # Space instead of empty
 
     assert response.status_code == 200
     html_content = response.text
@@ -63,9 +61,7 @@ def test_search_htmx_endpoint_no_results(client: TestClient):
 
 def test_search_htmx_endpoint_with_category(client: TestClient):
     """Test HTMX search endpoint with category filter."""
-    response = client.post(
-        "/htmx/search/products", data={"q": "pro", "category": "smartphone"}
-    )
+    response = client.post("/htmx/search/products", data={"q": "pro", "category": "smartphone"})
 
     assert response.status_code == 200
     html_content = response.text
