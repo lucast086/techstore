@@ -5,11 +5,11 @@
       "name": "Django: Techstore Backend",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/techstore/backend/manage.py",
+      "program": "${workspaceFolder}/techstore/manage.py",
       "args": ["runserver", "0.0.0.0:8000"],
       "django": true,
       "justMyCode": true,
-      "cwd": "${workspaceFolder}/techstore/backend",
+      "cwd": "${workspaceFolder}/techstore",
       "env": {
         "PYTHONPATH": "${workspaceFolder}/techstore"
       }

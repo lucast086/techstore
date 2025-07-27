@@ -30,12 +30,13 @@
     "**/.pytest_cache": true,
     "**/.ruff_cache": true
   },
-  "python.testing.pytestArgs": ["techstore/backend"],
+  "python.testing.pytestArgs": ["techstore"],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.testing.nosetestsEnabled": false,
   "python.analysis.extraPaths": [
-    "${workspaceFolder}/techstore/backend",
+    "${workspaceFolder}/techstore",
     "${workspaceFolder}"
-  ]
+  ],
+  "python.languageServer": "None"
 }

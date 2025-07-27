@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   app:
@@ -8,18 +8,19 @@ services:
     volumes:
       - ..:/workspace:cached
     command: sleep infinity
-    networks:
-      - internet
     environment:
-      - PRE_COMMIT_HOME=/workspace/.pre-commit
+      - PYTHONPATH=/workspace
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/techstore_db
       - GIT_AUTHOR_NAME=lucast086
       - GIT_AUTHOR_EMAIL=turlettilucasdev@gmail.com
       - GIT_COMMITTER_NAME=lucast086
       - GIT_COMMITTER_EMAIL=turlettilucasdev@gmail.com
     depends_on:
       - db
+    networks:
+      - techstore_network
 
-  # Servicio PostgreSQL para multitenancy
+  # PostgreSQL para FastAPI
   db:
     image: postgres:15
     restart: unless-stopped
@@ -32,13 +33,11 @@ services:
     ports:
       - "5433:5432"
     networks:
-      - internet
+      - techstore_network
 
 volumes:
-  node_modules:
-  postgres-data: # Volumen persistente para los datos de PostgreSQL
+  postgres-data:
 
 networks:
-  internet:
-    external:
-      name: internet
+  techstore_network:
+    driver: bridge

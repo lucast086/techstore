@@ -3,6 +3,8 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
+  "remoteUser": "developer",
+  "postCreateCommand": "sudo chown -R developer:developer /workspace",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -46,6 +48,9 @@
     }
   },
   "forwardPorts": [8000, 5432],
-  "postCreateCommand": "/usr/local/bin/init-dev.sh",
-  "remoteUser": "root"
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    }
+  }
 }
