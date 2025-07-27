@@ -1,5 +1,5 @@
 {
-  "python.linting.enabled": true,
+  "python.linting.enabled": false,
   "python.linting.flake8Enabled": false,
   "python.linting.pylintEnabled": false,
   "python.formatting.provider": "none",
@@ -7,6 +7,7 @@
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit",
       "source.fixAll.ruff": "explicit",
@@ -14,6 +15,13 @@
       "source.organizeImports.ruff": "explicit"
     }
   },
+
+  // Ruff settings (new native server)
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.format.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.nativeServer": true,
 
   "editor.formatOnSave": true,
   "editor.rulers": [100],
@@ -30,12 +38,13 @@
     "**/.pytest_cache": true,
     "**/.ruff_cache": true
   },
-  "python.testing.pytestArgs": ["techstore/backend"],
+  "python.testing.pytestArgs": ["tests"],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "python.testing.nosetestsEnabled": false,
   "python.analysis.extraPaths": [
-    "${workspaceFolder}/techstore/backend",
+    "${workspaceFolder}/src",
     "${workspaceFolder}"
-  ]
+  ],
+  "python.languageServer": "None"
 }

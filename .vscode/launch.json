@@ -2,17 +2,39 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Django: Techstore Backend",
+      "name": "FastAPI: TechStore SaaS",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/techstore/backend/manage.py",
-      "args": ["runserver", "0.0.0.0:8000"],
-      "django": true,
+      "module": "uvicorn",
+      "args": [
+        "src.app.main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "jinja": true,
       "justMyCode": true,
-      "cwd": "${workspaceFolder}/techstore/backend",
+      "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/techstore"
-      }
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "FastAPI: TechStore (Production Mode)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["src.app.main:app", "--host", "0.0.0.0", "--port", "8000"],
+      "jinja": true,
+      "justMyCode": true,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src"
+      },
+      "console": "integratedTerminal"
     }
   ]
 }

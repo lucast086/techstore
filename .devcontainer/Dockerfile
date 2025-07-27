@@ -1,41 +1,59 @@
-ARG VARIANT=3.11
-FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
+# Imagen base con Python 3.11
+FROM python:3.11-slim
 
-# Evitar mensajes de advertencia
+# Variables de entorno
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/workspace
 
-USER root
-
-# Instalar dependencias del sistema
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && apt-get -y install --no-install-recommends \
+# Instalar dependencias del sistema para desarrollo
+RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     git \
     zsh \
+    sudo \
+    vim \
     gnupg \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar Node.js 16
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+# Instalar Node.js 18
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
 
-# Configurar zsh como shell predeterminado
-RUN chsh -s /usr/bin/zsh root
+# Crear usuario developer con sudo
+RUN groupadd --gid 1000 developer \
+    && useradd --uid 1000 --gid 1000 -m developer \
+    && echo developer ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/developer \
+    && chmod 0440 /etc/sudoers.d/developer
 
-# Instalar Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="${PATH}:/root/.local/bin"
+# Configurar zsh para developer
+RUN chsh -s /usr/bin/zsh developer
 
-# Configurar Poetry para que no cree entornos virtuales dentro del contenedor
-RUN poetry config virtualenvs.create false
+# Instalar Poetry globalmente
+RUN pip install poetry==1.7.1
 
-# Instalar pre-commit y ruff globalmente
-RUN pip install pre-commit ruff
+# Configurar Poetry para instalar globalmente
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VENV_IN_PROJECT=false \
+    POETRY_VIRTUALENVS_CREATE=false \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Configurar directorio de trabajo
+WORKDIR /workspace
+
+# Instalar Claude Code globalmente
+RUN npm install -g @anthropic-ai/claude-code
+
+# Cambiar a usuario developer
+USER developer
+
+# Configurar Poetry para el usuario developer
+RUN poetry config virtualenvs.create false \
+    && poetry config virtualenvs.in-project false
 
 # Preparar el directorio de trabajo
 WORKDIR /workspace
 
-# Script de inicialización para configurar pre-commit
-COPY .devcontainer/init-dev.sh /usr/local/bin/init-dev.sh
-RUN chmod +x /usr/local/bin/init-dev.sh
+# Development environment ready

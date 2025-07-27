@@ -1,72 +1,65 @@
+[tool.poetry]
+name = "techstore"
+version = "0.1.0"
+description = "TechStore SaaS - FastAPI + HTMX"
+authors = ["Lucas <turlettilucasdev@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+jinja2 = "^3.1.2"
+python-multipart = "^0.0.6"
+sqlalchemy = "^2.0.23"
+alembic = "^1.12.1"
+psycopg2-binary = "^2.9.9"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-dotenv = "^1.0.0"
+pydantic-settings = "^2.1.0"
+aiofiles = "^23.2.0"
+httpx = "^0.25.2"
+python-slugify = "^8.0.1"
+email-validator = "^2.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+black = "^23.11.0"
+ruff = "^0.1.6"
+pre-commit = "^3.5.0"
+factory-boy = "^3.3.0"
+coverage = "^7.3.2"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.ruff]
-# Habilitar linters específicos
-lint.select = [
-    "E",    # pycodestyle errors
-    "F",    # pyflakes
-    "I",    # isort
-    "N",    # pep8-naming
-    "D",    # pydocstyle
-    "UP",   # pyupgrade
-    "ANN",  # flake8-annotations
-    "B",    # flake8-bugbear
-    "C4",   # flake8-comprehensions
-    "EM",   # flake8-errmsg
-    "ICN",  # flake8-import-conventions
-    "PT",   # flake8-pytest-style
-    "RET",  # flake8-return
-    "SIM",  # flake8-simplify
-    "TRY",  # tryceratops
+target-version = "py311"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
 ]
 
-# Ignorar algunos errores específicos
-lint.ignore = [
-    "D203",   # one-blank-line-before-class
-    "D212",   # multi-line-summary-first-line
-    "ANN101", # missing-type-self
-]
-
-# Excluir archivos o directorios
-lint.exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "node_modules",
-    "*.pyc",
-    "dist",
-    "build",
-]
-
-# Configuración de línea máxima
-line-length = 100
-
-# Configuración específica para pydocstyle
-[tool.ruff.lint.pydocstyle]
-convention = "google"  # Usar convención de docstrings de Google
-
-# Configuración para isort
-[tool.ruff.lint.isort]
-known-first-party = ["techstore"]
-combine-as-imports = true
-force-sort-within-sections = true
-
-# Configuración para importaciones
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Permitir importaciones no utilizadas en __init__.py
-
-# Configuración para el formateador
-[tool.ruff.format]
-quote-style = "double"     # Usar comillas dobles
-indent-style = "space"     # Usar espacios para indentación
-line-ending = "auto"       # Autodetectar finales de línea
-docstring-code-format = true  # Formatear código en docstrings
+[tool.black]
+line-length = 88
+target-version = ['py311']
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "techstore_api.settings"
-python_files = "test_*.py"
+minversion = "6.0"
+addopts = "-ra -q"
 testpaths = ["tests"]
-django_find_project = false
-pythonpath = ["."]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
