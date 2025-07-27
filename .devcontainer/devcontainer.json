@@ -4,7 +4,7 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   "remoteUser": "developer",
-  "postCreateCommand": "sudo chown -R developer:developer /workspace",
+  "postCreateCommand": "./.devcontainer/init-dev.sh",
   "customizations": {
     "vscode": {
       "extensions": [

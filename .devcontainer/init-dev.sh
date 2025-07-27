@@ -19,24 +19,16 @@ fi
 # Instalar dependencias Python con Poetry
 echo "📦 Instalando dependencias de Python con Poetry..."
 if [ -f pyproject.toml ]; then
-  poetry install
+  sudo poetry install
   echo "✓ Dependencias de Python instaladas."
 else
   echo "⚠️ No se encontró pyproject.toml"
 fi
 
-# Verificar si pre-commit está instalado
-if ! command -v pre-commit &> /dev/null; then
-  echo "🔧 Instalando pre-commit..."
-  poetry run pip install pre-commit
-else
-  echo "✓ pre-commit ya está instalado."
-fi
-
 # Instalar pre-commit hooks si existe configuración
 if [ -f .pre-commit-config.yaml ]; then
   echo "🔧 Instalando pre-commit hooks..."
-  poetry run pre-commit install
+  sudo poetry run pre-commit install
   echo "✓ pre-commit hooks instalados."
 fi
 

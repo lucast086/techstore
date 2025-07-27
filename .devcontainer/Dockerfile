@@ -34,9 +34,10 @@ RUN chsh -s /usr/bin/zsh developer
 # Instalar Poetry globalmente
 RUN pip install poetry==1.7.1
 
-# Configurar Poetry
+# Configurar Poetry para instalar globalmente
 ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VENV_IN_PROJECT=0 \
+    POETRY_VENV_IN_PROJECT=false \
+    POETRY_VIRTUALENVS_CREATE=false \
     POETRY_CACHE_DIR=/tmp/poetry_cache
 
 # Configurar directorio de trabajo
@@ -48,9 +49,11 @@ RUN npm install -g @anthropic-ai/claude-code
 # Cambiar a usuario developer
 USER developer
 
+# Configurar Poetry para el usuario developer
+RUN poetry config virtualenvs.create false \
+    && poetry config virtualenvs.in-project false
+
 # Preparar el directorio de trabajo
 WORKDIR /workspace
 
-# Script de inicialización para configurar pre-commit
-COPY .devcontainer/init-dev.sh /scripts/init-dev.sh
-RUN chmod +x /scripts/init-dev.sh
+# Development environment ready

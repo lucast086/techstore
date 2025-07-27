@@ -103,70 +103,71 @@
 
 ```
 techstore/
-├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPI app entry point
-│   ├── database.py             # DB connection & session
-│   ├── dependencies.py         # FastAPI dependencies
-│   ├── config.py               # Settings & environment vars
-│   │
-│   ├── models/                 # SQLAlchemy models
+├── src/
+│   ├── app/
 │   │   ├── __init__.py
-│   │   ├── base.py            # Base model class
-│   │   ├── cliente.py         # Customer model
-│   │   ├── producto.py        # Product model
-│   │   ├── venta.py           # Sale model
-│   │   └── reparacion.py      # Repair order model
+│   │   ├── main.py                 # FastAPI app entry point
+│   │   ├── database.py             # DB connection & session
+│   │   ├── dependencies.py         # FastAPI dependencies
+│   │   ├── config.py               # Settings & environment vars
+│   │   │
+│   │   ├── models/                 # SQLAlchemy models
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py            # Base model class
+│   │   │   ├── cliente.py         # Customer model
+│   │   │   ├── producto.py        # Product model
+│   │   │   ├── venta.py           # Sale model
+│   │   │   └── reparacion.py      # Repair order model
+│   │   │
+│   │   ├── schemas/               # Pydantic schemas
+│   │   │   ├── __init__.py
+│   │   │   ├── cliente.py         # Customer schemas
+│   │   │   ├── producto.py        # Product schemas
+│   │   │   ├── venta.py           # Sale schemas
+│   │   │   └── reparacion.py      # Repair schemas
+│   │   │
+│   │   ├── crud/                  # Database operations
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py            # Base CRUD operations
+│   │   │   ├── cliente.py         # Customer CRUD
+│   │   │   ├── producto.py        # Product CRUD
+│   │   │   ├── venta.py           # Sale CRUD
+│   │   │   └── reparacion.py      # Repair CRUD
+│   │   │
+│   │   ├── api/                   # API routes
+│   │   │   ├── __init__.py
+│   │   │   ├── deps.py            # API dependencies
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       ├── api.py         # API router
+│   │   │       ├── clientes.py    # Customer endpoints
+│   │   │       ├── productos.py   # Product endpoints
+│   │   │       ├── ventas.py      # Sale endpoints
+│   │   │       └── reparaciones.py # Repair endpoints
+│   │   │
+│   │   ├── web/                   # Web interface (HTMX)
+│   │   │   ├── __init__.py
+│   │   │   ├── deps.py            # Web dependencies  
+│   │   │   ├── main.py            # Web router
+│   │   │   ├── clientes.py        # Customer web views
+│   │   │   ├── productos.py       # Product web views
+│   │   │   ├── ventas.py          # Sale web views
+│   │   │   ├── reparaciones.py    # Repair web views
+│   │   │   └── dashboard.py       # Dashboard views
+│   │   │
+│   │   └── templates/             # Jinja2 templates
+│   │       ├── base.html          # Base template
+│   │       ├── dashboard.html     # Dashboard
+│   │       ├── clientes/          # Customer templates
+│   │       ├── productos/         # Product templates
+│   │       ├── ventas/            # Sale templates
+│   │       ├── reparaciones/      # Repair templates
+│   │       └── components/        # Reusable components
 │   │
-│   ├── schemas/               # Pydantic schemas
-│   │   ├── __init__.py
-│   │   ├── cliente.py         # Customer schemas
-│   │   ├── producto.py        # Product schemas
-│   │   ├── venta.py           # Sale schemas
-│   │   └── reparacion.py      # Repair schemas
-│   │
-│   ├── crud/                  # Database operations
-│   │   ├── __init__.py
-│   │   ├── base.py            # Base CRUD operations
-│   │   ├── cliente.py         # Customer CRUD
-│   │   ├── producto.py        # Product CRUD
-│   │   ├── venta.py           # Sale CRUD
-│   │   └── reparacion.py      # Repair CRUD
-│   │
-│   ├── api/                   # API routes
-│   │   ├── __init__.py
-│   │   ├── deps.py            # API dependencies
-│   │   └── v1/
-│   │       ├── __init__.py
-│   │       ├── api.py         # API router
-│   │       ├── clientes.py    # Customer endpoints
-│   │       ├── productos.py   # Product endpoints
-│   │       ├── ventas.py      # Sale endpoints
-│   │       └── reparaciones.py # Repair endpoints
-│   │
-│   ├── web/                   # Web interface (HTMX)
-│   │   ├── __init__.py
-│   │   ├── deps.py            # Web dependencies  
-│   │   ├── main.py            # Web router
-│   │   ├── clientes.py        # Customer web views
-│   │   ├── productos.py       # Product web views
-│   │   ├── ventas.py          # Sale web views
-│   │   ├── reparaciones.py    # Repair web views
-│   │   └── dashboard.py       # Dashboard views
-│   │
-│   └── templates/             # Jinja2 templates
-│       ├── base.html          # Base template
-│       ├── dashboard.html     # Dashboard
-│       ├── clientes/          # Customer templates
-│       ├── productos/         # Product templates
-│       ├── ventas/            # Sale templates
-│       ├── reparaciones/      # Repair templates
-│       └── components/        # Reusable components
-│
-├── static/                    # Static files
-│   ├── css/
-│   ├── js/
-│   └── images/
+│   └── static/                    # Static files
+│       ├── css/
+│       ├── js/
+│       └── images/
 │
 ├── alembic/                   # Database migrations
 │   ├── versions/
