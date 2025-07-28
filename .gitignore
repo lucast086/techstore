@@ -62,3 +62,8 @@ Thumbs.db
 
 # FastAPI
 .ruff_cache/
+
+# Personal notes
+my notes.md
+notes.md
+*.notes

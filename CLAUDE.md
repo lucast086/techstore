@@ -27,21 +27,40 @@ poetry run alembic upgrade head
 poetry run alembic revision --autogenerate -m "description"
 ```
 
-### Git Flow Management
+### Git Flow Management (REQUIRED)
+**CRITICAL: Use the version.sh script for ALL feature development and releases**
+
 ```bash
-# Initialize Git Flow structure
+# Initialize Git Flow structure (run once)
 ./scripts/version.sh init
 
-# Feature development
-./scripts/version.sh feature start feature-name
-./scripts/version.sh feature finish feature-name
+# Feature development workflow
+./scripts/version.sh feature start feature-name  # Creates feature/feature-name branch
+# [Develop your feature with regular commits]
+./scripts/version.sh feature finish feature-name # Merges to development
 
 # Release management
-./scripts/version.sh release start 1.0.0
-./scripts/version.sh release finish 1.0.0
+./scripts/version.sh release start 1.0.0   # Creates release/1.0.0 branch  
+./scripts/version.sh release finish 1.0.0  # Creates v1.0.0 tag, merges to main
+
+# Hotfix workflow
+./scripts/version.sh hotfix start 1.0.1    # Creates hotfix/1.0.1 from main
+./scripts/version.sh hotfix finish 1.0.1   # Creates v1.0.1 tag, merges to main & development
 
 # Current version
 ./scripts/version.sh current
+```
+
+### Testing with Dependency Injection
+```bash
+# Run tests with test database
+DATABASE_URL=postgresql://postgres:postgres@localhost/test_techstore poetry run pytest
+
+# Run specific test file
+poetry run pytest tests/test_web/test_customers.py
+
+# Run with coverage
+poetry run pytest --cov=app --cov-report=html
 ```
 
 ### Testing
@@ -60,10 +79,21 @@ poetry run pytest tests/test_models/test_cliente.py
 
 **TechStore SaaS** is a FastAPI-based business management system built for tech stores, focusing on customer management, product inventory, sales, and repair orders.
 
+### Architecture Guide
+**IMPORTANT**: See `docs/technical/architecture-guide.md` for detailed patterns including:
+- Request flow (HTMX returns HTML, API returns JSON)
+- Dependency injection requirements for testability
+- Service layer patterns (shared between web and API)
+- Testing with TestClient and mocked dependencies
+
 ### Technology Stack
 - **Backend**: FastAPI + Python 3.11
-- **Database**: PostgreSQL 15 
-- **Frontend**: HTMX + Jinja2 Templates
+- **Database**: PostgreSQL 15 with SQLAlchemy ORM
+- **Frontend**: HTMX + Jinja2 Templates + Tailwind CSS
+- **Dependency Management**: Poetry
+- **Database Migrations**: Alembic
+- **Code Quality**: Ruff (linting + formatting)
+- **Testing**: Pytest with coverage
 - **Deployment**: Railway (Production), Docker (Development)
 
 ### Project Structure
@@ -111,6 +141,14 @@ app/
 
 ### Session Workflow for Features
 **In every session, follow this process:**
+
+#### 1. Start Feature Branch
+```bash
+# ALWAYS start with a feature branch
+./scripts/version.sh feature start feature-name
+```
+
+#### 2. Development Process
 1. **Choose User Stories**: From `docs/user-stories.md` or write new ones
 2. **Apply TDD Process**: Follow `docs/feature-implementation-guide.md` exactly
 3. **Implementation Order**: 
@@ -118,14 +156,64 @@ app/
    - Green Phase: Implement to pass tests (Model → Service → API → Web)
    - Refactor Phase: Improve code while keeping tests green
 4. **Always use TodoWrite**: Track progress through each phase
-5. **Complete Features**: Don't leave half-implemented features
+5. **Regular Commits**: Commit frequently during development with descriptive messages
 
-### Git Workflow
+#### 3. Complete Feature
+1. **Final Testing**: Run full test suite and linting
+2. **Final Commit**: Commit any remaining changes
+3. **Finish Feature**: Merge back to development
+```bash
+./scripts/version.sh feature finish feature-name
+```
+
+### Git Workflow & Version Control
 - **Main Branch**: `main` (production-ready code only)
 - **Development Branch**: `development` (integration branch)
 - **Feature Branches**: `feature/feature-name`
 - **Release Branches**: `release/version-number`
 - **Hotfix Branches**: `hotfix/version-number`
+
+#### Commit Requirements
+**CRITICAL: Use both regular commits AND Git Flow commands**
+
+1. **During Feature Development** (Regular commits):
+   - After completing each logical piece of work
+   - After writing tests that pass
+   - After fixing bugs or issues
+   - Before taking breaks or ending sessions
+
+2. **Feature Integration** (Git Flow):
+   - Use `./scripts/version.sh feature finish` to merge completed features
+   - Use `./scripts/version.sh release start/finish` for version releases
+   - Use `./scripts/version.sh hotfix start/finish` for critical bug fixes
+
+3. **Commit Message Format**:
+   ```
+   type: Brief description of the change
+   
+   - Detailed bullet points of what was implemented
+   - Include technical details and architectural decisions
+   - Reference any user stories or issues addressed
+   - Note breaking changes or migration requirements
+   
+   🤖 Generated with [Claude Code](https://claude.ai/code)
+   
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   ```
+
+4. **Before Committing**:
+   - Run linting: `poetry run ruff check .`
+   - Run formatting: `poetry run ruff format .`
+   - Run tests: `poetry run pytest`
+   - Review staged changes with `git diff --staged`
+
+5. **Commit Types**:
+   - `feat:` New features or enhancements
+   - `fix:` Bug fixes
+   - `refactor:` Code restructuring without functionality change
+   - `docs:` Documentation updates
+   - `test:` Test additions or improvements
+   - `chore:` Maintenance tasks or dependency updates
 
 ### Environment Configuration
 - Uses `.env` files for local development
