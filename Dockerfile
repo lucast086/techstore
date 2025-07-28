@@ -11,6 +11,7 @@ RUN groupadd --gid 1000 appuser \
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
+    procps \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
