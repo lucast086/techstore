@@ -32,7 +32,7 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 
-    <!-- Alpine.js for dropdown functionality -->
+    <!-- Alpine.js - Must be loaded before body to work with x-data -->
     <script
       defer
       src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
@@ -318,48 +318,51 @@
 
     <main class="min-h-screen">{% block content %}{% endblock %}</main>
 
-    <!-- Alpine.js for interactive components -->
-    <script
-      defer
-      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
-
     <script>
-      // Initialize Alpine components on page load
+      // Force Alpine to initialize components
       document.addEventListener("alpine:init", () => {
         console.log("Alpine initialized");
       });
 
-      // Fix for navigation issues - ensure Alpine is working
+      // Handle navigation from admin panel
       document.addEventListener("DOMContentLoaded", () => {
-        // Check if Alpine failed to initialize
-        setTimeout(() => {
-          const navbar = document.querySelector("nav[x-data]");
-          if (navbar && !window.Alpine) {
-            console.error("Alpine.js failed to load");
-            location.reload();
-          }
-        }, 100);
+        // Check if we came from admin panel
+        const referrer = document.referrer;
+        if (referrer && referrer.includes("/admin")) {
+          console.log("Navigated from admin panel, ensuring Alpine works");
+          // Give Alpine a moment to initialize
+          setTimeout(() => {
+            const navbar = document.querySelector("nav[x-data]");
+            if (navbar && navbar.getAttribute("x-data")) {
+              // Force Alpine to process the element if needed
+              if (window.Alpine && !navbar._x_dataStack) {
+                window.Alpine.initTree(navbar);
+              }
+            }
+          }, 50);
+        }
       });
 
-      // Handle browser back/forward navigation
+      // Handle browser cache issues
       window.addEventListener("pageshow", (event) => {
         if (event.persisted) {
-          // Page was loaded from cache, reload to ensure proper initialization
+          // Page was loaded from cache
+          console.log("Page loaded from cache, reloading...");
           window.location.reload();
         }
       });
 
-      // Fix logout button to work properly
-      document.addEventListener("htmx:afterRequest", (event) => {
-        if (
-          event.detail.pathInfo.requestPath === "/logout" &&
-          event.detail.successful
-        ) {
-          // Redirect to login after successful logout
-          window.location.href = "/login";
-        }
-      });
+      // Better logout handling
+      if (typeof htmx !== "undefined") {
+        document.body.addEventListener("htmx:afterRequest", (event) => {
+          if (
+            event.detail.pathInfo.requestPath === "/logout" &&
+            event.detail.successful
+          ) {
+            window.location.href = "/login";
+          }
+        });
+      }
     </script>
 
     {% block extra_scripts %}{% endblock %}
