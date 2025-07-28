@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore Color Palette</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #F9FAFB;
+            padding: 2rem;
+            color: #111827;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { font-size: 2rem; margin-bottom: 2rem; font-weight: 600; }
+        h2 { font-size: 1.5rem; margin: 2rem 0 1rem; font-weight: 500; }
+        .color-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 2rem;
+        }
+        .color-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .color-preview {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+        }
+        .color-info {
+            padding: 1rem;
+            background: white;
+        }
+        .color-name { font-weight: 500; margin-bottom: 0.25rem; }
+        .color-hex { color: #6B7280; font-size: 0.875rem; font-family: monospace; }
+        .demo-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-primary { background: #2563EB; color: white; }
+        .btn-primary:hover { background: #1D4ED8; }
+        .btn-secondary { 
+            background: white; 
+            color: #374151; 
+            border: 1px solid #D1D5DB; 
+        }
+        .btn-secondary:hover { background: #F9FAFB; }
+        .btn-success { background: #10B981; color: white; }
+        .btn-error { background: #EF4444; color: white; }
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .alert-info { background: #DBEAFE; color: #1E40AF; }
+        .alert-success { background: #D1FAE5; color: #059669; }
+        .alert-warning { background: #FEF3C7; color: #D97706; }
+        .alert-error { background: #FEE2E2; color: #DC2626; }
+        .text-samples p { margin-bottom: 0.5rem; }
+        .ai-badge {
+            background: #EDE9FE;
+            color: #8B5CF6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TechStore Color Palette</h1>
+        
+        <h2>Primary Colors</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-preview" style="background: #2563EB;">#2563EB</div>
+                <div class="color-info">
+                    <div class="color-name">Primary 500</div>
+                    <div class="color-hex">Main brand color</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #1D4ED8;">#1D4ED8</div>
+                <div class="color-info">
+                    <div class="color-name">Primary 600</div>
+                    <div class="color-hex">Hover state</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #EFF6FF; color: #2563EB;">#EFF6FF</div>
+                <div class="color-info">
+                    <div class="color-name">Primary 50</div>
+                    <div class="color-hex">Light background</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Neutral Grays</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-preview" style="background: #111827;">#111827</div>
+                <div class="color-info">
+                    <div class="color-name">Gray 900</div>
+                    <div class="color-hex">Primary text</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #374151;">#374151</div>
+                <div class="color-info">
+                    <div class="color-name">Gray 700</div>
+                    <div class="color-hex">Secondary text</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #6B7280;">#6B7280</div>
+                <div class="color-info">
+                    <div class="color-name">Gray 500</div>
+                    <div class="color-hex">Muted text</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #D1D5DB; color: #374151;">#D1D5DB</div>
+                <div class="color-info">
+                    <div class="color-name">Gray 300</div>
+                    <div class="color-hex">Borders</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #F3F4F6; color: #374151;">#F3F4F6</div>
+                <div class="color-info">
+                    <div class="color-name">Gray 100</div>
+                    <div class="color-hex">Backgrounds</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Semantic Colors</h2>
+        <div class="color-grid">
+            <div class="color-card">
+                <div class="color-preview" style="background: #10B981;">#10B981</div>
+                <div class="color-info">
+                    <div class="color-name">Success 500</div>
+                    <div class="color-hex">Positive actions</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #F59E0B;">#F59E0B</div>
+                <div class="color-info">
+                    <div class="color-name">Warning 500</div>
+                    <div class="color-hex">Cautions</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #EF4444;">#EF4444</div>
+                <div class="color-info">
+                    <div class="color-name">Error 500</div>
+                    <div class="color-hex">Errors</div>
+                </div>
+            </div>
+            <div class="color-card">
+                <div class="color-preview" style="background: #8B5CF6;">#8B5CF6</div>
+                <div class="color-info">
+                    <div class="color-name">Purple 500</div>
+                    <div class="color-hex">AI features</div>
+                </div>
+            </div>
+        </div>
+
+        <h2>Component Examples</h2>
+        
+        <div class="demo-section">
+            <h3 style="margin-bottom: 1rem;">Buttons</h3>
+            <button class="button btn-primary">Primary Action</button>
+            <button class="button btn-secondary">Secondary</button>
+            <button class="button btn-success">Save Changes</button>
+            <button class="button btn-error">Delete</button>
+            <span class="ai-badge">AI Powered</span>
+        </div>
+
+        <div class="demo-section">
+            <h3 style="margin-bottom: 1rem;">Alerts</h3>
+            <div class="alert alert-info">ℹ️ This is an informational message</div>
+            <div class="alert alert-success">✅ Operation completed successfully!</div>
+            <div class="alert alert-warning">⚠️ Please review before continuing</div>
+            <div class="alert alert-error">❌ An error occurred. Please try again.</div>
+        </div>
+
+        <div class="demo-section">
+            <h3 style="margin-bottom: 1rem;">Text Hierarchy</h3>
+            <div class="text-samples">
+                <p style="color: #111827; font-size: 1.125rem; font-weight: 600;">Primary Heading</p>
+                <p style="color: #111827;">Regular body text uses Gray 900 for optimal readability</p>
+                <p style="color: #374151;">Secondary text uses Gray 700 for less emphasis</p>
+                <p style="color: #6B7280; font-size: 0.875rem;">Helper text and descriptions use Gray 500</p>
+                <p style="color: #9CA3AF; font-size: 0.875rem;">Placeholder text uses Gray 400</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
