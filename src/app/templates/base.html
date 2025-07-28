@@ -32,11 +32,20 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 
-    <!-- Alpine.js - Must be loaded before body to work with x-data -->
-    <script
-      defer
-      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
-    ></script>
+    <!-- Alpine.js - Initialize before using x-data -->
+    <script>
+      // Make Alpine available globally
+      window.Alpine = window.Alpine || {};
+    </script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+      // Start Alpine immediately
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.Alpine && window.Alpine.start) {
+          window.Alpine.start();
+        }
+      });
+    </script>
 
     <!-- Custom CSS -->
     <link
@@ -319,40 +328,7 @@
     <main class="min-h-screen">{% block content %}{% endblock %}</main>
 
     <script>
-      // Force Alpine to initialize components
-      document.addEventListener("alpine:init", () => {
-        console.log("Alpine initialized");
-      });
-
-      // Handle navigation from admin panel
-      document.addEventListener("DOMContentLoaded", () => {
-        // Check if we came from admin panel
-        const referrer = document.referrer;
-        if (referrer && referrer.includes("/admin")) {
-          console.log("Navigated from admin panel, ensuring Alpine works");
-          // Give Alpine a moment to initialize
-          setTimeout(() => {
-            const navbar = document.querySelector("nav[x-data]");
-            if (navbar && navbar.getAttribute("x-data")) {
-              // Force Alpine to process the element if needed
-              if (window.Alpine && !navbar._x_dataStack) {
-                window.Alpine.initTree(navbar);
-              }
-            }
-          }, 50);
-        }
-      });
-
-      // Handle browser cache issues
-      window.addEventListener("pageshow", (event) => {
-        if (event.persisted) {
-          // Page was loaded from cache
-          console.log("Page loaded from cache, reloading...");
-          window.location.reload();
-        }
-      });
-
-      // Better logout handling
+      // Better logout handling with HTMX
       if (typeof htmx !== "undefined") {
         document.body.addEventListener("htmx:afterRequest", (event) => {
           if (
