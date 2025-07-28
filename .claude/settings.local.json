@@ -10,7 +10,24 @@
       "Bash(python:*)",
       "Bash(poetry run ruff:*)",
       "Bash(poetry run pytest:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(curl:*)",
+      "Bash(export PYTHONPATH=/workspace/src)",
+      "Bash(pkill:*)",
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(touch:*)",
+      "Bash(./scripts/init_db.sh:*)",
+      "Bash(PGPASSWORD=postgres psql -h db -p 5432 -U postgres -c \"CREATE DATABASE test_techstore_db\")",
+      "Bash(poetry run alembic:*)",
+      "Bash(POSTGRES_DB=test_techstore_db poetry run alembic revision --autogenerate -m \"Initial empty migration\")",
+      "Bash(grep:*)",
+      "Bash(bash:*)",
+      "Bash(poetry add:*)",
+      "Bash(./scripts/version.sh:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }
