@@ -24,7 +24,7 @@
   "ruff.nativeServer": true,
 
   "editor.formatOnSave": true,
-  "editor.rulers": [100],
+  "editor.rulers": [88],
 
   // Configuraciones para pre-commit
   "files.exclude": {
