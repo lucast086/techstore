@@ -44,6 +44,18 @@ poetry run alembic revision --autogenerate -m "description"
 ./scripts/version.sh current
 ```
 
+### Testing with Dependency Injection
+```bash
+# Run tests with test database
+DATABASE_URL=postgresql://postgres:postgres@localhost/test_techstore poetry run pytest
+
+# Run specific test file
+poetry run pytest tests/test_web/test_customers.py
+
+# Run with coverage
+poetry run pytest --cov=app --cov-report=html
+```
+
 ### Testing
 ```bash
 # Run all tests
@@ -59,6 +71,13 @@ poetry run pytest tests/test_models/test_cliente.py
 ## Architecture Overview
 
 **TechStore SaaS** is a FastAPI-based business management system built for tech stores, focusing on customer management, product inventory, sales, and repair orders.
+
+### Architecture Guide
+**IMPORTANT**: See `docs/technical/architecture-guide.md` for detailed patterns including:
+- Request flow (HTMX returns HTML, API returns JSON)
+- Dependency injection requirements for testability
+- Service layer patterns (shared between web and API)
+- Testing with TestClient and mocked dependencies
 
 ### Technology Stack
 - **Backend**: FastAPI + Python 3.11
@@ -123,13 +142,51 @@ app/
    - Refactor Phase: Improve code while keeping tests green
 4. **Always use TodoWrite**: Track progress through each phase
 5. **Complete Features**: Don't leave half-implemented features
+6. **MANDATORY: Commit After Feature Completion**: Every completed story/feature MUST be committed with descriptive message
 
-### Git Workflow
+### Git Workflow & Version Control
 - **Main Branch**: `main` (production-ready code only)
 - **Development Branch**: `development` (integration branch)
 - **Feature Branches**: `feature/feature-name`
 - **Release Branches**: `release/version-number`
 - **Hotfix Branches**: `hotfix/version-number`
+
+#### Commit Requirements
+**CRITICAL: Always commit after completing any story or significant feature work**
+
+1. **When to Commit**:
+   - After completing a full user story or feature
+   - After fixing significant bugs or issues
+   - Before switching to a different story/task
+   - At the end of each development session
+
+2. **Commit Message Format**:
+   ```
+   type: Brief description of the change
+   
+   - Detailed bullet points of what was implemented
+   - Include technical details and architectural decisions
+   - Reference any user stories or issues addressed
+   - Note breaking changes or migration requirements
+   
+   🤖 Generated with [Claude Code](https://claude.ai/code)
+   
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   ```
+
+3. **Before Committing**:
+   - Run linting: `poetry run ruff check .`
+   - Run formatting: `poetry run ruff format .`
+   - Run tests: `poetry run pytest`
+   - Review staged changes with `git diff --staged`
+
+4. **Commit Types**:
+   - `feat:` New features or enhancements
+   - `fix:` Bug fixes
+   - `refactor:` Code restructuring without functionality change
+   - `docs:` Documentation updates
+   - `test:` Test additions or improvements
+   - `chore:` Maintenance tasks or dependency updates
 
 ### Environment Configuration
 - Uses `.env` files for local development
