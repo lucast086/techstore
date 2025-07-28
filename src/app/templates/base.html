@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -8,32 +8,35 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        error: {
-                            100: '#fee2e2',
-                            500: '#ef4444',
-                            600: '#dc2626',
-                        }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#eff6ff",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+              },
+              error: {
+                100: "#fee2e2",
+                500: "#ef4444",
+                600: "#dc2626",
+              },
+            },
+          },
+        },
+      };
     </script>
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 
     <!-- Alpine.js for dropdown functionality -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
 
     <!-- Custom CSS -->
     <link
@@ -44,7 +47,10 @@
     {% block extra_head %}{% endblock %}
   </head>
   <body class="bg-gray-50">
-    <nav class="bg-primary-600 shadow-lg" x-data="{ mobileMenuOpen: false, userMenuOpen: false }">
+    <nav
+      class="bg-primary-600 shadow-lg"
+      x-data="{ mobileMenuOpen: false, userMenuOpen: false }"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <!-- Left side: Logo and main navigation -->
@@ -52,25 +58,47 @@
             <!-- Logo -->
             <div class="flex-shrink-0 flex items-center">
               <a href="/dashboard" class="text-white font-bold text-xl">
-                <svg class="inline-block w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                <svg
+                  class="inline-block w-6 h-6 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  ></path>
                 </svg>
                 TechStore SaaS
               </a>
             </div>
-            
+
             <!-- Desktop Navigation -->
             <div class="hidden md:ml-6 md:flex md:space-x-4">
-              <a href="/clientes" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
+              <a
+                href="/clientes"
+                class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
+              >
                 Clientes
               </a>
-              <a href="/productos" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
+              <a
+                href="/productos"
+                class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
+              >
                 Productos
               </a>
-              <a href="/ventas" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
+              <a
+                href="/ventas"
+                class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
+              >
                 Ventas
               </a>
-              <a href="/reparaciones" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
+              <a
+                href="/reparaciones"
+                class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
+              >
                 Reparaciones
               </a>
             </div>
@@ -79,77 +107,176 @@
           <!-- Right side: User menu -->
           <div class="flex items-center">
             {% if request.state.current_user %}
-              <!-- User dropdown -->
-              <div class="ml-3 relative">
-                <div>
-                  <button @click="userMenuOpen = !userMenuOpen" type="button" class="flex text-sm rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary-600 focus:ring-white" id="user-menu-button">
-                    <span class="sr-only">Abrir menú de usuario</span>
-                    <div class="flex items-center">
-                      <svg class="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                      </svg>
-                      <span class="hidden md:block">{{ request.state.current_user.name or request.state.current_user.email }}</span>
-                      <svg class="ml-1 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                      </svg>
-                    </div>
-                  </button>
-                </div>
-                
-                <!-- Dropdown menu -->
-                <div x-show="userMenuOpen" 
-                     @click.away="userMenuOpen = false"
-                     x-transition:enter="transition ease-out duration-100"
-                     x-transition:enter-start="transform opacity-0 scale-95"
-                     x-transition:enter-end="transform opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-75"
-                     x-transition:leave-start="transform opacity-100 scale-100"
-                     x-transition:leave-end="transform opacity-0 scale-95"
-                     class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-                     style="display: none;">
-                  <div class="py-1">
-                    <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                      </svg>
-                      Mi Perfil
-                    </a>
-                    {% if request.state.current_user.role == "admin" %}
-                      <a href="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                        </svg>
-                        Panel de Administración
-                      </a>
-                    {% endif %}
-                    <hr class="my-1 border-gray-200">
-                    <form hx-post="/logout" class="block">
-                      <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                        <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                        </svg>
-                        Cerrar Sesión
-                      </button>
-                    </form>
+            <!-- User dropdown -->
+            <div class="ml-3 relative">
+              <div>
+                <button
+                  @click="userMenuOpen = !userMenuOpen"
+                  type="button"
+                  class="flex text-sm rounded-full text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary-600 focus:ring-white"
+                  id="user-menu-button"
+                >
+                  <span class="sr-only">Abrir menú de usuario</span>
+                  <div class="flex items-center">
+                    <svg
+                      class="h-6 w-6 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      ></path>
+                    </svg>
+                    <span class="hidden md:block"
+                      >{{ request.state.current_user.full_name or
+                      request.state.current_user.email }}</span
+                    >
+                    <svg
+                      class="ml-1 h-5 w-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
                   </div>
+                </button>
+              </div>
+
+              <!-- Dropdown menu -->
+              <div
+                x-show="userMenuOpen"
+                @click.away="userMenuOpen = false"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                style="display: none"
+              >
+                <div class="py-1">
+                  <a
+                    href="/profile"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <svg
+                      class="inline-block w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                      ></path>
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      ></path>
+                    </svg>
+                    Mi Perfil
+                  </a>
+                  {% if request.state.current_user.role == "admin" %}
+                  <a
+                    href="/admin"
+                    class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <svg
+                      class="inline-block w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                      ></path>
+                    </svg>
+                    Panel de Administración
+                  </a>
+                  {% endif %}
+                  <hr class="my-1 border-gray-200" />
+                  <form hx-post="/logout" class="block">
+                    <button
+                      type="submit"
+                      class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <svg
+                        class="inline-block w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        ></path>
+                      </svg>
+                      Cerrar Sesión
+                    </button>
+                  </form>
                 </div>
               </div>
+            </div>
             {% else %}
-              <a href="/login" class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-                Iniciar Sesión
-              </a>
+            <a
+              href="/login"
+              class="text-white hover:bg-primary-700 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
+            >
+              <svg
+                class="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                ></path>
+              </svg>
+              Iniciar Sesión
+            </a>
             {% endif %}
-            
+
             <!-- Mobile menu button -->
             <div class="md:hidden ml-2">
-              <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+              <button
+                @click="mobileMenuOpen = !mobileMenuOpen"
+                type="button"
+                class="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              >
                 <span class="sr-only">Abrir menú principal</span>
-                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                <svg
+                  class="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  ></path>
                 </svg>
               </button>
             </div>
@@ -158,20 +285,82 @@
       </div>
 
       <!-- Mobile menu -->
-      <div x-show="mobileMenuOpen" 
-           @click.away="mobileMenuOpen = false"
-           class="md:hidden"
-           style="display: none;">
+      <div
+        x-show="mobileMenuOpen"
+        @click.away="mobileMenuOpen = false"
+        class="md:hidden"
+        style="display: none"
+      >
         <div class="px-2 pt-2 pb-3 space-y-1">
-          <a href="/clientes" class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium">Clientes</a>
-          <a href="/productos" class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium">Productos</a>
-          <a href="/ventas" class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium">Ventas</a>
-          <a href="/reparaciones" class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium">Reparaciones</a>
+          <a
+            href="/clientes"
+            class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium"
+            >Clientes</a
+          >
+          <a
+            href="/productos"
+            class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium"
+            >Productos</a
+          >
+          <a
+            href="/ventas"
+            class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium"
+            >Ventas</a
+          >
+          <a
+            href="/reparaciones"
+            class="text-white hover:bg-primary-700 block px-3 py-2 rounded-md text-base font-medium"
+            >Reparaciones</a
+          >
         </div>
       </div>
     </nav>
 
     <main class="min-h-screen">{% block content %}{% endblock %}</main>
+
+    <!-- Alpine.js for interactive components -->
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
+    <script>
+      // Initialize Alpine components on page load
+      document.addEventListener("alpine:init", () => {
+        console.log("Alpine initialized");
+      });
+
+      // Fix for navigation issues - ensure Alpine is working
+      document.addEventListener("DOMContentLoaded", () => {
+        // Check if Alpine failed to initialize
+        setTimeout(() => {
+          const navbar = document.querySelector("nav[x-data]");
+          if (navbar && !window.Alpine) {
+            console.error("Alpine.js failed to load");
+            location.reload();
+          }
+        }, 100);
+      });
+
+      // Handle browser back/forward navigation
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+          // Page was loaded from cache, reload to ensure proper initialization
+          window.location.reload();
+        }
+      });
+
+      // Fix logout button to work properly
+      document.addEventListener("htmx:afterRequest", (event) => {
+        if (
+          event.detail.pathInfo.requestPath === "/logout" &&
+          event.detail.successful
+        ) {
+          // Redirect to login after successful logout
+          window.location.href = "/login";
+        }
+      });
+    </script>
 
     {% block extra_scripts %}{% endblock %}
   </body>
