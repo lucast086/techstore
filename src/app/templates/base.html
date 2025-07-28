@@ -32,20 +32,11 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
 
-    <!-- Alpine.js - Initialize before using x-data -->
-    <script>
-      // Make Alpine available globally
-      window.Alpine = window.Alpine || {};
-    </script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script>
-      // Start Alpine immediately
-      document.addEventListener("DOMContentLoaded", () => {
-        if (window.Alpine && window.Alpine.start) {
-          window.Alpine.start();
-        }
-      });
-    </script>
+    <!-- Alpine.js - Load with defer for proper initialization -->
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
 
     <!-- Custom CSS -->
     <link
