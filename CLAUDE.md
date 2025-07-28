@@ -27,18 +27,25 @@ poetry run alembic upgrade head
 poetry run alembic revision --autogenerate -m "description"
 ```
 
-### Git Flow Management
+### Git Flow Management (REQUIRED)
+**CRITICAL: Use the version.sh script for ALL feature development and releases**
+
 ```bash
-# Initialize Git Flow structure
+# Initialize Git Flow structure (run once)
 ./scripts/version.sh init
 
-# Feature development
-./scripts/version.sh feature start feature-name
-./scripts/version.sh feature finish feature-name
+# Feature development workflow
+./scripts/version.sh feature start feature-name  # Creates feature/feature-name branch
+# [Develop your feature with regular commits]
+./scripts/version.sh feature finish feature-name # Merges to development
 
 # Release management
-./scripts/version.sh release start 1.0.0
-./scripts/version.sh release finish 1.0.0
+./scripts/version.sh release start 1.0.0   # Creates release/1.0.0 branch  
+./scripts/version.sh release finish 1.0.0  # Creates v1.0.0 tag, merges to main
+
+# Hotfix workflow
+./scripts/version.sh hotfix start 1.0.1    # Creates hotfix/1.0.1 from main
+./scripts/version.sh hotfix finish 1.0.1   # Creates v1.0.1 tag, merges to main & development
 
 # Current version
 ./scripts/version.sh current
@@ -134,6 +141,14 @@ app/
 
 ### Session Workflow for Features
 **In every session, follow this process:**
+
+#### 1. Start Feature Branch
+```bash
+# ALWAYS start with a feature branch
+./scripts/version.sh feature start feature-name
+```
+
+#### 2. Development Process
 1. **Choose User Stories**: From `docs/user-stories.md` or write new ones
 2. **Apply TDD Process**: Follow `docs/feature-implementation-guide.md` exactly
 3. **Implementation Order**: 
@@ -141,8 +156,15 @@ app/
    - Green Phase: Implement to pass tests (Model → Service → API → Web)
    - Refactor Phase: Improve code while keeping tests green
 4. **Always use TodoWrite**: Track progress through each phase
-5. **Complete Features**: Don't leave half-implemented features
-6. **MANDATORY: Commit After Feature Completion**: Every completed story/feature MUST be committed with descriptive message
+5. **Regular Commits**: Commit frequently during development with descriptive messages
+
+#### 3. Complete Feature
+1. **Final Testing**: Run full test suite and linting
+2. **Final Commit**: Commit any remaining changes
+3. **Finish Feature**: Merge back to development
+```bash
+./scripts/version.sh feature finish feature-name
+```
 
 ### Git Workflow & Version Control
 - **Main Branch**: `main` (production-ready code only)
@@ -152,15 +174,20 @@ app/
 - **Hotfix Branches**: `hotfix/version-number`
 
 #### Commit Requirements
-**CRITICAL: Always commit after completing any story or significant feature work**
+**CRITICAL: Use both regular commits AND Git Flow commands**
 
-1. **When to Commit**:
-   - After completing a full user story or feature
-   - After fixing significant bugs or issues
-   - Before switching to a different story/task
-   - At the end of each development session
+1. **During Feature Development** (Regular commits):
+   - After completing each logical piece of work
+   - After writing tests that pass
+   - After fixing bugs or issues
+   - Before taking breaks or ending sessions
 
-2. **Commit Message Format**:
+2. **Feature Integration** (Git Flow):
+   - Use `./scripts/version.sh feature finish` to merge completed features
+   - Use `./scripts/version.sh release start/finish` for version releases
+   - Use `./scripts/version.sh hotfix start/finish` for critical bug fixes
+
+3. **Commit Message Format**:
    ```
    type: Brief description of the change
    
@@ -174,13 +201,13 @@ app/
    Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 
-3. **Before Committing**:
+4. **Before Committing**:
    - Run linting: `poetry run ruff check .`
    - Run formatting: `poetry run ruff format .`
    - Run tests: `poetry run pytest`
    - Review staged changes with `git diff --staged`
 
-4. **Commit Types**:
+5. **Commit Types**:
    - `feat:` New features or enhancements
    - `fix:` Bug fixes
    - `refactor:` Code restructuring without functionality change
