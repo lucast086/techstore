@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TechStore{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="px-4 py-6 sm:px-0">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <h2 class="text-lg font-medium text-gray-900">Bienvenido a TechStore</h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    Has iniciado sesión exitosamente. Este es el dashboard principal.
+                </p>
+                {% if request.state.current_user %}
+                    <div class="mt-4 p-4 bg-blue-50 rounded-md">
+                        <p class="text-sm text-blue-700">
+                            <strong>Usuario:</strong> {{ request.state.current_user.name or request.state.current_user.email }}
+                        </p>
+                        <p class="text-sm text-blue-700">
+                            <strong>Rol:</strong> {{ request.state.current_user.role }}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

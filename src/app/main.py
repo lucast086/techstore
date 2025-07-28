@@ -2,18 +2,24 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.api.v1.search import router as search_api_router
+from app.api.v1 import auth as auth_api
+from app.api.v1 import health as health_api
+from app.middleware.auth_context import AuthContextMiddleware
+from app.web import auth
 from app.web.main import router as web_router
-from app.web.search import router as search_web_router
 
 app = FastAPI(
     title="TechStore SaaS",
     description="Sistema de gestión para tiendas de tecnología",
     version="0.1.0",
 )
+
+# Auth context middleware (must be added before CORS)
+app.add_middleware(AuthContextMiddleware)
 
 # CORS middleware
 app.add_middleware(
@@ -31,19 +37,22 @@ app.mount("/static", StaticFiles(directory="src/static"), name="static")
 templates = Jinja2Templates(directory="src/app/templates")
 
 
-# Health check endpoint
-@app.get("/health")
-def health_check():
-    """Health check endpoint."""
-    return {"status": "ok", "message": "TechStore API is running"}
+# Root redirect to login
+@app.get("/")
+async def root():
+    """Redirect root to login page."""
+    return RedirectResponse(url="/login", status_code=302)
 
 
-# API routes (JSON)
-app.include_router(search_api_router, prefix="/api/v1")
+# API routes
+app.include_router(health_api.router, prefix="/api/v1")
+app.include_router(auth_api.router)  # Auth API endpoints
+
+# Auth routes (HTMX)
+app.include_router(auth.router, tags=["auth"])
 
 # Web routes (HTMX)
 app.include_router(web_router)
-app.include_router(search_web_router, prefix="/htmx")
 
 if __name__ == "__main__":
     import uvicorn
