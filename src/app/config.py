@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     database_url: str = Field(
         default="postgresql://postgres:postgres@db:5432/techstore_db",
         description="PostgreSQL database URL",
+        alias="DATABASE_URL",
     )
 
     # Security
@@ -27,7 +28,9 @@ class Settings(BaseSettings):
         description="Secret key for JWT tokens",
     )
     JWT_ALGORITHM: str = Field(default="HS256", description="JWT signing algorithm")
-    JWT_EXPIRATION_HOURS: int = Field(default=8, description="JWT token expiration in hours")
+    JWT_EXPIRATION_HOURS: int = Field(
+        default=8, description="JWT token expiration in hours"
+    )
     JWT_REFRESH_EXPIRATION_DAYS: int = Field(
         default=30, description="JWT refresh token expiration in days"
     )
@@ -36,8 +39,12 @@ class Settings(BaseSettings):
     BCRYPT_ROUNDS: int = Field(default=12, description="Bcrypt hashing rounds")
 
     # Rate Limiting
-    LOGIN_RATE_LIMIT_PER_MINUTE: int = Field(default=5, description="Login attempts per minute")
-    LOGIN_RATE_LIMIT_PER_HOUR: int = Field(default=20, description="Login attempts per hour")
+    LOGIN_RATE_LIMIT_PER_MINUTE: int = Field(
+        default=5, description="Login attempts per minute"
+    )
+    LOGIN_RATE_LIMIT_PER_HOUR: int = Field(
+        default=20, description="Login attempts per hour"
+    )
 
     # Application
     app_name: str = Field(default="TechStore SaaS", description="Application name")

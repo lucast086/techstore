@@ -10,7 +10,8 @@
       "Bash(python:*)",
       "Bash(poetry run ruff:*)",
       "Bash(poetry run pytest:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(poetry run:*)"
     ],
     "deny": []
   }
