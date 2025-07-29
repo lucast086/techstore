@@ -3,6 +3,10 @@
 import pytest
 from app.database import Base, get_db
 from app.main import app
+
+# Import all models to ensure they're registered
+from app.models import *  # noqa: F401, F403
+from app.models.user import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -10,7 +14,9 @@ from sqlalchemy.orm import sessionmaker
 # Use in-memory SQLite for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -54,3 +60,19 @@ def client(db_session):
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def test_user(db_session):
+    """Create a test user for tests that need authentication."""
+    user = User(
+        email="test@example.com",
+        password_hash="hashed_password",
+        full_name="Test User",
+        role="admin",
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
