@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 def create_admin_user():
     """Create initial admin user for the system."""
     # Create sync engine
-    engine = create_engine(settings.database_url)
+    engine = create_engine(settings.DATABASE_URL)
     Session = sessionmaker(bind=engine)
 
     # Admin user data

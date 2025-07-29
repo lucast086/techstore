@@ -10,10 +10,9 @@ class Settings(BaseSettings):
     """Application settings with environment variable support."""
 
     # Database
-    database_url: str = Field(
+    DATABASE_URL: str = Field(
         default="postgresql://postgres:postgres@db:5432/techstore_db",
         description="PostgreSQL database URL",
-        alias="DATABASE_URL",
     )
 
     # Security

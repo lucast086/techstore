@@ -8,7 +8,7 @@ from app.config import settings
 
 # Create SQLAlchemy engine
 engine = create_engine(
-    settings.database_url,
+    settings.DATABASE_URL,
     pool_pre_ping=True,
     pool_recycle=300,
     echo=settings.debug,  # Log SQL queries in debug mode
