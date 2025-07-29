@@ -37,9 +37,16 @@ async def login_htmx(
     print("[WEB LOGIN DEBUG] HTMX login endpoint called")
     print(f"[WEB LOGIN DEBUG] Form data: email={email}")
     print(f"[WEB LOGIN DEBUG] Base URL: {request.base_url}")
+    
+    # Force HTTPS in production
+    base_url = str(request.base_url)
+    if settings.environment == "production" and base_url.startswith("http://"):
+        base_url = base_url.replace("http://", "https://", 1)
+    
+    print(f"[WEB LOGIN DEBUG] Using base URL: {base_url}")
 
     # Call the API endpoint using httpx
-    async with httpx.AsyncClient(base_url=str(request.base_url)) as client:
+    async with httpx.AsyncClient(base_url=base_url) as client:
         print("[WEB LOGIN DEBUG] Calling API endpoint: /api/v1/auth/login")
         api_response = await client.post(
             "/api/v1/auth/login",
