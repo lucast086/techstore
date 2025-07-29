@@ -1,13 +1,13 @@
 """Auth routes for web interface."""
 from typing import Annotated
 
-import httpx
 from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.core.auth import AuthService
 from app.core.web_auth import get_current_user_from_cookie
 from app.database import get_async_session
 
@@ -36,36 +36,22 @@ async def login_htmx(
     """
     print("[WEB LOGIN DEBUG] HTMX login endpoint called")
     print(f"[WEB LOGIN DEBUG] Form data: email={email}")
-    print(f"[WEB LOGIN DEBUG] Base URL: {request.base_url}")
-    
-    # Force HTTPS in production
-    base_url = str(request.base_url)
-    if settings.environment == "production" and base_url.startswith("http://"):
-        base_url = base_url.replace("http://", "https://", 1)
-    
-    print(f"[WEB LOGIN DEBUG] Using base URL: {base_url}")
 
-    # Call the API endpoint using httpx
-    async with httpx.AsyncClient(base_url=base_url) as client:
-        print("[WEB LOGIN DEBUG] Calling API endpoint: /api/v1/auth/login")
-        api_response = await client.post(
-            "/api/v1/auth/login",
-            json={"email": email, "password": password},
-            headers={
-                "X-Forwarded-For": request.client.host if request.client else "unknown"
-            },
-        )
-        print(f"[WEB LOGIN DEBUG] API response status: {api_response.status_code}")
-        print(f"[WEB LOGIN DEBUG] API response body: {api_response.text}")
+    # Use AuthService directly instead of HTTP call
+    auth_service = AuthService(db)
+    print(f"[WEB LOGIN DEBUG] Authenticating user: {email}")
 
-    if api_response.status_code == 200:
-        # Success - get tokens from JSON response
-        tokens = api_response.json()
+    user = auth_service.authenticate_user(email=email, password=password)
+
+    if user:
+        print(f"[WEB LOGIN DEBUG] Authentication successful for user: {user.email}")
+        # Generate tokens
+        tokens = auth_service.create_tokens(user)
 
         # Set cookies for web authentication
         response.set_cookie(
             key="access_token",
-            value=tokens["access_token"],
+            value=tokens.access_token,
             httponly=True,
             secure=settings.environment == "production",
             samesite="lax",
@@ -74,7 +60,7 @@ async def login_htmx(
 
         response.set_cookie(
             key="refresh_token",
-            value=tokens["refresh_token"],
+            value=tokens.refresh_token,
             httponly=True,
             secure=settings.environment == "production",
             samesite="lax",
@@ -85,16 +71,9 @@ async def login_htmx(
         response.headers["HX-Redirect"] = "/dashboard"
         return ""
 
-    elif api_response.status_code == 429:
-        # Rate limit exceeded
-        return """
-        <div class="bg-error-100 border border-error-500 text-error-600 px-4 py-3 rounded-md text-sm">
-            <span class="font-medium">Error:</span> Too many login attempts. Please try again later.
-        </div>
-        """
-
     else:
         # Authentication failed
+        print(f"[WEB LOGIN DEBUG] Authentication failed for user: {email}")
         return """
         <div class="bg-error-100 border border-error-500 text-error-600 px-4 py-3 rounded-md text-sm">
             <span class="font-medium">Error:</span> Invalid email or password.

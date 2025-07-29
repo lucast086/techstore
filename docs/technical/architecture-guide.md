@@ -4,53 +4,59 @@
 
 ### Unified Architecture
 ```
-Browser → HTMX Endpoint → API Endpoint → Service Layer → Database
-              ↓               ↓
-         HTML Template    JSON Response
-                         (reusable for any client)
+Browser → HTMX Endpoint ↘
+                         Service Layer → Database
+Mobile App → API Endpoint ↗
+              ↓
+         JSON Response
 
-Mobile App → API Endpoint → Service Layer → Database
-                  ↓
-             JSON Response
+Browser receives: HTML Template
+Mobile receives: JSON Response
 ```
 
-### Key Principle: API-First Design
-- **ALL business logic goes through API endpoints**
-- **HTMX endpoints are thin presentation layers**
-- **API endpoints are the single source of truth**
-- **Services contain reusable business logic**
+### Key Principle: Service Layer as Single Source of Truth
+- **ALL business logic lives in the Service Layer**
+- **API endpoints are JSON adapters for the Service Layer**
+- **HTMX endpoints are HTML adapters for the Service Layer**
+- **Both endpoint types call the same services directly**
 
 ### Benefits of This Architecture:
-1. **Single Source of Truth**: Change business logic in one place (API)
-2. **Future-Proof**: Mobile app can use same API endpoints
-3. **Testable**: API endpoints can be tested independently
-4. **Maintainable**: Clear separation of concerns
-5. **Scalable**: API can be deployed separately if needed
+1. **Single Source of Truth**: Business logic exists only in services
+2. **No HTTP Overhead**: HTMX endpoints call services directly
+3. **Simpler Testing**: Services can be tested in isolation
+4. **Better Performance**: No internal HTTP calls
+5. **Clearer Separation**: Each layer has a specific responsibility
 
 ## Authentication Pattern
 
-TechStore follows an **API-First Authentication** approach (see ADR-004):
+TechStore follows a **Service-First Authentication** approach:
 
-1. **All authentication logic flows through API endpoints**
-   - `/api/v1/auth/login` returns JWT tokens as JSON
-   - Web endpoints call API endpoints and handle web-specific concerns
+1. **All authentication logic lives in AuthService**
+   - `AuthService.authenticate_user()` handles user verification
+   - `AuthService.create_tokens()` generates JWT tokens
+   - Both API and HTMX endpoints use the same service
 
 2. **Token Storage by Client Type**:
-   - **Web Browser**: Secure httpOnly cookies
-   - **Mobile Apps**: Device secure storage (Keychain/Keystore)
+   - **Web Browser**: Secure httpOnly cookies (set by HTMX endpoint)
+   - **Mobile Apps**: Device secure storage (received from API endpoint)
    - **API Clients**: Client's choice (headers, etc.)
 
-3. **Example Flow**:
+3. **Example Flows**:
    ```python
-   # Web endpoint calls API
-   api_response = await client.post("/api/v1/auth/login", json=credentials)
-   tokens = api_response.json()
-   
-   # Web endpoint handles cookies
-   response.set_cookie("access_token", tokens["access_token"], httponly=True)
+   # HTMX endpoint - Direct service call
+   auth_service = AuthService(db)
+   user = auth_service.authenticate_user(email, password)
+   tokens = auth_service.create_tokens(user)
+   response.set_cookie("access_token", tokens.access_token, httponly=True)
+
+   # API endpoint - Same service, different response format
+   auth_service = AuthService(db)
+   user = auth_service.authenticate_user(email, password)
+   tokens = auth_service.create_tokens(user)
+   return tokens.model_dump()  # Returns JSON
    ```
 
-This ensures consistency across all client types and maintains a single source of truth for authentication logic.
+This ensures consistency while avoiding unnecessary HTTP overhead.
 
 ## Implementation Standards
 
@@ -75,49 +81,48 @@ async def create_customer_htmx(
     address: str = Form(None),
     notes: str = Form(None),
     # Dependencies
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
-    HTMX endpoint - thin presentation layer
-    Calls API endpoint and returns HTML
+    HTMX endpoint - HTML adapter for CustomerService
+    Calls service directly and returns HTML
     """
-    # Prepare data for API
-    customer_data = {
-        "name": name,
-        "phone": phone,
-        "phone_secondary": phone_secondary,
-        "email": email,
-        "address": address,
-        "notes": notes
-    }
-    
-    # Call API endpoint via HTTP (API-First approach)
-    # See ADR-004 for authentication pattern details
-    async with httpx.AsyncClient(base_url=str(request.base_url)) as client:
-        # Forward auth token from cookies
-        headers = {"Authorization": f"Bearer {request.cookies.get('access_token')}"}
-        
-        response = await client.post(
-            "/api/v1/customers",
-            json=customer_data,
-            headers=headers
+    # Log the operation
+    logger.info(f"Creating customer via HTMX: {name}")
+
+    # Prepare data for service
+    customer_data = CustomerCreate(
+        name=name,
+        phone=phone,
+        phone_secondary=phone_secondary,
+        email=email,
+        address=address,
+        notes=notes
+    )
+
+    # Call service directly (Service-First approach)
+    customer_service = CustomerService(db)
+    try:
+        customer = customer_service.create_customer(
+            customer_data,
+            created_by=current_user.id
         )
-        
-        if response.status_code == 201:
-            customer = response.json()
-            # Return HTML partial with data
-            return templates.TemplateResponse(
-                "customers/partials/customer_row.html",
-                {"request": request, "customer": customer}
-            )
-        else:
-            # Handle errors
-            error = response.json().get("detail", "An error occurred")
-            return templates.TemplateResponse(
-                "partials/error.html",
-                {"request": request, "error": error},
-                status_code=response.status_code
-            )
+        logger.info(f"Customer created successfully: {customer.id}")
+
+        # Return HTML partial with data
+        return templates.TemplateResponse(
+            "customers/partials/customer_row.html",
+            {"request": request, "customer": customer}
+        )
+    except ValueError as e:
+        logger.error(f"Error creating customer: {e}")
+        # Handle validation errors
+        return templates.TemplateResponse(
+            "partials/error.html",
+            {"request": request, "error": str(e)},
+            status_code=400
+        )
 ```
 
 ### API Routes (REST)
@@ -137,14 +142,23 @@ async def create_customer(
     current_user: User = Depends(get_current_user)
 ):
     """
-    REST API endpoint - returns JSON
-    Uses same service layer as web routes
+    API endpoint - JSON adapter for CustomerService
+    Calls service directly and returns JSON
     """
-    return customer_service.create(
-        db=db,
-        **customer.dict(),
-        created_by_id=current_user.id
-    )
+    logger.info(f"Creating customer via API: {customer.name}")
+
+    # Call service directly (same as HTMX endpoint)
+    customer_service = CustomerService(db)
+    try:
+        new_customer = customer_service.create_customer(
+            customer,
+            created_by=current_user.id
+        )
+        logger.info(f"Customer created successfully: {new_customer.id}")
+        return CustomerResponse.model_validate(new_customer)
+    except ValueError as e:
+        logger.error(f"Error creating customer: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 ```
 
 ### Service Layer
@@ -157,8 +171,8 @@ from app.models.customer import Customer
 
 class CustomerService:
     """Business logic layer - used by both web and API routes"""
-    
-    def create(self, db: Session, name: str, phone: str, 
+
+    def create(self, db: Session, name: str, phone: str,
                created_by_id: int, **kwargs) -> Customer:
         """
         Create customer with business rules
@@ -167,7 +181,7 @@ class CustomerService:
         # Business logic here
         if self.is_duplicate_phone(db, phone):
             raise ValueError(f"Phone {phone} already registered")
-        
+
         # Delegate to CRUD
         return customer_crud.create(
             db=db,
@@ -176,7 +190,7 @@ class CustomerService:
             created_by_id=created_by_id,
             **kwargs
         )
-    
+
     def is_duplicate_phone(self, db: Session, phone: str) -> bool:
         """Check if phone already exists"""
         return customer_crud.get_by_phone(db, phone) is not None
@@ -193,7 +207,7 @@ from app.models.customer import Customer
 
 class CustomerCRUD:
     """Database operations - no business logic"""
-    
+
     def create(self, db: Session, **kwargs) -> Customer:
         """Simple database create"""
         customer = Customer(**kwargs)
@@ -201,7 +215,7 @@ class CustomerCRUD:
         db.commit()
         db.refresh(customer)
         return customer
-    
+
     def get_by_phone(self, db: Session, phone: str) -> Optional[Customer]:
         """Simple database query"""
         return db.query(Customer).filter(
@@ -238,18 +252,18 @@ def test_create_customer_htmx(client: TestClient, db: Session, mocker):
         "phone": "1234567890",
         "balance": 0.0
     }
-    
+
     # Mock the API function call
     mocker.patch(
         "app.api.v1.customers.create_customer",
         return_value=mock_customer
     )
-    
+
     response = client.post("/customers/new", data={
         "name": "Test Customer",
         "phone": "1234567890"
     })
-    
+
     # Check HTML response
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
@@ -264,7 +278,7 @@ def test_create_customer_api(client: TestClient, db: Session):
         "name": "Test Customer",
         "phone": "1234567890"
     })
-    
+
     # Check JSON response
     assert response.status_code == 200
     data = response.json()

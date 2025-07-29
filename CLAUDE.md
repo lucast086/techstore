@@ -81,9 +81,11 @@ poetry run pytest tests/test_models/test_cliente.py
 
 ### Architecture Guide
 **IMPORTANT**: See `docs/technical/architecture-guide.md` for detailed patterns including:
-- Request flow (HTMX returns HTML, API returns JSON)
-- Dependency injection requirements for testability
-- Service layer patterns (shared between web and API)
+- Service Layer as Single Source of Truth (NOT API endpoints)
+- Both HTMX and API endpoints call services directly
+- No internal HTTP calls between endpoints
+- HTMX returns HTML, API returns JSON
+- Extensive logging in all implementations for debugging
 - Testing with TestClient and mocked dependencies
 
 ### Technology Stack
