@@ -9,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from app.api.v1 import auth as auth_api
 from app.api.v1 import health as health_api
 from app.middleware.auth_context import AuthContextMiddleware
-from app.web import auth
+from app.web import admin, auth
 from app.web.main import router as web_router
 
 app = FastAPI(
@@ -50,6 +50,9 @@ app.include_router(auth_api.router)  # Auth API endpoints
 
 # Auth routes (HTMX)
 app.include_router(auth.router, tags=["auth"])
+
+# Admin routes
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 # Web routes (HTMX)
 app.include_router(web_router)

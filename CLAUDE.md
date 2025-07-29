@@ -12,7 +12,7 @@ poetry install
 # Run development server (in devcontainer)
 uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
 
-# Run development server (outside devcontainer) 
+# Run development server (outside devcontainer)
 poetry run uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Run tests
@@ -40,7 +40,7 @@ poetry run alembic revision --autogenerate -m "description"
 ./scripts/version.sh feature finish feature-name # Merges to development
 
 # Release management
-./scripts/version.sh release start 1.0.0   # Creates release/1.0.0 branch  
+./scripts/version.sh release start 1.0.0   # Creates release/1.0.0 branch
 ./scripts/version.sh release finish 1.0.0  # Creates v1.0.0 tag, merges to main
 
 # Hotfix workflow
@@ -128,10 +128,17 @@ app/
 ### Code Quality
 - **Linting**: Configured with ruff (replaces flake8, black, isort)
 - **Type Hints**: Required throughout codebase
-- **Line Length**: 88 characters (configured in pyproject.toml)
+- **Line Length**: 88 characters (PEP 8 standard)
 - **Pre-commit Hooks**: Automatically run linting, formatting, and tests
 - **Docstrings**: Add docstrings for modules, classes, and functions when required by linting
 - **Comments**: NEVER add inline comments unless explicitly requested by the user
+
+### Pre-commit Configuration
+- **Ruff**: Handles Python linting and formatting
+- **Prettier**: Only for frontend files (JS, CSS, HTML, YAML)
+- **Basic hooks**: trailing-whitespace, end-of-file-fixer, check-yaml
+- **Scripts exception**: E402 (imports) ignored for scripts/ directory
+- **Auto-fix**: Pre-commit will auto-fix most issues when possible
 
 ### Feature Implementation
 - **ALWAYS follow TDD approach**: See `docs/feature-implementation-guide.md`
@@ -151,7 +158,7 @@ app/
 #### 2. Development Process
 1. **Choose User Stories**: From `docs/user-stories.md` or write new ones
 2. **Apply TDD Process**: Follow `docs/feature-implementation-guide.md` exactly
-3. **Implementation Order**: 
+3. **Implementation Order**:
    - Red Phase: Write failing tests (Web → API → Service → Model)
    - Green Phase: Implement to pass tests (Model → Service → API → Web)
    - Refactor Phase: Improve code while keeping tests green
@@ -190,14 +197,14 @@ app/
 3. **Commit Message Format**:
    ```
    type: Brief description of the change
-   
+
    - Detailed bullet points of what was implemented
    - Include technical details and architectural decisions
    - Reference any user stories or issues addressed
    - Note breaking changes or migration requirements
-   
+
    🤖 Generated with [Claude Code](https://claude.ai/code)
-   
+
    Co-Authored-By: Claude <noreply@anthropic.com>
    ```
 

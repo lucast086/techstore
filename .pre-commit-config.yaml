@@ -1,57 +1,31 @@
 repos:
+  # Hooks básicos de higiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
       - id: trailing-whitespace
-        exclude: |
-          (?x)(
-            ^.pre-commit/|
-            ^.cursor/|
-            ^.bmad-core/|
-            ^.claude/|
-            ^scripts/version.sh$|
-            ^docs/|
-          )
       - id: end-of-file-fixer
-        exclude: |
-          (?x)(
-            ^.pre-commit/|
-            ^.cursor/|
-            ^.bmad-core/|
-            ^.claude/|
-            ^scripts/version.sh$|
-            ^docs/|
-          )
       - id: check-yaml
-        exclude: |
-          (?x)(
-            ^.pre-commit/|
-            ^.cursor/|
-            ^.bmad-core/|
-            ^.claude/|
-            ^docs/
-          )
       - id: check-added-large-files
-        args: [--maxkb=10240]
+        args: [--maxkb=10240] # 10MB
 
+  # Ruff para Python (linting + formatting)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.6
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
       - id: ruff-format
-        args: [--line-length=100]
 
+  # Prettier solo para archivos frontend
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v3.0.0
     hooks:
       - id: prettier
-        types_or: [javascript, jsx, ts, tsx, json, css, scss, yaml]
+        types_or: [javascript, jsx, ts, tsx, json, css, scss, yaml, html]
         exclude: |
           (?x)(
             ^.pre-commit/|
-            ^.cursor/|
-            ^.bmad-core/|
-            ^.claude/|
-            ^docs/
+            ^docs/.*\.json$|
+            ^alembic/versions/
           )

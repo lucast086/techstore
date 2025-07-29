@@ -1,9 +1,10 @@
 """Pydantic schemas package for TechStore SaaS."""
 
-from .search import CategoryResponse, ProductSchema, SearchResponse
+from .auth import LoginRequest, TokenResponse, UserCreate, UserResponse
 
 __all__ = [
-    "SearchResponse",
-    "ProductSchema",
-    "CategoryResponse",
+    "LoginRequest",
+    "TokenResponse",
+    "UserCreate",
+    "UserResponse",
 ]
