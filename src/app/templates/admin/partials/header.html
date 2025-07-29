@@ -82,14 +82,13 @@
             Profile Settings
           </a>
           <hr class="my-1" />
-          <form action="/api/v1/auth/logout" method="POST">
-            <button
-              type="submit"
-              class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              Logout
-            </button>
-          </form>
+          <button
+            hx-post="/logout"
+            hx-trigger="click"
+            class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </div>

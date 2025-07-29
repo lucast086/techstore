@@ -1,7 +1,10 @@
 # ADR-004: API-First Authentication Pattern
 
 ## Status
-Accepted
+~~Accepted~~ **Superseded by ADR-005**
+
+> **Note**: This ADR has been superseded by [ADR-005: Service Layer as Single Source of Truth](./ADR-005-service-layer-architecture.md).
+> The API-First pattern caused issues with HTTP redirects in production. We now use direct service calls from all endpoints.
 
 ## Date
 2025-07-28

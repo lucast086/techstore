@@ -1,164 +1,220 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Admin - TechStore{% endblock %}</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Design System CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/design-tokens.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/admin.css') }}">
-    
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/design-tokens.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/admin.css') }}"
+    />
+
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    
+
     <!-- Alpine.js for interactive components -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+    <script
+      defer
+      src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+
     {% block extra_head %}{% endblock %}
-</head>
-<body class="admin-layout bg-gray-50" hx-boost="true">
+  </head>
+  <body class="admin-layout bg-gray-50" hx-boost="true">
     <!-- Admin Header -->
     {% include "admin/partials/header.html" %}
-    
+
     <!-- Admin Container -->
     <div class="admin-container flex h-screen pt-16">
-        <!-- Sidebar Navigation -->
-        {% include "admin/partials/sidebar.html" %}
-        
-        <!-- Main Content Area -->
-        <main class="admin-main flex-1 overflow-y-auto">
-            <!-- Breadcrumb Navigation -->
-            <div class="bg-white border-b border-gray-200 px-6 py-3">
-                {% include "components/breadcrumb.html" %}
-            </div>
-            
-            <!-- Page Content -->
-            <div id="main-content" class="p-6">
-                {% block content %}{% endblock %}
-            </div>
-        </main>
+      <!-- Sidebar Navigation -->
+      {% include "admin/partials/sidebar.html" %}
+
+      <!-- Main Content Area -->
+      <main class="admin-main flex-1 overflow-y-auto">
+        <!-- Breadcrumb Navigation -->
+        <div class="bg-white border-b border-gray-200 px-6 py-3">
+          {% include "components/breadcrumb.html" %}
+        </div>
+
+        <!-- Page Content -->
+        <div id="main-content" class="p-6">
+          {% block content %}{% endblock %}
+        </div>
+      </main>
     </div>
-    
+
     <!-- Session Timeout Warning Modal -->
-    <div id="session-timeout-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 class="text-lg font-semibold mb-4">Session Timeout Warning</h3>
-            <p class="text-gray-600 mb-6">Your session will expire in <span id="timeout-countdown">5:00</span> minutes. Do you want to continue?</p>
-            <div class="flex gap-3">
-                <button onclick="refreshSession()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                    Continue Session
-                </button>
-                <button onclick="logout()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                    Logout
-                </button>
-            </div>
+    <div
+      id="session-timeout-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+    >
+      <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Session Timeout Warning</h3>
+        <p class="text-gray-600 mb-6">
+          Your session will expire in
+          <span id="timeout-countdown">5:00</span> minutes. Do you want to
+          continue?
+        </p>
+        <div class="flex gap-3">
+          <button
+            onclick="refreshSession()"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Continue Session
+          </button>
+          <button
+            onclick="logout()"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          >
+            Logout
+          </button>
         </div>
+      </div>
     </div>
-    
+
     <!-- Loading Indicator -->
-    <div id="loading-indicator" class="htmx-indicator fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
-        <div class="flex items-center gap-2">
-            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Loading...</span>
-        </div>
+    <div
+      id="loading-indicator"
+      class="htmx-indicator fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg"
+    >
+      <div class="flex items-center gap-2">
+        <svg
+          class="animate-spin h-4 w-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <span>Loading...</span>
+      </div>
     </div>
-    
+
     <script>
-        // Session timeout management
-        let sessionTimeout;
-        let warningTimeout;
-        let countdownInterval;
-        const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
-        const WARNING_BEFORE = 5 * 60 * 1000; // 5 minutes before timeout
-        
-        function resetSessionTimer() {
-            clearTimeout(sessionTimeout);
-            clearTimeout(warningTimeout);
+      // Session timeout management
+      let sessionTimeout;
+      let warningTimeout;
+      let countdownInterval;
+      const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
+      const WARNING_BEFORE = 5 * 60 * 1000; // 5 minutes before timeout
+      // FOR TESTING: Uncomment these lines to test quickly
+      // const SESSION_DURATION = 2 * 60 * 1000; // 2 minutes
+      // const WARNING_BEFORE = 1 * 60 * 1000; // 1 minute before timeout
+
+      function resetSessionTimer() {
+        clearTimeout(sessionTimeout);
+        clearTimeout(warningTimeout);
+        clearInterval(countdownInterval);
+
+        warningTimeout = setTimeout(() => {
+          showSessionWarning();
+        }, SESSION_DURATION - WARNING_BEFORE);
+
+        sessionTimeout = setTimeout(() => {
+          logout();
+        }, SESSION_DURATION);
+      }
+
+      function showSessionWarning() {
+        document
+          .getElementById("session-timeout-modal")
+          .classList.remove("hidden");
+
+        let timeLeft = 5 * 60; // 5 minutes in seconds
+        countdownInterval = setInterval(() => {
+          timeLeft--;
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          document.getElementById(
+            "timeout-countdown",
+          ).textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+          if (timeLeft <= 0) {
             clearInterval(countdownInterval);
-            
-            warningTimeout = setTimeout(() => {
-                showSessionWarning();
-            }, SESSION_DURATION - WARNING_BEFORE);
-            
-            sessionTimeout = setTimeout(() => {
-                logout();
-            }, SESSION_DURATION);
-        }
-        
-        function showSessionWarning() {
-            document.getElementById('session-timeout-modal').classList.remove('hidden');
-            
-            let timeLeft = 5 * 60; // 5 minutes in seconds
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                document.getElementById('timeout-countdown').textContent = 
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                }
-            }, 1000);
-        }
-        
-        function refreshSession() {
-            document.getElementById('session-timeout-modal').classList.add('hidden');
-            clearInterval(countdownInterval);
-            
-            // Call refresh endpoint
-            fetch('/api/v1/auth/refresh', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    refresh_token: getCookie('refresh_token')
-                })
-            }).then(() => {
-                resetSessionTimer();
-            });
-        }
-        
-        function logout() {
-            window.location.href = '/logout';
-        }
-        
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-        
-        // Initialize session timer
-        resetSessionTimer();
-        
-        // Reset timer on user activity
-        document.addEventListener('click', resetSessionTimer);
-        document.addEventListener('keypress', resetSessionTimer);
-        
-        // HTMX configuration
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-Requested-With'] = 'XMLHttpRequest';
+          }
+        }, 1000);
+      }
+
+      function refreshSession() {
+        document
+          .getElementById("session-timeout-modal")
+          .classList.add("hidden");
+        clearInterval(countdownInterval);
+
+        // Call web refresh endpoint - cookies are sent automatically
+        fetch("/refresh-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((response) => {
+          if (response.ok) {
+            resetSessionTimer();
+          } else {
+            // If refresh fails, redirect to login
+            window.location.href = "/login";
+          }
         });
-        
-        // Global loading indicator
-        htmx.on('htmx:beforeRequest', function(evt) {
-            document.getElementById('loading-indicator').style.display = 'block';
-        });
-        
-        htmx.on('htmx:afterRequest', function(evt) {
-            document.getElementById('loading-indicator').style.display = 'none';
-        });
+      }
+
+      function logout() {
+        // Use form submission for logout
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/logout";
+        document.body.appendChild(form);
+        form.submit();
+      }
+
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+      }
+
+      // Initialize session timer
+      resetSessionTimer();
+
+      // Reset timer on user activity
+      document.addEventListener("click", resetSessionTimer);
+      document.addEventListener("keypress", resetSessionTimer);
+
+      // HTMX configuration
+      document.body.addEventListener("htmx:configRequest", (event) => {
+        event.detail.headers["X-Requested-With"] = "XMLHttpRequest";
+      });
+
+      // Global loading indicator
+      htmx.on("htmx:beforeRequest", function (evt) {
+        document.getElementById("loading-indicator").style.display = "block";
+      });
+
+      htmx.on("htmx:afterRequest", function (evt) {
+        document.getElementById("loading-indicator").style.display = "none";
+      });
     </script>
-    
+
     {% block extra_scripts %}{% endblock %}
-</body>
+  </body>
 </html>

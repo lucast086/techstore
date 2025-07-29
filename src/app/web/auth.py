@@ -102,6 +102,75 @@ async def dashboard(
         return RedirectResponse(url="/login", status_code=302)
 
 
+@router.post("/refresh-session")
+async def refresh_session(
+    request: Request,
+    response: Response,
+    refresh_token: Annotated[str | None, Cookie()] = None,
+    db: Session = Depends(get_async_session),
+):
+    """Refresh session for web users.
+
+    This endpoint refreshes the access token using the refresh token from cookies.
+    """
+    print("[WEB REFRESH DEBUG] Refresh session endpoint called")
+
+    if not refresh_token:
+        print("[WEB REFRESH DEBUG] No refresh token in cookies")
+        return Response(status_code=401)
+
+    try:
+        # Decode refresh token
+        from app.core.security import decode_token, verify_token_type
+
+        payload = decode_token(refresh_token)
+
+        if not verify_token_type(payload, "refresh"):
+            print("[WEB REFRESH DEBUG] Invalid token type")
+            return Response(status_code=401)
+
+        user_id = payload.get("sub")
+        if not user_id:
+            print("[WEB REFRESH DEBUG] No user ID in token")
+            return Response(status_code=401)
+
+        # Get user and create new tokens
+        auth_service = AuthService(db)
+        user = auth_service.get_user_by_id(int(user_id))
+
+        if not user or not user.is_active:
+            print(f"[WEB REFRESH DEBUG] User not found or inactive: {user_id}")
+            return Response(status_code=401)
+
+        print(f"[WEB REFRESH DEBUG] Refreshing tokens for user: {user.email}")
+        tokens = auth_service.create_tokens(user)
+
+        # Update cookies
+        response.set_cookie(
+            key="access_token",
+            value=tokens.access_token,
+            httponly=True,
+            secure=settings.environment == "production",
+            samesite="lax",
+            max_age=8 * 3600,  # 8 hours
+        )
+
+        response.set_cookie(
+            key="refresh_token",
+            value=tokens.refresh_token,
+            httponly=True,
+            secure=settings.environment == "production",
+            samesite="lax",
+            max_age=30 * 24 * 3600,  # 30 days
+        )
+
+        return Response(status_code=200)
+
+    except Exception as e:
+        print(f"[WEB REFRESH DEBUG] Error refreshing session: {e}")
+        return Response(status_code=401)
+
+
 @router.post("/logout")
 async def logout_web(
     response: Response, access_token: Annotated[str | None, Cookie()] = None
