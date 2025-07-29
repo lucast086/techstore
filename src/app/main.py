@@ -1,5 +1,11 @@
 """FastAPI application entry point for TechStore SaaS."""
 
+import os
+import sys
+
+print("[STARTUP] main.py is being imported", file=sys.stderr)
+print(f"[STARTUP] PORT env var: {os.environ.get('PORT', 'NOT SET')}", file=sys.stderr)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -17,6 +23,8 @@ app = FastAPI(
     description="Sistema de gestión para tiendas de tecnología",
     version="0.1.0",
 )
+
+print("[STARTUP] FastAPI app created successfully", file=sys.stderr)
 
 # Auth context middleware (must be added before CORS)
 app.add_middleware(AuthContextMiddleware)
