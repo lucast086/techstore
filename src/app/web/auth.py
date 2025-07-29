@@ -8,9 +8,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.config import settings
-from app.database import get_async_session
 from app.core.web_auth import get_current_user_from_cookie
-from app.models.user import User
+from app.database import get_async_session
 
 router = APIRouter()
 templates = Jinja2Templates(directory="src/app/templates")
@@ -35,13 +34,22 @@ async def login_htmx(
     This endpoint handles the HTMX form submission and calls the API endpoint.
     Returns appropriate HTMX responses for success or error.
     """
+    print("[WEB LOGIN DEBUG] HTMX login endpoint called")
+    print(f"[WEB LOGIN DEBUG] Form data: email={email}")
+    print(f"[WEB LOGIN DEBUG] Base URL: {request.base_url}")
+
     # Call the API endpoint using httpx
     async with httpx.AsyncClient(base_url=str(request.base_url)) as client:
+        print("[WEB LOGIN DEBUG] Calling API endpoint: /api/v1/auth/login")
         api_response = await client.post(
             "/api/v1/auth/login",
             json={"email": email, "password": password},
-            headers={"X-Forwarded-For": request.client.host if request.client else "unknown"},
+            headers={
+                "X-Forwarded-For": request.client.host if request.client else "unknown"
+            },
         )
+        print(f"[WEB LOGIN DEBUG] API response status: {api_response.status_code}")
+        print(f"[WEB LOGIN DEBUG] API response body: {api_response.text}")
 
     if api_response.status_code == 200:
         # Success - get tokens from JSON response
@@ -109,7 +117,9 @@ async def dashboard(
 
 
 @router.post("/logout")
-async def logout_web(response: Response, access_token: Annotated[str | None, Cookie()] = None):
+async def logout_web(
+    response: Response, access_token: Annotated[str | None, Cookie()] = None
+):
     """Web logout endpoint that handles cookie-based authentication.
 
     This endpoint is for web browsers using cookies. It clears the authentication

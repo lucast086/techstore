@@ -75,7 +75,8 @@ def get_client_ip(request: Request) -> str:
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)], db: Session = Depends(get_async_session)
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Session = Depends(get_async_session),
 ) -> User:
     """Get current authenticated user from JWT token.
 
@@ -119,7 +120,9 @@ async def get_current_user(
         raise credentials_exception
 
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user"
+        )
 
     return user
 
@@ -167,26 +170,40 @@ async def login(
     Raises:
         HTTPException: If authentication fails or rate limit exceeded.
     """
+    print("[API LOGIN DEBUG] Login endpoint called")
+    print(f"[API LOGIN DEBUG] Request data: email={login_data.email}")
+
     # Check rate limit
     client_ip = get_client_ip(request)
+    print(f"[API LOGIN DEBUG] Client IP: {client_ip}")
+
     if not check_rate_limit(client_ip):
         logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+        print(f"[API LOGIN DEBUG] Rate limit exceeded for IP: {client_ip}")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many login attempts. Please try again later.",
         )
 
     auth_service = AuthService(db)
+    print("[API LOGIN DEBUG] AuthService created")
 
     # Log login attempt
     logger.info(f"Login attempt for email: {login_data.email} from IP: {client_ip}")
+    print(f"[API LOGIN DEBUG] Calling authenticate_user with email: {login_data.email}")
 
     # Authenticate user
-    user = auth_service.authenticate_user(email=login_data.email, password=login_data.password)
+    user = auth_service.authenticate_user(
+        email=login_data.email, password=login_data.password
+    )
+    print(f"[API LOGIN DEBUG] authenticate_user returned: {user}")
 
     if not user:
         # Log failed attempt
-        logger.warning(f"Failed login attempt for email: {login_data.email} from IP: {client_ip}")
+        logger.warning(
+            f"Failed login attempt for email: {login_data.email} from IP: {client_ip}"
+        )
+        print("[API LOGIN DEBUG] Authentication failed - user is None")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -223,7 +240,9 @@ async def login(
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
-    response: Response, refresh_data: RefreshTokenRequest, db: Session = Depends(get_async_session)
+    response: Response,
+    refresh_data: RefreshTokenRequest,
+    db: Session = Depends(get_async_session),
 ) -> TokenResponse:
     """Refresh access token using refresh token.
 

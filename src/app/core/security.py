@@ -10,7 +10,9 @@ from passlib.context import CryptContext
 from app.config import settings
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=settings.BCRYPT_ROUNDS)
+pwd_context = CryptContext(
+    schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=settings.BCRYPT_ROUNDS
+)
 
 # Password validation regex
 PASSWORD_REGEX = re.compile(
@@ -28,7 +30,17 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if the password matches, False otherwise.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    print("[SECURITY DEBUG] verify_password called")
+    print(f"[SECURITY DEBUG] Plain password length: {len(plain_password)}")
+    print(f"[SECURITY DEBUG] Hashed password: {hashed_password[:20]}...")
+
+    try:
+        result = pwd_context.verify(plain_password, hashed_password)
+        print(f"[SECURITY DEBUG] Password verification result: {result}")
+        return result
+    except Exception as e:
+        print(f"[SECURITY DEBUG] Password verification error: {type(e).__name__}: {e}")
+        return False
 
 
 def get_password_hash(password: str) -> str:
@@ -40,7 +52,11 @@ def get_password_hash(password: str) -> str:
     Returns:
         The hashed password.
     """
-    return pwd_context.hash(password)
+    print("[SECURITY DEBUG] get_password_hash called")
+    print(f"[SECURITY DEBUG] Password to hash length: {len(password)}")
+    hash_result = pwd_context.hash(password)
+    print(f"[SECURITY DEBUG] Generated hash: {hash_result[:20]}...")
+    return hash_result
 
 
 def validate_password(password: str) -> tuple[bool, str]:
@@ -77,7 +93,9 @@ def validate_password(password: str) -> tuple[bool, str]:
     return True, ""
 
 
-def create_access_token(data: dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    data: dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """Create a JWT access token.
 
     Args:
@@ -94,13 +112,11 @@ def create_access_token(data: dict[str, Any], expires_delta: Optional[timedelta]
     else:
         expire = datetime.now(UTC) + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.now(UTC),
-        "type": "access"
-    })
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC), "type": "access"})
 
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 
@@ -116,13 +132,11 @@ def create_refresh_token(data: dict[str, Any]) -> str:
     to_encode = data.copy()
     expire = datetime.now(UTC) + timedelta(days=settings.JWT_REFRESH_EXPIRATION_DAYS)
 
-    to_encode.update({
-        "exp": expire,
-        "iat": datetime.now(UTC),
-        "type": "refresh"
-    })
+    to_encode.update({"exp": expire, "iat": datetime.now(UTC), "type": "refresh"})
 
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
     return encoded_jwt
 
 
@@ -139,7 +153,9 @@ def decode_token(token: str) -> dict[str, Any]:
         JWTError: If the token is invalid or expired.
     """
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
         return payload
     except JWTError:
         raise
