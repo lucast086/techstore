@@ -13,10 +13,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.api.v1 import auth as auth_api
+from app.api.v1 import customers as customers_api
 from app.api.v1 import health as health_api
 from app.api.v1 import temp_setup  # TEMPORARY - DELETE AFTER USE
 from app.middleware.auth_context import AuthContextMiddleware
-from app.web import admin, auth
+from app.web import admin, auth, customers
 from app.web.main import router as web_router
 
 app = FastAPI(
@@ -56,6 +57,7 @@ async def root():
 # API routes
 app.include_router(health_api.router, prefix="/api/v1")
 app.include_router(auth_api.router)  # Auth API endpoints
+app.include_router(customers_api.router, prefix="/api/v1")  # Customer API endpoints
 app.include_router(temp_setup.router, prefix="/api/v1")  # TEMPORARY - DELETE AFTER USE
 
 # Auth routes (HTMX)
@@ -63,6 +65,9 @@ app.include_router(auth.router, tags=["auth"])
 
 # Admin routes
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
+
+# Customer routes (HTMX)
+app.include_router(customers.router, tags=["customers"])
 
 # Web routes (HTMX)
 app.include_router(web_router)

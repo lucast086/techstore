@@ -65,9 +65,11 @@ def client(db_session):
 @pytest.fixture(scope="function")
 def test_user(db_session):
     """Create a test user for tests that need authentication."""
+    from app.core.security import get_password_hash
+
     user = User(
         email="test@example.com",
-        password_hash="hashed_password",
+        password_hash=get_password_hash("test_password"),
         full_name="Test User",
         role="admin",
         is_active=True,
