@@ -41,21 +41,30 @@ class AuthService:
         Returns:
             User object if authentication succeeds, None otherwise.
         """
+        print(f"[AUTH DEBUG] Attempting login for email: {email}")
+
         # Get user by email
-        result = self.db.execute(
-            select(User).where(User.email == email)
-        )
+        result = self.db.execute(select(User).where(User.email == email))
         user = result.scalar_one_or_none()
 
         if not user:
+            print(f"[AUTH DEBUG] User not found: {email}")
             return None
+
+        print(f"[AUTH DEBUG] User found: {user.email}, active: {user.is_active}")
 
         # Check if user is active
         if not user.is_active:
+            print("[AUTH DEBUG] User is not active")
             return None
 
         # Verify password
-        if not verify_password(password, user.password_hash):
+        print("[AUTH DEBUG] Verifying password...")
+        password_valid = verify_password(password, user.password_hash)
+        print(f"[AUTH DEBUG] Password valid: {password_valid}")
+
+        if not password_valid:
+            print(f"[AUTH DEBUG] Password hash in DB: {user.password_hash[:20]}...")
             return None
 
         # Update last login
@@ -74,11 +83,7 @@ class AuthService:
             TokenResponse with access and refresh tokens.
         """
         # Token payload
-        token_data = {
-            "sub": str(user.id),
-            "email": user.email,
-            "role": user.role
-        }
+        token_data = {"sub": str(user.id), "email": user.email, "role": user.role}
 
         # Create tokens
         access_token = create_access_token(token_data)
@@ -88,7 +93,7 @@ class AuthService:
             access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer",
-            expires_in=8 * 3600  # 8 hours in seconds
+            expires_in=8 * 3600,  # 8 hours in seconds
         )
 
     def get_user_by_id(self, user_id: int) -> Optional[User]:
@@ -100,9 +105,7 @@ class AuthService:
         Returns:
             User object if found, None otherwise.
         """
-        result = self.db.execute(
-            select(User).where(User.id == user_id)
-        )
+        result = self.db.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
     def get_user_by_email(self, email: str) -> Optional[User]:
@@ -114,12 +117,12 @@ class AuthService:
         Returns:
             User object if found, None otherwise.
         """
-        result = self.db.execute(
-            select(User).where(User.email == email)
-        )
+        result = self.db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
-    def create_user(self, user_data: UserCreate, created_by: Optional[int] = None) -> User:
+    def create_user(
+        self, user_data: UserCreate, created_by: Optional[int] = None
+    ) -> User:
         """Create a new user.
 
         Args:
@@ -146,7 +149,7 @@ class AuthService:
             password_hash=password_hash,
             full_name=user_data.full_name,
             role=user_data.role,
-            created_by=created_by
+            created_by=created_by,
         )
 
         self.db.add(user)
@@ -155,7 +158,9 @@ class AuthService:
 
         return user
 
-    def change_password(self, user: User, current_password: str, new_password: str) -> bool:
+    def change_password(
+        self, user: User, current_password: str, new_password: str
+    ) -> bool:
         """Change a user's password.
 
         Args:

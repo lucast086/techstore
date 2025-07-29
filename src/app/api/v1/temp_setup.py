@@ -46,3 +46,30 @@ def create_admin_user(db: Session = Depends(get_db)):
         "credentials": {"email": admin_email, "password": admin_password},
         "warning": "DELETE THIS ENDPOINT AFTER USE!",
     }
+
+
+@router.get("/setup/check-admin")
+def check_admin_user(db: Session = Depends(get_db)):
+    """Check admin user details - DELETE AFTER USE."""
+    admin_email = "admin@techstore.com"
+
+    # Get admin user
+    user = db.execute(
+        select(User).where(User.email == admin_email)
+    ).scalar_one_or_none()
+
+    if not user:
+        return {"status": "not_found", "message": "Admin user not found"}
+
+    return {
+        "status": "found",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "role": user.role,
+            "is_active": user.is_active,
+            "password_hash": user.password_hash[:20] + "...",
+            "created_at": str(user.created_at) if hasattr(user, "created_at") else None,
+        },
+    }
