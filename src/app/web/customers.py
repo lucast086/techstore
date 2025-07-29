@@ -27,6 +27,7 @@ async def customer_list(
     request: Request,
     page: int = Query(1, ge=1),
     search: str | None = Query(None),
+    success: str | None = Query(None),
     current_user: User = Depends(get_current_user_from_cookie),
     db: Session = Depends(get_db),
 ):
@@ -69,6 +70,11 @@ async def customer_list(
 
     total_pages = (total + per_page - 1) // per_page
 
+    # Decode success message if present
+    success_message = None
+    if success == "registered":
+        success_message = "Customer registered successfully!"
+
     return templates.TemplateResponse(
         "customers/list.html",
         {
@@ -78,6 +84,7 @@ async def customer_list(
             "total_pages": total_pages,
             "search": search or "",
             "current_user": current_user,
+            "success_message": success_message,
         },
     )
 
@@ -154,14 +161,10 @@ async def create_customer_submit(
 
         logger.info(f"Customer created successfully via HTMX: {customer.id}")
 
-        # Set success message
-        request.session[
-            "flash_message"
-        ] = f"Customer {customer.name} registered successfully!"
-
-        # Redirect to customer profile
+        # Redirect to customer list with success message
+        # (redirecting to profile would give 404 since profile not implemented)
         return RedirectResponse(
-            url=f"/customers/{customer.id}", status_code=status.HTTP_303_SEE_OTHER
+            url="/customers?success=registered", status_code=status.HTTP_303_SEE_OTHER
         )
 
     except ValueError as e:

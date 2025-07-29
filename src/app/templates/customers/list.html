@@ -84,7 +84,7 @@
   </div>
 
   <!-- Flash Messages -->
-  {% if request.session.get('flash_message') %}
+  {% if success_message %}
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="rounded-md bg-green-50 p-4">
       <div class="flex">
@@ -104,7 +104,7 @@
         </div>
         <div class="ml-3">
           <p class="text-sm font-medium text-green-800">
-            {{ request.session.pop('flash_message') }}
+            {{ success_message }}
           </p>
         </div>
       </div>

@@ -11,13 +11,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.v1 import auth as auth_api
 from app.api.v1 import customers as customers_api
 from app.api.v1 import health as health_api
 from app.api.v1 import temp_setup  # TEMPORARY - DELETE AFTER USE
-from app.config import settings
 from app.middleware.auth_context import AuthContextMiddleware
 from app.web import admin, auth, customers
 from app.web.main import router as web_router
@@ -30,10 +28,7 @@ app = FastAPI(
 
 print("[STARTUP] FastAPI app created successfully", file=sys.stderr)
 
-# Session middleware (must be added first for flash messages)
-app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
-
-# Auth context middleware
+# Auth context middleware (must be added before CORS)
 app.add_middleware(AuthContextMiddleware)
 
 # CORS middleware
