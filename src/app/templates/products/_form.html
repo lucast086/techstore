@@ -54,18 +54,8 @@
         <select id="category_id" name="category_id" required>
           <option value="">Select a category</option>
           {% for category in categories %}
-          <option
-            value="{{ category.id }}"
-            {%
-            if
-            values
-            and
-            values.category_id=""
-            ="category.id"
-            %}selected{%
-            endif
-            %}
-          >
+          <!-- prettier-ignore -->
+          <option value="{{ category.id }}" {% if values and values.category_id == category.id %}selected{% endif %}>
             {{ category.name }}
           </option>
           {% endfor %}
@@ -371,22 +361,8 @@
 <div class="bg-white shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:p-6">
     <div class="flex items-center">
-      <input
-        type="checkbox"
-        id="is_active"
-        name="is_active"
-        value="true"
-        {%
-        if
-        not
-        values
-        or
-        values.is_active
-        %}checked{%
-        endif
-        %}
-        class="mr-2"
-      />
+      <!-- prettier-ignore -->
+      <input type="checkbox" id="is_active" name="is_active" value="true" {% if not values or values.is_active %}checked{% endif %} class="mr-2" />
       <label for="is_active" class="text-sm font-medium text-gray-700">
         Product is active and available for sale
       </label>
