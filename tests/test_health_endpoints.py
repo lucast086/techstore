@@ -49,7 +49,9 @@ class TestHealthEndpoints:
         try:
             response = client.get("/api/v1/health/db")
 
-            assert response.status_code == 200  # Still returns 200 but with unhealthy status
+            assert (
+                response.status_code == 200
+            )  # Still returns 200 but with unhealthy status
             data = response.json()
             assert data["status"] == "unhealthy"
             assert data["database"] == "disconnected"

@@ -20,14 +20,18 @@ class TestAdminPanel:
         assert response.status_code == 403
         assert "Insufficient permissions" in response.json()["detail"]
 
-    def test_admin_dashboard_access(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_dashboard_access(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test that admin users can access the dashboard."""
         response = client.get("/admin", headers=admin_user_token_headers)
         assert response.status_code == 200
         assert "Dashboard Overview" in response.text
         assert "TechStore Admin" in response.text
 
-    def test_admin_navigation_links(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_navigation_links(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test that all navigation links are present."""
         response = client.get("/admin", headers=admin_user_token_headers)
         assert response.status_code == 200
@@ -39,7 +43,9 @@ class TestAdminPanel:
         assert "Activity Logs" in response.text
         assert "Return to Main App" in response.text
 
-    def test_admin_breadcrumbs(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_breadcrumbs(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test that breadcrumbs are displayed correctly."""
         response = client.get("/admin", headers=admin_user_token_headers)
         assert response.status_code == 200
@@ -59,7 +65,9 @@ class TestAdminPanel:
         assert "Admin Users" in response.text
         assert "System Status" in response.text
 
-    def test_admin_htmx_navigation(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_htmx_navigation(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test HTMX partial loading for navigation."""
         # Test dashboard partial
         response = client.get("/admin/dashboard", headers=admin_user_token_headers)
@@ -72,7 +80,9 @@ class TestAdminPanel:
         assert "User Management" in response.text
 
         # Test settings partial
-        response = client.get("/admin/settings/content", headers=admin_user_token_headers)
+        response = client.get(
+            "/admin/settings/content", headers=admin_user_token_headers
+        )
         assert response.status_code == 200
         assert "System Settings" in response.text
 
@@ -81,7 +91,9 @@ class TestAdminPanel:
         assert response.status_code == 200
         assert "Activity Logs" in response.text
 
-    def test_admin_responsive_classes(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_responsive_classes(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test that responsive classes are present."""
         response = client.get("/admin", headers=admin_user_token_headers)
         assert response.status_code == 200
@@ -102,7 +114,9 @@ class TestAdminPanel:
         assert "Session Timeout Warning" in response.text
         assert "Continue Session" in response.text
 
-    def test_admin_loading_indicator(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_loading_indicator(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test that loading indicator is present."""
         response = client.get("/admin", headers=admin_user_token_headers)
         assert response.status_code == 200
@@ -111,7 +125,9 @@ class TestAdminPanel:
         assert "loading-indicator" in response.text
         assert "htmx-indicator" in response.text
 
-    def test_admin_quick_actions(self, client: TestClient, admin_user_token_headers: dict):
+    def test_admin_quick_actions(
+        self, client: TestClient, admin_user_token_headers: dict
+    ):
         """Test that quick actions are displayed."""
         response = client.get("/admin", headers=admin_user_token_headers)
         assert response.status_code == 200

@@ -96,7 +96,9 @@ class TestJWTTokens:
         token = create_access_token(data)
 
         # Decode and verify
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
 
         assert payload["sub"] == "123"
         assert payload["email"] == "test@example.com"
@@ -111,7 +113,9 @@ class TestJWTTokens:
         token = create_refresh_token(data)
 
         # Decode and verify
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
 
         assert payload["sub"] == "123"
         assert payload["email"] == "test@example.com"
@@ -125,7 +129,9 @@ class TestJWTTokens:
         data = {"sub": "123"}
         token = create_access_token(data)
 
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
         exp_time = datetime.fromtimestamp(payload["exp"], tz=UTC)
         iat_time = datetime.fromtimestamp(payload["iat"], tz=UTC)
 
@@ -138,7 +144,9 @@ class TestJWTTokens:
         data = {"sub": "123"}
         token = create_refresh_token(data)
 
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
         exp_time = datetime.fromtimestamp(payload["exp"], tz=UTC)
         iat_time = datetime.fromtimestamp(payload["iat"], tz=UTC)
 
@@ -152,7 +160,9 @@ class TestJWTTokens:
         custom_delta = timedelta(minutes=5)
         token = create_access_token(data, expires_delta=custom_delta)
 
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
         exp_time = datetime.fromtimestamp(payload["exp"], tz=UTC)
         iat_time = datetime.fromtimestamp(payload["iat"], tz=UTC)
 

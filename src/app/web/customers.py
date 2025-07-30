@@ -297,3 +297,50 @@ async def send_balance_reminder(
     whatsapp_url = f"https://wa.me/{customer.phone}?text={quote(message)}"
 
     return {"whatsapp_url": whatsapp_url, "message": message}
+
+
+@router.get("/{customer_id}", response_class=HTMLResponse)
+async def customer_detail(
+    customer_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db),
+):
+    """Customer detail/profile page.
+
+    Args:
+        customer_id: ID of the customer.
+        request: FastAPI request object.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        HTML response with customer profile.
+    """
+    logger.info(f"Accessing customer detail via HTMX - customer_id: {customer_id}")
+
+    # Get customer
+    customer = customer_crud.get(db, customer_id)
+    if not customer:
+        return templates.TemplateResponse(
+            "404.html",
+            {"request": request, "message": "Customer not found"},
+            status_code=404,
+        )
+
+    # Get balance info
+    balance_info = balance_service.get_balance_summary(db, customer_id)
+
+    # Get recent transactions (last 10)
+    transactions = balance_service.get_transaction_history(db, customer_id, limit=10)
+
+    return templates.TemplateResponse(
+        "customers/detail.html",
+        {
+            "request": request,
+            "customer": customer,
+            "balance_info": balance_info,
+            "recent_transactions": transactions,
+            "current_user": current_user,
+        },
+    )
