@@ -24,7 +24,9 @@ class TestAlembicConfiguration:
         alembic_dir = Path("/workspace/alembic")
         assert alembic_dir.exists(), "alembic directory not found"
         assert (alembic_dir / "env.py").exists(), "alembic/env.py not found"
-        assert (alembic_dir / "versions").exists(), "alembic/versions directory not found"
+        assert (
+            alembic_dir / "versions"
+        ).exists(), "alembic/versions directory not found"
 
     def test_alembic_env_imports_models(self):
         """Test that alembic env.py imports all models"""

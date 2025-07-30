@@ -3,7 +3,11 @@
 from datetime import timedelta
 
 import pytest
-from app.core.security import create_access_token, create_refresh_token, get_password_hash
+from app.core.security import (
+    create_access_token,
+    create_refresh_token,
+    get_password_hash,
+)
 from app.models.user import User
 from fastapi import status
 from httpx import AsyncClient
@@ -64,7 +68,8 @@ class TestLogin:
     async def test_login_success(self, async_client: AsyncClient, test_user: User):
         """Test successful login."""
         response = await async_client.post(
-            "/api/v1/auth/login", json={"email": "test@example.com", "password": "TestPass123!"}
+            "/api/v1/auth/login",
+            json={"email": "test@example.com", "password": "TestPass123!"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -78,7 +83,9 @@ class TestLogin:
         assert "access_token" in response.cookies
         assert "refresh_token" in response.cookies
 
-    async def test_login_invalid_password(self, async_client: AsyncClient, test_user: User):
+    async def test_login_invalid_password(
+        self, async_client: AsyncClient, test_user: User
+    ):
         """Test login with invalid password."""
         response = await async_client.post(
             "/api/v1/auth/login",
@@ -98,7 +105,9 @@ class TestLogin:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.json()["detail"] == "Incorrect email or password"
 
-    async def test_login_inactive_user(self, async_client: AsyncClient, inactive_user: User):
+    async def test_login_inactive_user(
+        self, async_client: AsyncClient, inactive_user: User
+    ):
         """Test login with inactive user."""
         response = await async_client.post(
             "/api/v1/auth/login",
@@ -127,7 +136,9 @@ class TestLogin:
 class TestTokenRefresh:
     """Test token refresh endpoint."""
 
-    async def test_refresh_token_success(self, async_client: AsyncClient, test_user: User):
+    async def test_refresh_token_success(
+        self, async_client: AsyncClient, test_user: User
+    ):
         """Test successful token refresh."""
         # Create refresh token
         refresh_token = create_refresh_token(
@@ -153,7 +164,9 @@ class TestTokenRefresh:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.json()["detail"] == "Could not validate refresh token"
 
-    async def test_refresh_token_wrong_type(self, async_client: AsyncClient, test_user: User):
+    async def test_refresh_token_wrong_type(
+        self, async_client: AsyncClient, test_user: User
+    ):
         """Test refresh with access token instead of refresh token."""
         # Create access token (wrong type)
         access_token = create_access_token(
@@ -170,7 +183,9 @@ class TestTokenRefresh:
 class TestCurrentUser:
     """Test get current user endpoint."""
 
-    async def test_get_current_user_success(self, async_client: AsyncClient, test_user: User):
+    async def test_get_current_user_success(
+        self, async_client: AsyncClient, test_user: User
+    ):
         """Test getting current user info."""
         # Create access token
         access_token = create_access_token(
@@ -204,11 +219,17 @@ class TestCurrentUser:
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.json()["detail"] == "Could not validate credentials"
 
-    async def test_get_current_user_expired_token(self, async_client: AsyncClient, test_user: User):
+    async def test_get_current_user_expired_token(
+        self, async_client: AsyncClient, test_user: User
+    ):
         """Test getting current user with expired token."""
         # Create expired token
         expired_token = create_access_token(
-            {"sub": str(test_user.id), "email": test_user.email, "role": test_user.role},
+            {
+                "sub": str(test_user.id),
+                "email": test_user.email,
+                "role": test_user.role,
+            },
             expires_delta=timedelta(seconds=-1),
         )
 
@@ -251,7 +272,9 @@ class TestRoleBasedAccess:
         # This is a placeholder - in real implementation, you'd test actual admin endpoints
         pass
 
-    async def test_require_role_unauthorized(self, async_client: AsyncClient, test_user: User):
+    async def test_require_role_unauthorized(
+        self, async_client: AsyncClient, test_user: User
+    ):
         """Test access denied for insufficient role."""
         # This is a placeholder - in real implementation, you'd test actual role-protected endpoints
         pass

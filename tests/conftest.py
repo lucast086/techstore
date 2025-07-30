@@ -1,16 +1,28 @@
 """Test configuration for TechStore SaaS."""
 
+import os
+
 import pytest
 from app.database import Base, get_db
 from app.main import app
+
+# Import all models to ensure they're registered
+from app.models import *  # noqa: F401, F403
+from app.models.user import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+# Set test environment variables
+os.environ["LOGIN_RATE_LIMIT_PER_MINUTE"] = "0"  # Disable rate limiting for tests
+os.environ["LOGIN_RATE_LIMIT_PER_HOUR"] = "0"
+
 # Use in-memory SQLite for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -50,7 +62,30 @@ def client(db_session):
     """Create test client with database session override."""
     app.dependency_overrides[get_db] = lambda: db_session
 
+    # Clear login attempts to avoid rate limiting in tests
+    from app.api.v1.auth import login_attempts
+
+    login_attempts.clear()
+
     with TestClient(app) as test_client:
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def test_user(db_session):
+    """Create a test user for tests that need authentication."""
+    from app.core.security import get_password_hash
+
+    user = User(
+        email="test@example.com",
+        password_hash=get_password_hash("test_password"),
+        full_name="Test User",
+        role="admin",
+        is_active=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user

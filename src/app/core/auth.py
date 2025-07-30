@@ -1,7 +1,6 @@
 """Authentication logic and user management."""
 
 from datetime import UTC, datetime
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -31,7 +30,7 @@ class AuthService:
         """
         self.db = db
 
-    def authenticate_user(self, email: str, password: str) -> Optional[User]:
+    def authenticate_user(self, email: str, password: str) -> User | None:
         """Authenticate a user by email and password.
 
         Args:
@@ -96,7 +95,7 @@ class AuthService:
             expires_in=8 * 3600,  # 8 hours in seconds
         )
 
-    def get_user_by_id(self, user_id: int) -> Optional[User]:
+    def get_user_by_id(self, user_id: int) -> User | None:
         """Get a user by ID.
 
         Args:
@@ -108,7 +107,7 @@ class AuthService:
         result = self.db.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         """Get a user by email.
 
         Args:
@@ -120,9 +119,7 @@ class AuthService:
         result = self.db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
-    def create_user(
-        self, user_data: UserCreate, created_by: Optional[int] = None
-    ) -> User:
+    def create_user(self, user_data: UserCreate, created_by: int | None = None) -> User:
         """Create a new user.
 
         Args:

@@ -1,0 +1,396 @@
+<!-- Basic Information Section -->
+<div class="bg-white shadow sm:rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <!-- SKU Field -->
+      <div>
+        <label for="sku" class="block text-sm font-medium text-gray-700">
+          SKU <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="sku"
+          name="sku"
+          pattern="^[A-Za-z0-9-]+$"
+          value="{{ values.sku if values else '' }}"
+          required
+          placeholder="PRD-001"
+          class="mt-1"
+        />
+        <p class="mt-1 text-sm text-gray-500">Alphanumeric and hyphens only</p>
+        {% if errors and errors.get('sku') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.sku }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Name Field -->
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">
+          Product Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value="{{ values.name if values else '' }}"
+          required
+          placeholder="iPhone 14 Pro"
+        />
+        {% if errors and errors.get('name') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Category Field -->
+      <div>
+        <label
+          for="category_id"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Category <span class="text-red-500">*</span>
+        </label>
+        <select id="category_id" name="category_id" required>
+          <option value="">Select a category</option>
+          {% for category in categories %}
+          <!-- prettier-ignore -->
+          <option value="{{ category.id }}" {% if values and values.category_id == category.id %}selected{% endif %}>
+            {{ category.name }}
+          </option>
+          {% endfor %}
+        </select>
+        {% if errors and errors.get('category_id') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.category_id }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Brand Field -->
+      <div>
+        <label for="brand" class="block text-sm font-medium text-gray-700">
+          Brand
+        </label>
+        <input
+          type="text"
+          id="brand"
+          name="brand"
+          value="{{ values.brand if values else '' }}"
+          placeholder="Apple"
+        />
+      </div>
+
+      <!-- Model Field -->
+      <div>
+        <label for="model" class="block text-sm font-medium text-gray-700">
+          Model
+        </label>
+        <input
+          type="text"
+          id="model"
+          name="model"
+          value="{{ values.model if values else '' }}"
+          placeholder="A2849"
+        />
+      </div>
+
+      <!-- Barcode Field -->
+      <div>
+        <label for="barcode" class="block text-sm font-medium text-gray-700">
+          Barcode
+        </label>
+        <input
+          type="text"
+          id="barcode"
+          name="barcode"
+          value="{{ values.barcode if values else '' }}"
+          placeholder="194253024019"
+        />
+      </div>
+    </div>
+
+    <!-- Description Field -->
+    <div class="mt-6">
+      <label for="description" class="block text-sm font-medium text-gray-700">
+        Description
+      </label>
+      <textarea
+        id="description"
+        name="description"
+        rows="3"
+        placeholder="Product description..."
+      >
+{{ values.description if values else '' }}</textarea
+      >
+    </div>
+  </div>
+</div>
+
+<!-- Pricing Section -->
+<div class="bg-white shadow sm:rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Pricing</h2>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Purchase Price -->
+      <div>
+        <label
+          for="purchase_price"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Purchase Price <span class="text-red-500">*</span>
+        </label>
+        <div class="mt-1 relative rounded-md shadow-sm">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <span class="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input
+            type="number"
+            id="purchase_price"
+            name="purchase_price"
+            value="{{ values.purchase_price if values else '' }}"
+            min="0"
+            step="0.01"
+            required
+            placeholder="0.00"
+            class="pl-7"
+          />
+        </div>
+        {% if errors and errors.get('purchase_price') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.purchase_price }}</p>
+        {% endif %}
+      </div>
+
+      <!-- First Sale Price -->
+      <div>
+        <label
+          for="first_sale_price"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Primary Sale Price <span class="text-red-500">*</span>
+        </label>
+        <div class="mt-1 relative rounded-md shadow-sm">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <span class="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input
+            type="number"
+            id="first_sale_price"
+            name="first_sale_price"
+            value="{{ values.first_sale_price if values else '' }}"
+            min="0"
+            step="0.01"
+            required
+            placeholder="0.00"
+            class="pl-7"
+          />
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Regular price</p>
+        {% if errors and errors.get('first_sale_price') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.first_sale_price }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Second Sale Price -->
+      <div>
+        <label
+          for="second_sale_price"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Secondary Sale Price <span class="text-red-500">*</span>
+        </label>
+        <div class="mt-1 relative rounded-md shadow-sm">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <span class="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input
+            type="number"
+            id="second_sale_price"
+            name="second_sale_price"
+            value="{{ values.second_sale_price if values else '' }}"
+            min="0"
+            step="0.01"
+            required
+            placeholder="0.00"
+            class="pl-7"
+          />
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Wholesale price</p>
+        {% if errors and errors.get('second_sale_price') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.second_sale_price }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Third Sale Price -->
+      <div>
+        <label
+          for="third_sale_price"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Tertiary Sale Price <span class="text-red-500">*</span>
+        </label>
+        <div class="mt-1 relative rounded-md shadow-sm">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
+            <span class="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input
+            type="number"
+            id="third_sale_price"
+            name="third_sale_price"
+            value="{{ values.third_sale_price if values else '' }}"
+            min="0"
+            step="0.01"
+            required
+            placeholder="0.00"
+            class="pl-7"
+          />
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Special price</p>
+        {% if errors and errors.get('third_sale_price') %}
+        <p class="mt-1 text-sm text-red-600">{{ errors.third_sale_price }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Tax Rate -->
+      <div>
+        <label for="tax_rate" class="block text-sm font-medium text-gray-700">
+          Tax Rate (%)
+        </label>
+        <input
+          type="number"
+          id="tax_rate"
+          name="tax_rate"
+          value="{{ values.tax_rate if values else '16.00' }}"
+          min="0"
+          max="100"
+          step="0.01"
+          placeholder="16.00"
+        />
+        <p class="mt-1 text-sm text-gray-500">Default: 16%</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory Section -->
+<div class="bg-white shadow sm:rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Inventory</h2>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- Current Stock -->
+      <div>
+        <label
+          for="current_stock"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Initial Stock
+        </label>
+        <input
+          type="number"
+          id="current_stock"
+          name="current_stock"
+          value="{{ values.current_stock if values else '0' }}"
+          min="0"
+          placeholder="0"
+        />
+      </div>
+
+      <!-- Minimum Stock -->
+      <div>
+        <label
+          for="minimum_stock"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Minimum Stock
+        </label>
+        <input
+          type="number"
+          id="minimum_stock"
+          name="minimum_stock"
+          value="{{ values.minimum_stock if values else '0' }}"
+          min="0"
+          placeholder="0"
+        />
+        <p class="mt-1 text-sm text-gray-500">Alert level</p>
+      </div>
+
+      <!-- Maximum Stock -->
+      <div>
+        <label
+          for="maximum_stock"
+          class="block text-sm font-medium text-gray-700"
+        >
+          Maximum Stock
+        </label>
+        <input
+          type="number"
+          id="maximum_stock"
+          name="maximum_stock"
+          value="{{ values.maximum_stock if values else '' }}"
+          min="0"
+          placeholder="Optional"
+        />
+      </div>
+
+      <!-- Location -->
+      <div>
+        <label for="location" class="block text-sm font-medium text-gray-700">
+          Location
+        </label>
+        <input
+          type="text"
+          id="location"
+          name="location"
+          value="{{ values.location if values else '' }}"
+          placeholder="A1-B2"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Section -->
+<div class="bg-white shadow sm:rounded-lg">
+  <div class="px-4 py-5 sm:p-6">
+    <div class="flex items-center">
+      <!-- prettier-ignore -->
+      <input type="checkbox" id="is_active" name="is_active" value="true" {% if not values or values.is_active %}checked{% endif %} class="mr-2" />
+      <label for="is_active" class="text-sm font-medium text-gray-700">
+        Product is active and available for sale
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Error Messages -->
+{% if errors and errors.get('general') %}
+<div class="rounded-md bg-red-50 p-4">
+  <div class="flex">
+    <div class="flex-shrink-0">
+      <svg
+        class="h-5 w-5 text-red-400"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    </div>
+    <div class="ml-3">
+      <p class="text-sm font-medium text-red-800">{{ errors.general }}</p>
+    </div>
+  </div>
+</div>
+{% endif %}

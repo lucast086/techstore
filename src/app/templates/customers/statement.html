@@ -1,0 +1,227 @@
+{% extends "base.html" %} {% block title %}Account Statement - {{ customer.name
+}}{% endblock %} {% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Account Statement</h1>
+        <div class="flex space-x-4">
+          <a href="/customers" class="text-blue-600 hover:text-blue-800">
+            ← Back to Customers
+          </a>
+          <a href="?format=pdf" class="text-green-600 hover:text-green-800">
+            📄 Download PDF
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Info -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">
+          Customer Information
+        </h2>
+        <div class="space-y-2">
+          <p><span class="font-medium">Name:</span> {{ customer.name }}</p>
+          <p><span class="font-medium">Phone:</span> {{ customer.phone }}</p>
+          {% if customer.phone_secondary %}
+          <p>
+            <span class="font-medium">Alt Phone:</span> {{
+            customer.phone_secondary }}
+          </p>
+          {% endif %} {% if customer.email %}
+          <p><span class="font-medium">Email:</span> {{ customer.email }}</p>
+          {% endif %} {% if customer.address %}
+          <p>
+            <span class="font-medium">Address:</span> {{ customer.address }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900 mb-3">
+          Statement Details
+        </h2>
+        <div class="space-y-2">
+          <p>
+            <span class="font-medium">Statement Date:</span> {{
+            generated_at.strftime('%B %d, %Y') }}
+          </p>
+          <p>
+            <span class="font-medium">Customer Since:</span> {{
+            customer.created_at.strftime('%B %d, %Y') }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Balance Summary -->
+    <div class="bg-gray-50 rounded-lg p-6 mb-8">
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Current Balance</h2>
+      <div class="text-center">
+        {% if balance_info.has_debt %}
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Amount Due</p>
+          <p class="text-3xl font-bold text-red-600">
+            ${{ "{:,.2f}".format(abs(balance_info.current_balance)) }}
+          </p>
+        </div>
+        {% elif balance_info.has_credit %}
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Credit Balance</p>
+          <p class="text-3xl font-bold text-green-600">
+            ${{ "{:,.2f}".format(balance_info.current_balance) }}
+          </p>
+        </div>
+        {% else %}
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Balance</p>
+          <p class="text-3xl font-bold text-gray-900">$0.00</p>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if balance_info.has_debt %}
+      <div class="mt-4 text-center">
+        <button
+          onclick="sendBalanceReminder({{ customer.id }})"
+          class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
+        >
+          📱 Send WhatsApp Reminder
+        </button>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Transaction History -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">
+        Transaction History
+      </h2>
+      {% if transactions %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Date
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Description
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Debit
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Credit
+              </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Balance
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for transaction in transactions %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {{ transaction.date.strftime('%m/%d/%Y') }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900">
+                {{ transaction.description }} {% if transaction.reference_number
+                %}
+                <span class="text-gray-500"
+                  >(Ref: {{ transaction.reference_number }})</span
+                >
+                {% endif %}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-right text-red-600"
+              >
+                {% if transaction.amount < 0 %} ${{
+                "{:,.2f}".format(abs(transaction.amount)) }} {% endif %}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600"
+              >
+                {% if transaction.amount > 0 %} ${{
+                "{:,.2f}".format(transaction.amount) }} {% endif %}
+              </td>
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium"
+              >
+                ${{ "{:,.2f}".format(abs(transaction.running_balance)) }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="bg-gray-50">
+            <tr>
+              <td
+                colspan="4"
+                class="px-6 py-3 text-right font-medium text-gray-900"
+              >
+                Current Balance
+              </td>
+              <td class="px-6 py-3 text-right font-bold text-gray-900">
+                ${{ "{:,.2f}".format(abs(balance_info.current_balance)) }}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-8 text-gray-500">
+        <p>No transactions recorded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-500"
+    >
+      <p>
+        This statement is generated automatically and reflects all transactions
+        up to the statement date.
+      </p>
+      <p>For questions about your account, please contact us.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function sendBalanceReminder(customerId) {
+    fetch(`/customers/${customerId}/send-balance-reminder`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.whatsapp_url) {
+          window.open(data.whatsapp_url, "_blank");
+        } else if (data.error) {
+          alert(data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Failed to generate WhatsApp link");
+      });
+  }
+</script>
+{% endblock %}

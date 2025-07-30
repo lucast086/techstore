@@ -11,7 +11,11 @@
       "Bash(poetry run ruff:*)",
       "Bash(poetry run pytest:*)",
       "Bash(mv:*)",
-      "Bash(poetry run:*)"
+      "Bash(poetry run:*)",
+      "Bash(./scripts/version.sh:*)",
+      "Bash(rm:*)",
+      "Bash(touch:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

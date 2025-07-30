@@ -18,7 +18,11 @@ router = APIRouter(tags=["admin"])
 templates = Jinja2Templates(directory="src/app/templates")
 
 
-@router.get("/", response_class=HTMLResponse, dependencies=[Depends(require_web_role(["admin"]))])
+@router.get(
+    "/",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
+)
 async def admin_dashboard(
     request: Request,
     current_user: Annotated[User, Depends(get_current_user_from_cookie)],
@@ -61,7 +65,9 @@ async def admin_dashboard(
 
 
 @router.get(
-    "/dashboard", response_class=HTMLResponse, dependencies=[Depends(require_web_role(["admin"]))]
+    "/dashboard",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_dashboard_partial(
     request: Request,
@@ -98,10 +104,13 @@ async def admin_dashboard_partial(
 
 
 @router.get(
-    "/users", response_class=HTMLResponse, dependencies=[Depends(require_web_role(["admin"]))]
+    "/users",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_users(
-    request: Request, current_user: Annotated[User, Depends(get_current_user_from_cookie)]
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
 ) -> HTMLResponse:
     """Render user management page.
 
@@ -127,10 +136,13 @@ async def admin_users(
 
 
 @router.get(
-    "/users/list", response_class=HTMLResponse, dependencies=[Depends(require_web_role(["admin"]))]
+    "/users/list",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_users_partial(
-    request: Request, current_user: Annotated[User, Depends(get_current_user_from_cookie)]
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
 ) -> HTMLResponse:
     """Render user management partial for HTMX.
 
@@ -147,10 +159,13 @@ async def admin_users_partial(
 
 
 @router.get(
-    "/settings", response_class=HTMLResponse, dependencies=[Depends(require_web_role(["admin"]))]
+    "/settings",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_settings(
-    request: Request, current_user: Annotated[User, Depends(get_current_user_from_cookie)]
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
 ) -> HTMLResponse:
     """Render system settings page.
 
@@ -181,7 +196,8 @@ async def admin_settings(
     dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_settings_partial(
-    request: Request, current_user: Annotated[User, Depends(get_current_user_from_cookie)]
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
 ) -> HTMLResponse:
     """Render system settings partial for HTMX.
 
@@ -198,10 +214,13 @@ async def admin_settings_partial(
 
 
 @router.get(
-    "/logs", response_class=HTMLResponse, dependencies=[Depends(require_web_role(["admin"]))]
+    "/logs",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_logs(
-    request: Request, current_user: Annotated[User, Depends(get_current_user_from_cookie)]
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
 ) -> HTMLResponse:
     """Render activity logs page.
 
@@ -232,7 +251,8 @@ async def admin_logs(
     dependencies=[Depends(require_web_role(["admin"]))],
 )
 async def admin_logs_partial(
-    request: Request, current_user: Annotated[User, Depends(get_current_user_from_cookie)]
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
 ) -> HTMLResponse:
     """Render activity logs partial for HTMX.
 

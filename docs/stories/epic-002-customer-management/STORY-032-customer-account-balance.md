@@ -4,11 +4,11 @@
 - **Epic**: EPIC-002 (Customer Management)
 - **Priority**: HIGH
 - **Estimate**: 1 day
-- **Status**: TODO
+- **Status**: DONE
 
 ## 🎯 User Story
-**As** María,  
-**I want** to view customer account balances and transaction history,  
+**As** María,
+**I want** to view customer account balances and transaction history,
 **So that** I can track credit sales and customer payments
 
 ## ✅ Acceptance Criteria
@@ -51,7 +51,7 @@ from sqlalchemy import func
 
 class BalanceService:
     """Service for calculating customer balances from transactions"""
-    
+
     def calculate_balance(self, db: Session, customer_id: int) -> Decimal:
         """
         Calculate current balance from all transactions
@@ -62,19 +62,19 @@ class BalanceService:
         #     Sale.customer_id == customer_id,
         #     Sale.payment_method == "credit"
         # ).scalar() or Decimal("0")
-        
+
         # TODO: When Payment model exists
         # payments_total = db.query(func.sum(Payment.amount)).filter(
         #     Payment.customer_id == customer_id
         # ).scalar() or Decimal("0")
-        
+
         # MVP: Return 0 for now
         return Decimal("0.00")
-    
+
     def get_balance_summary(self, db: Session, customer_id: int) -> Dict:
         """Get balance with summary information"""
         balance = self.calculate_balance(db, customer_id)
-        
+
         return {
             "current_balance": float(balance),
             "has_debt": balance < 0,
@@ -82,7 +82,7 @@ class BalanceService:
             "status": "debt" if balance < 0 else "credit" if balance > 0 else "clear",
             "formatted": self.format_balance(balance)
         }
-    
+
     def format_balance(self, balance: Decimal) -> str:
         """Format balance for display"""
         if balance < 0:
@@ -91,8 +91,8 @@ class BalanceService:
             return f"Credit ${balance:,.2f}"
         else:
             return "$0.00"
-    
-    def get_transaction_history(self, db: Session, customer_id: int, 
+
+    def get_transaction_history(self, db: Session, customer_id: int,
                               limit: Optional[int] = None) -> List[Dict]:
         """
         Get transaction history with running balance
@@ -100,12 +100,12 @@ class BalanceService:
         """
         # TODO: Implement when Sale and Payment models exist
         # transactions = []
-        # 
+        #
         # # Get all sales
         # sales = db.query(Sale).filter(
         #     Sale.customer_id == customer_id
         # ).all()
-        # 
+        #
         # for sale in sales:
         #     transactions.append({
         #         "date": sale.created_at,
@@ -114,12 +114,12 @@ class BalanceService:
         #         "amount": -sale.total,  # Negative for debt
         #         "reference": f"sale_{sale.id}"
         #     })
-        # 
+        #
         # # Get all payments
         # payments = db.query(Payment).filter(
         #     Payment.customer_id == customer_id
         # ).all()
-        # 
+        #
         # for payment in payments:
         #     transactions.append({
         #         "date": payment.created_at,
@@ -128,31 +128,31 @@ class BalanceService:
         #         "amount": payment.amount,  # Positive for credit
         #         "reference": f"payment_{payment.id}"
         #     })
-        # 
+        #
         # # Sort by date and calculate running balance
         # transactions.sort(key=lambda x: x['date'])
-        # 
+        #
         # running_balance = Decimal("0")
         # for transaction in transactions:
         #     running_balance += transaction['amount']
         #     transaction['running_balance'] = float(running_balance)
-        # 
+        #
         # if limit:
         #     transactions = transactions[-limit:]
-        # 
+        #
         # return transactions
-        
+
         return []  # MVP: Empty for now
-    
+
     def can_delete_customer(self, db: Session, customer_id: int) -> tuple[bool, str]:
         """Check if customer can be deleted based on balance"""
         balance = self.calculate_balance(db, customer_id)
-        
+
         if balance != 0:
             return False, f"Customer has non-zero balance: {self.format_balance(balance)}"
-        
+
         return True, "Customer can be deleted"
-    
+
     def get_customers_with_debt(self, db: Session, limit: Optional[int] = None) -> List[Dict]:
         """
         Get list of customers with outstanding debt
@@ -172,10 +172,10 @@ def get_with_balance(self, db: Session, customer_id: int) -> Dict:
     customer = self.get(db, customer_id)
     if not customer:
         return None
-    
+
     from app.services.balance_service import balance_service
     balance_info = balance_service.get_balance_summary(db, customer_id)
-    
+
     return {
         **customer.to_dict(),
         **balance_info
@@ -186,17 +186,17 @@ def list_with_balances(self, db: Session, skip: int = 0, limit: int = 20) -> Lis
     customers = db.query(Customer).filter(
         Customer.is_active == True
     ).offset(skip).limit(limit).all()
-    
+
     from app.services.balance_service import balance_service
     result = []
-    
+
     for customer in customers:
         balance_info = balance_service.get_balance_summary(db, customer.id)
         result.append({
             **customer.to_dict(),
             **balance_info
         })
-    
+
     return result
 ```
 
@@ -217,15 +217,15 @@ async def customer_statement(
     customer = customer_crud.get(db, customer_id)
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    
+
     # Get balance and transactions
     balance_info = balance_service.get_balance_summary(db, customer_id)
     transactions = balance_service.get_transaction_history(db, customer_id)
-    
+
     if format == "pdf":
         # Generate PDF
         pdf_bytes = generate_statement_pdf(customer, balance_info, transactions)
-        
+
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
@@ -233,7 +233,7 @@ async def customer_statement(
                 "Content-Disposition": f"attachment; filename=statement_{customer.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
             }
         )
-    
+
     # HTML view
     return templates.TemplateResponse("customers/statement.html", {
         "request": request,
@@ -254,12 +254,12 @@ async def send_balance_reminder(
     customer = customer_crud.get(db, customer_id)
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    
+
     balance_info = balance_service.get_balance_summary(db, customer_id)
-    
+
     if not balance_info['has_debt']:
         raise HTTPException(status_code=400, detail="Customer has no outstanding debt")
-    
+
     # Generate WhatsApp message
     message = (
         f"Hello {customer.name},\n\n"
@@ -268,9 +268,9 @@ async def send_balance_reminder(
         f"Please contact us to arrange payment.\n"
         f"Thank you!"
     )
-    
+
     whatsapp_url = f"https://wa.me/{customer.phone}?text={quote(message)}"
-    
+
     return {"whatsapp_url": whatsapp_url, "message": message}
 ```
 
@@ -293,7 +293,7 @@ async def send_balance_reminder(
                 </a>
             </div>
         </div>
-        
+
         <div class="statement-info">
             <div class="customer-info">
                 <h2>{{ customer.name }}</h2>
@@ -305,14 +305,14 @@ async def send_balance_reminder(
                 <p>{{ customer.address }}</p>
                 {% endif %}
             </div>
-            
+
             <div class="statement-meta">
                 <p><strong>Statement Date:</strong> {{ generated_at.strftime('%B %d, %Y') }}</p>
                 <p><strong>Customer Since:</strong> {{ customer.created_at.strftime('%B %d, %Y') }}</p>
             </div>
         </div>
     </div>
-    
+
     <div class="balance-summary">
         <h3>Current Balance</h3>
         <div class="balance-display {{ balance_info.status }}">
@@ -328,7 +328,7 @@ async def send_balance_reminder(
             {% endif %}
         </div>
     </div>
-    
+
     <div class="transaction-section">
         <h3>Transaction History</h3>
         {% if transactions %}
@@ -374,7 +374,7 @@ async def send_balance_reminder(
         </div>
         {% endif %}
     </div>
-    
+
     <div class="statement-footer">
         <p class="disclaimer">
             This statement is generated automatically and reflects all transactions up to the statement date.
@@ -401,27 +401,27 @@ def generate_statement_pdf(customer: Dict, balance_info: Dict, transactions: Lis
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import inch
     from reportlab.lib import colors
-    
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     styles = getSampleStyleSheet()
     story = []
-    
+
     # Title
     story.append(Paragraph("ACCOUNT STATEMENT", styles['Title']))
     story.append(Spacer(1, 0.5*inch))
-    
+
     # Customer Info
     story.append(Paragraph(f"<b>Customer:</b> {customer['name']}", styles['Normal']))
     story.append(Paragraph(f"<b>Phone:</b> {customer['phone']}", styles['Normal']))
     if customer.get('address'):
         story.append(Paragraph(f"<b>Address:</b> {customer['address']}", styles['Normal']))
     story.append(Spacer(1, 0.3*inch))
-    
+
     # Statement Date
     story.append(Paragraph(f"<b>Statement Date:</b> {datetime.now().strftime('%B %d, %Y')}", styles['Normal']))
     story.append(Spacer(1, 0.3*inch))
-    
+
     # Current Balance
     balance_style = ParagraphStyle(
         'Balance',
@@ -430,23 +430,23 @@ def generate_statement_pdf(customer: Dict, balance_info: Dict, transactions: Lis
     )
     story.append(Paragraph(f"Current Balance: {balance_info['formatted']}", balance_style))
     story.append(Spacer(1, 0.5*inch))
-    
+
     # Transactions Table
     if transactions:
         story.append(Paragraph("Transaction History", styles['Heading2']))
-        
+
         # Table data
         data = [['Date', 'Description', 'Debit', 'Credit', 'Balance']]
-        
+
         for trans in transactions:
             date = trans['date'].strftime('%m/%d/%Y')
             desc = trans['description']
             debit = f"${abs(trans['amount']):,.2f}" if trans['amount'] < 0 else ""
             credit = f"${trans['amount']:,.2f}" if trans['amount'] > 0 else ""
             balance = f"${abs(trans['running_balance']):,.2f}"
-            
+
             data.append([date, desc, debit, credit, balance])
-        
+
         # Create table
         table = Table(data, colWidths=[1.2*inch, 2.5*inch, 1*inch, 1*inch, 1*inch])
         table.setStyle(TableStyle([
@@ -459,16 +459,16 @@ def generate_statement_pdf(customer: Dict, balance_info: Dict, transactions: Lis
             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ]))
-        
+
         story.append(table)
     else:
         story.append(Paragraph("No transactions recorded.", styles['Normal']))
-    
+
     # Build PDF
     doc.build(story)
     pdf_bytes = buffer.getvalue()
     buffer.close()
-    
+
     return pdf_bytes
 ```
 
@@ -503,10 +503,10 @@ def generate_statement_pdf(customer: Dict, balance_info: Dict, transactions: Lis
 - Try delete with balance
 
 ## 🔗 Dependencies
-- **Depends on**: 
+- **Depends on**:
   - STORY-028 (Customer Model)
   - STORY-031 (Customer Profile)
-- **Blocks**: 
+- **Blocks**:
   - Sales features (need balance tracking)
   - Payment features (need balance tracking)
 

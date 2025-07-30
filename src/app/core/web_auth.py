@@ -8,7 +8,7 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_token, verify_token_type
-from app.database import get_async_session
+from app.dependencies import get_db
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 async def get_current_user_from_cookie(
     request: Request,
     access_token: Annotated[str | None, Cookie()] = None,
-    db: Session = Depends(get_async_session),
+    db: Session = Depends(get_db),
 ) -> User:
     """Get current authenticated user from cookie-based JWT token.
 
@@ -68,7 +68,9 @@ async def get_current_user_from_cookie(
         raise credentials_exception
 
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user"
+        )
 
     return user
 
@@ -83,7 +85,9 @@ def require_web_role(allowed_roles: list[str]):
         Dependency function that checks user role.
     """
 
-    def role_checker(current_user: User = Depends(get_current_user_from_cookie)) -> User:
+    def role_checker(
+        current_user: User = Depends(get_current_user_from_cookie),
+    ) -> User:
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"

@@ -1,6 +1,5 @@
 """Template context processors for injecting global data into templates."""
 
-from typing import Optional
 
 from fastapi import Cookie, Request
 
@@ -9,8 +8,8 @@ from app.models.user import User
 
 
 async def get_current_user_context(
-    request: Request, access_token: Optional[str] = Cookie(None)
-) -> Optional[User]:
+    request: Request, access_token: str | None = Cookie(None)
+) -> User | None:
     """Get current user for template context.
 
     This function attempts to get the current user from cookies.

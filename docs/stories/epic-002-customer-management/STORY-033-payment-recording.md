@@ -4,11 +4,11 @@
 - **Epic**: EPIC-002 (Customer Management)
 - **Priority**: CRITICAL
 - **Estimate**: 1 day
-- **Status**: TODO
+- **Status**: DONE
 
 ## 🎯 User Story
-**As** María or Carlos,  
-**I want** to record customer payments against their account balance,  
+**As** María or Carlos,
+**I want** to record customer payments against their account balance,
 **So that** I can track when customers pay their debts and maintain accurate account balances
 
 ## ✅ Acceptance Criteria
@@ -58,29 +58,29 @@ from app.models import BaseModel
 
 class Payment(BaseModel):
     __tablename__ = "payments"
-    
+
     # Payment details
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
     amount = Column(Decimal(10, 2), nullable=False)
     payment_method = Column(String(50), nullable=False)  # cash, transfer, card
     reference_number = Column(String(100), nullable=True)
     notes = Column(Text, nullable=True)
-    
+
     # Receipt info
     receipt_number = Column(String(50), unique=True, nullable=False, index=True)
-    
+
     # Audit
     received_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     voided = Column(Boolean, default=False)
     void_reason = Column(Text, nullable=True)
     voided_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     voided_at = Column(DateTime, nullable=True)
-    
+
     # Relationships
     customer = relationship("Customer", backref="payments")
     received_by = relationship("User", foreign_keys=[received_by_id])
     voided_by = relationship("User", foreign_keys=[voided_by_id])
-    
+
     def __repr__(self):
         return f"<Payment {self.receipt_number} - ${self.amount}>"
 ```
@@ -97,7 +97,7 @@ class PaymentCreate(BaseModel):
     payment_method: str = Field(..., regex="^(cash|transfer|card)$")
     reference_number: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = None
-    
+
     @validator('reference_number')
     def validate_reference(cls, v, values):
         method = values.get('payment_method')
@@ -117,7 +117,7 @@ class PaymentResponse(BaseModel):
     received_by: str
     created_at: datetime
     voided: bool
-    
+
     class Config:
         orm_mode = True
 
@@ -137,12 +137,12 @@ from app.models.payment import Payment
 from app.schemas.payment import PaymentCreate
 
 class PaymentCRUD:
-    def create(self, db: Session, customer_id: int, 
+    def create(self, db: Session, customer_id: int,
                payment: PaymentCreate, received_by_id: int) -> Payment:
         """Record new payment"""
         # Generate receipt number
         receipt_number = self.generate_receipt_number(db)
-        
+
         db_payment = Payment(
             customer_id=customer_id,
             amount=payment.amount,
@@ -152,54 +152,54 @@ class PaymentCRUD:
             receipt_number=receipt_number,
             received_by_id=received_by_id
         )
-        
+
         db.add(db_payment)
         db.commit()
         db.refresh(db_payment)
-        
+
         return db_payment
-    
+
     def generate_receipt_number(self, db: Session) -> str:
         """Generate unique receipt number: REC-YYYYMMDD-XXXX"""
         today = datetime.now()
         prefix = f"REC-{today.strftime('%Y%m%d')}"
-        
+
         # Get count of receipts today
         count = db.query(func.count(Payment.id)).filter(
             Payment.receipt_number.like(f"{prefix}%")
         ).scalar() or 0
-        
+
         return f"{prefix}-{str(count + 1).zfill(4)}"
-    
+
     def get_by_receipt(self, db: Session, receipt_number: str) -> Optional[Payment]:
         """Get payment by receipt number"""
         return db.query(Payment).filter(
             Payment.receipt_number == receipt_number
         ).first()
-    
-    def get_customer_payments(self, db: Session, customer_id: int, 
+
+    def get_customer_payments(self, db: Session, customer_id: int,
                             include_voided: bool = False) -> List[Payment]:
         """Get all payments for a customer"""
         query = db.query(Payment).filter(Payment.customer_id == customer_id)
-        
+
         if not include_voided:
             query = query.filter(Payment.voided == False)
-        
+
         return query.order_by(Payment.created_at.desc()).all()
-    
-    def void_payment(self, db: Session, payment_id: int, 
+
+    def void_payment(self, db: Session, payment_id: int,
                     void_reason: str, voided_by_id: int) -> bool:
         """Void a payment (cannot delete)"""
         payment = db.query(Payment).filter(Payment.id == payment_id).first()
-        
+
         if not payment or payment.voided:
             return False
-        
+
         payment.voided = True
         payment.void_reason = void_reason
         payment.voided_by_id = voided_by_id
         payment.voided_at = datetime.now()
-        
+
         db.commit()
         return True
 
@@ -233,10 +233,10 @@ async def payment_form(
     customer = customer_crud.get(db, customer_id)
     if not customer:
         raise HTTPException(404, "Customer not found")
-    
+
     # Get current balance
     balance_info = balance_service.get_balance_summary(db, customer_id)
-    
+
     return templates.TemplateResponse("payments/record_payment.html", {
         "request": request,
         "customer": customer,
@@ -261,15 +261,15 @@ async def record_payment(
         customer = customer_crud.get(db, customer_id)
         if not customer:
             raise HTTPException(404, "Customer not found")
-        
+
         # Check amount doesn't exceed debt
         current_balance = balance_service.calculate_balance(db, customer_id)
         if current_balance >= 0:
             raise ValueError("Customer has no outstanding debt")
-        
+
         if amount > abs(current_balance):
             raise ValueError(f"Payment amount exceeds debt of ${abs(current_balance):.2f}")
-        
+
         # Create payment
         payment_data = PaymentCreate(
             amount=amount,
@@ -277,23 +277,23 @@ async def record_payment(
             reference_number=reference_number,
             notes=notes
         )
-        
+
         payment = payment_crud.create(
             db=db,
             customer_id=customer_id,
             payment=payment_data,
             received_by_id=current_user.id
         )
-        
+
         # Set success message
         request.session["flash_message"] = f"Payment recorded: {payment.receipt_number}"
-        
+
         # Redirect to receipt view
         return RedirectResponse(
             url=f"/payments/{payment.id}/receipt?print=true",
             status_code=303
         )
-        
+
     except ValueError as e:
         return templates.TemplateResponse("payments/record_payment.html", {
             "request": request,
@@ -321,24 +321,24 @@ async def view_receipt(
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
         raise HTTPException(404, "Payment not found")
-    
+
     # Calculate balances
     balance_before = balance_service.calculate_balance_before_payment(
         db, payment.customer_id, payment.id
     )
     balance_after = balance_before + payment.amount
-    
+
     receipt_data = {
         "payment": payment,
         "balance_before": balance_before,
         "balance_after": balance_after,
         "print_mode": print
     }
-    
+
     if format == "pdf":
         receipt_service = ReceiptService()
         pdf_bytes = receipt_service.generate_payment_receipt(receipt_data)
-        
+
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
@@ -346,7 +346,7 @@ async def view_receipt(
                 "Content-Disposition": f"attachment; filename={payment.receipt_number}.pdf"
             }
         )
-    
+
     return templates.TemplateResponse("reports/payment_receipt.html", {
         "request": request,
         **receipt_data
@@ -361,28 +361,28 @@ async def whatsapp_receipt(
     payment = db.query(Payment).filter(Payment.id == payment_id).first()
     if not payment:
         raise HTTPException(404, "Payment not found")
-    
+
     # Calculate new balance
     new_balance = balance_service.calculate_balance(db, payment.customer_id)
-    
+
     message = (
         f"*Payment Receipt - {payment.receipt_number}*\n\n"
         f"Amount Received: ${payment.amount:.2f}\n"
         f"Payment Method: {payment.payment_method.title()}\n"
         f"Date: {payment.created_at.strftime('%B %d, %Y')}\n\n"
     )
-    
+
     if new_balance == 0:
         message += "✅ *ACCOUNT PAID IN FULL*\n\n"
     elif new_balance < 0:
         message += f"Remaining Balance: ${abs(new_balance):.2f}\n\n"
     else:
         message += f"Account Credit: ${new_balance:.2f}\n\n"
-    
+
     message += "Thank you for your payment!"
-    
+
     whatsapp_url = f"https://wa.me/{payment.customer.phone}?text={quote(message)}"
-    
+
     return {"url": whatsapp_url}
 ```
 
@@ -394,7 +394,7 @@ from jinja2 import Template
 
 class ReceiptService:
     """Service for generating receipts"""
-    
+
     def __init__(self):
         self.company_info = {
             "name": "TechStore",
@@ -402,24 +402,24 @@ class ReceiptService:
             "phone": "(555) 123-4567",
             "email": "info@techstore.com"
         }
-    
+
     def generate_payment_receipt(self, data: Dict) -> bytes:
         """Generate payment receipt PDF"""
         # Load template
         with open('templates/reports/payment_receipt.html', 'r') as f:
             template = Template(f.read())
-        
+
         # Add company info
         data['company'] = self.company_info
         data['generated_at'] = datetime.now()
-        
+
         # Render HTML
         html_content = template.render(**data)
-        
+
         # Convert to PDF
         from weasyprint import HTML
         pdf = HTML(string=html_content).write_pdf()
-        
+
         return pdf
 ```
 
@@ -457,11 +457,11 @@ class ReceiptService:
 - Void already voided
 
 ## 🔗 Dependencies
-- **Depends on**: 
+- **Depends on**:
   - STORY-028 (Customer Model)
   - STORY-032 (Account Balance)
   - STORY-027 (Database Setup)
-- **Blocks**: 
+- **Blocks**:
   - Complete account management
   - Sales on credit
 
@@ -485,7 +485,7 @@ class ReceiptService:
 # Before payment
 balance_before = sum(sales_on_credit) - sum(previous_payments)
 
-# After payment  
+# After payment
 balance_after = balance_before + payment_amount
 ```
 

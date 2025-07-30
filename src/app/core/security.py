@@ -2,7 +2,7 @@
 
 import re
 from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -94,7 +94,7 @@ def validate_password(password: str) -> tuple[bool, str]:
 
 
 def create_access_token(
-    data: dict[str, Any], expires_delta: Optional[timedelta] = None
+    data: dict[str, Any], expires_delta: timedelta | None = None
 ) -> str:
     """Create a JWT access token.
 
