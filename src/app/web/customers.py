@@ -3,17 +3,21 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Annotated
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Form, Query, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
+from app.crud.customer import customer_crud
 from app.dependencies import get_db
 from app.models.user import User
 from app.schemas.customer import CustomerCreate
+from app.services.balance_service import balance_service
 from app.services.customer import customer_service
 
 logger = logging.getLogger(__name__)
@@ -52,20 +56,20 @@ async def customer_list(
         customers = customer_service.search_customers(
             db=db, query=search, include_inactive=False, limit=per_page
         )
+        # Add balance info to each customer
+        customers_with_balance = []
+        for customer in customers:
+            balance_info = balance_service.get_balance_summary(db, customer.id)
+            customer_dict = (
+                customer.to_dict() if hasattr(customer, "to_dict") else customer
+            )
+            customers_with_balance.append({**customer_dict, **balance_info})
+        customers = customers_with_balance
         total = len(customers)  # For now, simple count
     else:
-        # For pagination without search, we still need to get customers directly
-        # TODO: Add pagination support to service layer
+        # Get customers with balances using updated CRUD method
         skip = (page - 1) * per_page
-        from app.models.customer import Customer
-
-        customers = (
-            db.query(Customer)
-            .filter(Customer.is_active.is_(True))
-            .offset(skip)
-            .limit(per_page)
-            .all()
-        )
+        customers = customer_crud.list_with_balances(db, skip=skip, limit=per_page)
         total = customer_service.get_customer_count(db)
 
     total_pages = (total + per_page - 1) // per_page
@@ -189,3 +193,107 @@ async def create_customer_submit(
             },
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@router.get("/{customer_id}/statement", response_class=HTMLResponse)
+async def customer_statement(
+    customer_id: int,
+    request: Request,
+    format: str = Query("html", pattern="^(html|pdf)$"),
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db),
+):
+    """View or download customer account statement.
+
+    Args:
+        customer_id: ID of the customer.
+        request: FastAPI request object.
+        format: Output format (html or pdf).
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        HTML statement or PDF download.
+    """
+    customer = customer_crud.get(db, customer_id)
+    if not customer:
+        # Return 404 page
+        return templates.TemplateResponse(
+            "404.html",
+            {"request": request, "message": "Customer not found"},
+            status_code=404,
+        )
+
+    # Get balance and transactions
+    balance_info = balance_service.get_balance_summary(db, customer_id)
+    transactions = balance_service.get_transaction_history(db, customer_id)
+
+    if format == "pdf":
+        # Generate PDF using simple HTML to PDF approach
+        from app.utils.pdf_generator import generate_statement_pdf
+
+        pdf_bytes = generate_statement_pdf(
+            customer.to_dict(), balance_info, transactions
+        )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=statement_{customer.name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            },
+        )
+
+    # HTML view
+    return templates.TemplateResponse(
+        "customers/statement.html",
+        {
+            "request": request,
+            "customer": customer,
+            "balance_info": balance_info,
+            "transactions": transactions,
+            "current_user": current_user,
+            "generated_at": datetime.now(),
+        },
+    )
+
+
+@router.post("/{customer_id}/send-balance-reminder")
+async def send_balance_reminder(
+    customer_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db),
+):
+    """Generate WhatsApp link for balance reminder.
+
+    Args:
+        customer_id: ID of the customer.
+        request: FastAPI request object.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        JSON with WhatsApp URL.
+    """
+    customer = customer_crud.get(db, customer_id)
+    if not customer:
+        return {"error": "Customer not found"}
+
+    balance_info = balance_service.get_balance_summary(db, customer_id)
+
+    if not balance_info["has_debt"]:
+        return {"error": "Customer has no outstanding debt"}
+
+    # Generate WhatsApp message
+    message = (
+        f"Hello {customer.name},\n\n"
+        f"This is a friendly reminder about your account balance.\n"
+        f"Current balance: ${abs(balance_info['current_balance']):,.2f}\n\n"
+        f"Please contact us to arrange payment.\n"
+        f"Thank you!"
+    )
+
+    whatsapp_url = f"https://wa.me/{customer.phone}?text={quote(message)}"
+
+    return {"whatsapp_url": whatsapp_url, "message": message}

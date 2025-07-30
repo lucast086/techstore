@@ -2,6 +2,7 @@
 
 from .base import Base, BaseModel, TimestampMixin
 from .customer import Customer
+from .payment import Payment
 from .user import User
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "TimestampMixin",
     "User",
     "Customer",
+    "Payment",
 ]

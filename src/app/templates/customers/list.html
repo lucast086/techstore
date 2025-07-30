@@ -175,21 +175,54 @@
                     {{ customer.email or '-' }}
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-right">
+                    {% if customer.has_debt %}
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                    >
+                      Owes ${{ "{:,.2f}".format(abs(customer.current_balance))
+                      }}
+                    </span>
+                    {% elif customer.has_credit %}
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                    >
+                      Credit ${{ "{:,.2f}".format(customer.current_balance) }}
+                    </span>
+                    {% else %}
                     <span
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                     >
                       $0.00
                     </span>
+                    {% endif %}
                   </td>
                   <td
                     class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
                   >
-                    <a
-                      href="/customers/{{ customer.id }}"
-                      class="text-indigo-600 hover:text-indigo-900"
-                    >
-                      View<span class="sr-only">, {{ customer.name }}</span>
-                    </a>
+                    <div class="flex items-center justify-end space-x-2">
+                      <a
+                        href="/customers/{{ customer.id }}/statement"
+                        class="text-gray-600 hover:text-gray-900"
+                        title="View Statement"
+                      >
+                        📄
+                      </a>
+                      {% if customer.has_debt %}
+                      <a
+                        href="/payments/record/{{ customer.id }}"
+                        class="text-green-600 hover:text-green-900"
+                        title="Record Payment"
+                      >
+                        💰
+                      </a>
+                      {% endif %}
+                      <a
+                        href="/customers/{{ customer.id }}"
+                        class="text-indigo-600 hover:text-indigo-900"
+                      >
+                        View<span class="sr-only">, {{ customer.name }}</span>
+                      </a>
+                    </div>
                   </td>
                 </tr>
                 {% endfor %}

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.customer import Customer
 from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.services.balance_service import balance_service
 
 
 class CustomerCRUD:
@@ -169,13 +170,19 @@ class CustomerCRUD:
 
         Returns:
             True if customer was deleted, False if not found.
+
+        Raises:
+            ValueError: If customer has non-zero balance.
         """
         customer = self.get(db, customer_id)
         if not customer:
             return False
 
-        # TODO: Check if customer has balance when transaction system is implemented
-        # For now, just perform soft delete
+        # Check if customer can be deleted based on balance
+        can_delete, reason = balance_service.can_delete_customer(db, customer_id)
+        if not can_delete:
+            raise ValueError(reason)
+
         customer.is_active = False
         db.commit()
         return True
@@ -194,6 +201,52 @@ class CustomerCRUD:
             .filter(Customer.is_active.is_(True))
             .scalar()
         )
+
+    def get_with_balance(self, db: Session, customer_id: int) -> dict | None:
+        """Get customer with calculated balance.
+
+        Args:
+            db: Database session.
+            customer_id: Customer ID to retrieve.
+
+        Returns:
+            Customer dict with balance info if found, None otherwise.
+        """
+        customer = self.get(db, customer_id)
+        if not customer:
+            return None
+
+        balance_info = balance_service.get_balance_summary(db, customer_id)
+
+        return {**customer.to_dict(), **balance_info}
+
+    def list_with_balances(
+        self, db: Session, skip: int = 0, limit: int = 20
+    ) -> list[dict]:
+        """Get customers with their balances.
+
+        Args:
+            db: Database session.
+            skip: Number of records to skip.
+            limit: Maximum number of records to return.
+
+        Returns:
+            List of customer dicts with balance information.
+        """
+        customers = (
+            db.query(Customer)
+            .filter(Customer.is_active.is_(True))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+        result = []
+        for customer in customers:
+            balance_info = balance_service.get_balance_summary(db, customer.id)
+            result.append({**customer.to_dict(), **balance_info})
+
+        return result
 
 
 customer_crud = CustomerCRUD()

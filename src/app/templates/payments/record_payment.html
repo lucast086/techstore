@@ -1,0 +1,223 @@
+{% extends "base.html" %} {% block title %}Record Payment - {{ customer.name
+}}{% endblock %} {% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Record Payment</h1>
+        <p class="text-gray-600">
+          Customer: <span class="font-medium">{{ customer.name }}</span>
+        </p>
+      </div>
+
+      <!-- Current Balance -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">Current Balance:</span>
+          {% if balance_info.has_debt %}
+          <span class="text-xl font-bold text-red-600"
+            >Owes ${{ "{:,.2f}".format(abs(balance_info.current_balance))
+            }}</span
+          >
+          {% elif balance_info.has_credit %}
+          <span class="text-xl font-bold text-green-600"
+            >Credit ${{ "{:,.2f}".format(balance_info.current_balance) }}</span
+          >
+          {% else %}
+          <span class="text-xl font-bold text-gray-900">$0.00</span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if error %}
+      <div
+        class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6"
+      >
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <!-- Payment Form -->
+      <form
+        method="POST"
+        action="/payments/record/{{ customer.id }}"
+        class="space-y-6"
+      >
+        <!-- Amount -->
+        <div>
+          <label
+            for="amount"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Payment Amount <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+            >
+              <span class="text-gray-500">$</span>
+            </div>
+            <input
+              type="number"
+              id="amount"
+              name="amount"
+              step="0.01"
+              min="0.01"
+              value="{{ form_data.amount if form_data else '' }}"
+              class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div>
+          <label
+            for="payment_method"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Payment Method <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="payment_method"
+            name="payment_method"
+            onchange="toggleReferenceField()"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select method...</option>
+            <option
+              value="cash"
+              {%
+              if
+              form_data
+              and
+              form_data.payment_method=""
+              ="cash"
+              %}selected{%
+              endif
+              %}
+            >
+              Cash
+            </option>
+            <option
+              value="transfer"
+              {%
+              if
+              form_data
+              and
+              form_data.payment_method=""
+              ="transfer"
+              %}selected{%
+              endif
+              %}
+            >
+              Bank Transfer
+            </option>
+            <option
+              value="card"
+              {%
+              if
+              form_data
+              and
+              form_data.payment_method=""
+              ="card"
+              %}selected{%
+              endif
+              %}
+            >
+              Card
+            </option>
+          </select>
+        </div>
+
+        <!-- Reference Number -->
+        <div id="reference_field" style="display: none">
+          <label
+            for="reference_number"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Reference Number
+            <span
+              id="reference_required"
+              class="text-red-500"
+              style="display: none"
+              >*</span
+            >
+          </label>
+          <input
+            type="text"
+            id="reference_number"
+            name="reference_number"
+            value="{{ form_data.reference_number if form_data else '' }}"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          />
+          <p class="mt-1 text-sm text-gray-500">
+            Required for bank transfers and card payments
+          </p>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label
+            for="notes"
+            class="block text-sm font-medium text-gray-700 mb-1"
+          >
+            Notes (Optional)
+          </label>
+          <textarea
+            id="notes"
+            name="notes"
+            rows="3"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          >
+{{ form_data.notes if form_data else '' }}</textarea
+          >
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-between pt-4">
+          <a
+            href="/customers"
+            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md"
+          >
+            Cancel
+          </a>
+          <button
+            type="submit"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md"
+          >
+            Record Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleReferenceField() {
+    const method = document.getElementById("payment_method").value;
+    const referenceField = document.getElementById("reference_field");
+    const referenceInput = document.getElementById("reference_number");
+    const referenceRequired = document.getElementById("reference_required");
+
+    if (method === "transfer" || method === "card") {
+      referenceField.style.display = "block";
+      referenceInput.required = true;
+      referenceRequired.style.display = "inline";
+    } else {
+      referenceField.style.display = "none";
+      referenceInput.required = false;
+      referenceRequired.style.display = "none";
+      referenceInput.value = "";
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    toggleReferenceField();
+  });
+</script>
+{% endblock %}
