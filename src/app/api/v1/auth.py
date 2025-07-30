@@ -31,8 +31,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 # Simple in-memory rate limiting
 login_attempts: dict[str, list[datetime]] = defaultdict(list)
-RATE_LIMIT_ATTEMPTS = 5
-RATE_LIMIT_WINDOW = timedelta(minutes=15)
+RATE_LIMIT_ATTEMPTS = settings.LOGIN_RATE_LIMIT_PER_MINUTE
+RATE_LIMIT_WINDOW = (
+    timedelta(minutes=1)
+    if settings.LOGIN_RATE_LIMIT_PER_MINUTE > 0
+    else timedelta(seconds=0)
+)
 
 
 def check_rate_limit(ip_address: str) -> bool:
@@ -44,6 +48,10 @@ def check_rate_limit(ip_address: str) -> bool:
     Returns:
         True if within rate limit, False if exceeded.
     """
+    # If rate limiting is disabled (0), always return True
+    if RATE_LIMIT_ATTEMPTS == 0:
+        return True
+
     now = datetime.now(UTC)
     attempts = login_attempts[ip_address]
 

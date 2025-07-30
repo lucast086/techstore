@@ -17,7 +17,7 @@ from app.api.v1 import customers as customers_api
 from app.api.v1 import health as health_api
 from app.api.v1 import temp_setup  # TEMPORARY - DELETE AFTER USE
 from app.middleware.auth_context import AuthContextMiddleware
-from app.web import admin, auth, customers, payments
+from app.web import admin, auth, customers, payments, products
 from app.web.main import router as web_router
 
 app = FastAPI(
@@ -71,6 +71,9 @@ app.include_router(customers.router, tags=["customers"])
 
 # Payment routes (HTMX)
 app.include_router(payments.router, tags=["payments"])
+
+# Product routes (HTMX)
+app.include_router(products.router, tags=["products"])
 
 # Web routes (HTMX)
 app.include_router(web_router)

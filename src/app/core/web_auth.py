@@ -8,7 +8,7 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 from app.core.security import decode_token, verify_token_type
-from app.database import get_async_session
+from app.dependencies import get_db
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 async def get_current_user_from_cookie(
     request: Request,
     access_token: Annotated[str | None, Cookie()] = None,
-    db: Session = Depends(get_async_session),
+    db: Session = Depends(get_db),
 ) -> User:
     """Get current authenticated user from cookie-based JWT token.
 

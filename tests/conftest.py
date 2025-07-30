@@ -1,5 +1,7 @@
 """Test configuration for TechStore SaaS."""
 
+import os
+
 import pytest
 from app.database import Base, get_db
 from app.main import app
@@ -10,6 +12,10 @@ from app.models.user import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Set test environment variables
+os.environ["LOGIN_RATE_LIMIT_PER_MINUTE"] = "0"  # Disable rate limiting for tests
+os.environ["LOGIN_RATE_LIMIT_PER_HOUR"] = "0"
 
 # Use in-memory SQLite for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -55,6 +61,11 @@ def db_session(db_engine):
 def client(db_session):
     """Create test client with database session override."""
     app.dependency_overrides[get_db] = lambda: db_session
+
+    # Clear login attempts to avoid rate limiting in tests
+    from app.api.v1.auth import login_attempts
+
+    login_attempts.clear()
 
     with TestClient(app) as test_client:
         yield test_client

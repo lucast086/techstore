@@ -4,7 +4,7 @@
 - **Epic**: EPIC-003 - Product Management
 - **Priority**: P0 - Critical
 - **Estimate**: 13 points
-- **Status**: TODO
+- **Status**: IN PROGRESS (Core functionality implemented, pending Alpine.js, image upload, notifications)
 
 ## User Story
 **As** María (Store Owner),
@@ -13,15 +13,15 @@
 
 ## Acceptance Criteria
 1. **Product Form Access**: Users can access the "Add Product" form from the main products page and dashboard
-2. **Required Fields**: The form enforces required fields: name, SKU, category, purchase price, sale price, and initial stock
+2. **Required Fields**: The form enforces required fields: name, SKU, category, purchase price, sales prices, and initial stock
 3. **SKU Validation**: The system validates SKU uniqueness and format (alphanumeric, no spaces)
 4. **Category Selection**: Users can select from existing categories or create a new one inline
-5. **Price Validation**: Purchase and sale prices must be positive numbers with up to 2 decimal places
+5. **Price Validation**: Purchase and sales prices must be positive numbers with up to 2 decimal places
 6. **Stock Management**: Initial stock quantity must be a non-negative integer
 7. **Optional Fields**: Description, brand, model, barcode, minimum stock level, and location can be optionally provided
-8. **Image Upload**: Users can upload up to 5 product images (JPG, PNG, max 5MB each)
+8. **Image Upload**: Users can upload up to 1 product images (JPG, PNG, max 5MB)
 9. **Supplier Information**: Users can optionally link the product to one or more suppliers
-10. **Tax Configuration**: Users can set tax rate (IVA) for the product, defaulting to 16%
+10. **Tax Configuration**: Users can set tax rate (IVA) for the product, defaulting to 21%
 11. **Success Feedback**: After successful creation, users see a success message and can choose to add another or view the product
 12. **Error Handling**: Clear error messages for validation failures (duplicate SKU, invalid prices, etc.)
 13. **Draft Saving**: Users can save products as draft (inactive) without requiring all fields
@@ -73,7 +73,9 @@ CREATE TABLE products (
     model VARCHAR(100),
     barcode VARCHAR(50),
     purchase_price DECIMAL(10,2) NOT NULL,
-    sale_price DECIMAL(10,2) NOT NULL,
+    first_sale_price DECIMAL(10,2) NOT NULL,
+    second_sale_price DECIMAL(10,2) NOT NULL,
+    third_sale_price DECIMAL(10,2) NOT NULL,
     tax_rate DECIMAL(5,2) DEFAULT 16.00,
     current_stock INTEGER DEFAULT 0,
     minimum_stock INTEGER DEFAULT 0,
@@ -133,7 +135,9 @@ class ProductBase(BaseModel):
     model: Optional[str] = Field(None, max_length=100)
     barcode: Optional[str] = Field(None, max_length=50)
     purchase_price: Decimal = Field(..., ge=0, decimal_places=2)
-    sale_price: Decimal = Field(..., ge=0, decimal_places=2)
+    first_sale_price: Decimal = Field(..., ge=0, decimal_places=2)
+    second_sale_price: Decimal = Field(..., ge=0, decimal_places=2)
+    third_sale_price: Decimal = Field(..., ge=0, decimal_places=2)
     tax_rate: Decimal = Field(default=Decimal("16.00"), ge=0, le=100)
     current_stock: int = Field(default=0, ge=0)
     minimum_stock: int = Field(default=0, ge=0)
@@ -342,20 +346,60 @@ async def create_product(
 - Category hierarchy depth limit (suggest max 3 levels)
 
 ## Tasks/Subtasks
-- [ ] Create product and category models
-- [ ] Create database migrations
-- [ ] Implement Pydantic schemas with validation
-- [ ] Create product service class
-- [ ] Implement web routes for create form
-- [ ] Design HTML form with Tailwind CSS
+- [x] Create product and category models
+- [x] Create database migrations
+- [x] Implement Pydantic schemas with validation
+- [x] Create product service class
+- [x] Implement web routes for create form
+- [x] Design HTML form with Tailwind CSS
 - [ ] Add client-side validation with Alpine.js
 - [ ] Implement image upload handling
 - [ ] Create success/error notification system
-- [ ] Write unit tests for models and services
-- [ ] Write integration tests for web routes
+- [x] Write unit tests for models and services
+- [x] Write integration tests for web routes
 - [ ] Manual testing of complete flow
 - [ ] Update documentation
 
 ---
+## Dev Agent Record
+
+### Agent Model Used
+claude-opus-4-20250514
+
+### Debug Log References
+- N/A
+
+### Completion Notes
+- Implemented product and category models with full relationships
+- Created supplier model to support ProductSupplier relationship
+- Generated database migrations for all models
+- Implemented comprehensive Pydantic schemas with validation
+- Created service layer with CategoryService and ProductService
+- Implemented web routes for product listing, creation, and detail views
+- Designed responsive HTML templates using Tailwind CSS
+- Written unit tests for models and services with good coverage
+- Created integration tests for web routes
+- Pending: Alpine.js validation, image upload, notifications, manual testing
+
+### File List
+- src/app/models/product.py - Product, Category, ProductImage, ProductSupplier models
+- src/app/models/supplier.py - Supplier model
+- src/app/schemas/product.py - Product-related Pydantic schemas
+- src/app/schemas/supplier.py - Supplier schemas
+- src/app/schemas/base.py - Base schemas for common functionality
+- src/app/services/product_service.py - Product and Category services
+- src/app/web/products.py - Product web routes (HTMX)
+- src/app/templates/products/create.html - Product creation form
+- src/app/templates/products/_form.html - Reusable form partial
+- src/app/templates/products/list.html - Product list view
+- src/app/templates/products/detail.html - Product detail view
+- src/app/templates/products/_search_results.html - Search results partial
+- tests/unit/models/test_product.py - Product model unit tests
+- tests/unit/services/test_product_service.py - Product service unit tests
+- tests/integration/web/test_products.py - Product web routes integration tests
+- alembic/versions/7d1c1d54160f_add_product_category_and_supplier_models.py - Database migration
+
+---
 ## Change Log
 - 2024-01-XX: Story created based on requirements
+- 2025-07-30: Implemented core product functionality (models, services, web routes, templates, tests)
