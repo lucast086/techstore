@@ -60,7 +60,15 @@ def db_session(db_engine):
 @pytest.fixture(scope="function")
 def client(db_session):
     """Create test client with database session override."""
-    app.dependency_overrides[get_db] = lambda: db_session
+
+    # Create a factory that returns the same session
+    def get_test_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = get_test_db
 
     # Clear login attempts to avoid rate limiting in tests
     from app.api.v1.auth import login_attempts

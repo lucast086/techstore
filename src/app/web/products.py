@@ -29,34 +29,53 @@ async def products_list(
     page: int = 1,
     search: Optional[str] = None,
     category_id: Optional[int] = None,
+    stock_status: str = "all",
+    sort_by: str = "name",
+    sort_order: str = "asc",
+    view: str = "table",
 ):
-    """Display the products list page."""
+    """Display the products list page with enhanced filtering."""
+    from app.schemas.filters import (
+        ProductFilter,
+        ProductListParams,
+        SortField,
+        SortOrder,
+        StockStatus,
+        ViewMode,
+    )
+
     service = ProductService(db)
     category_service = CategoryService(db)
 
-    # Pagination
-    page_size = 20
-    skip = (page - 1) * page_size
-
-    # Get products
-    products = await service.get_products(
-        skip=skip,
-        limit=page_size,
+    # Build filter params
+    filters = ProductFilter(
         search=search,
-        category_id=category_id,
-        is_active=True,
+        category_ids=[category_id] if category_id else [],
+        stock_status=StockStatus(stock_status),
+        is_active=True,  # Only show active products by default
     )
 
-    # Get total count
-    total = await service.count_products(
-        search=search, category_id=category_id, is_active=True
+    # Build list params
+    params = ProductListParams(
+        filters=filters,
+        sort_by=SortField(sort_by),
+        sort_order=SortOrder(sort_order),
+        page=page,
+        page_size=20,
+        view_mode=ViewMode(view),
     )
+
+    # Get products with new method
+    products, total = await service.get_product_list(params)
 
     # Get categories for filter
     categories = await category_service.get_categories(is_active=True)
 
+    # Get filter options
+    filter_options = await service.get_filter_options()
+
     # Calculate pagination
-    total_pages = (total + page_size - 1) // page_size
+    total_pages = (total + params.page_size - 1) // params.page_size
 
     return templates.TemplateResponse(
         "products/list.html",
@@ -70,6 +89,11 @@ async def products_list(
             "total": total,
             "search": search,
             "category_id": category_id,
+            "stock_status": stock_status,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
+            "view": view,
+            "filter_options": filter_options,
         },
     )
 

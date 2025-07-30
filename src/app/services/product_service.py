@@ -3,12 +3,20 @@
 import logging
 from typing import Optional
 
-from sqlalchemy import func, or_
+from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.product import Category, Product, ProductImage, ProductSupplier
 from app.models.supplier import Supplier
+from app.schemas.filters import (
+    ProductFilter,
+    ProductListItem,
+    ProductListParams,
+    SortField,
+    SortOrder,
+    StockStatus,
+)
 from app.schemas.product import (
     CategoryCreate,
     CategoryUpdate,
@@ -456,3 +464,231 @@ class ProductService:
             query = query.filter(search_filter)
 
         return query.scalar() or 0
+
+    async def get_product_list(
+        self, params: ProductListParams
+    ) -> tuple[list[ProductListItem], int]:
+        """Get paginated product list with advanced filters.
+
+        Args:
+            params: Product list parameters including filters, sorting, and pagination.
+
+        Returns:
+            Tuple of product items and total count.
+        """
+        logger.info(f"Fetching product list with params: {params}")
+
+        # Start with base query
+        query = self.db.query(Product).options(
+            joinedload(Product.category),
+            joinedload(Product.images),
+        )
+
+        # Apply filters
+        query = self._apply_filters(query, params.filters)
+
+        # Get total count before pagination
+        total = query.count()
+
+        # Apply sorting
+        query = self._apply_sorting(query, params.sort_by, params.sort_order)
+
+        # Apply pagination
+        offset = (params.page - 1) * params.page_size
+        query = query.offset(offset).limit(params.page_size)
+
+        # Execute query
+        products = query.all()
+
+        # Convert to list items
+        items = []
+        for product in products:
+            # Calculate stock status
+            stock_status = self._calculate_stock_status(product)
+
+            # Calculate profit margin
+            profit_margin = product.first_sale_price - product.purchase_price
+            margin_percentage = (
+                float(profit_margin / product.purchase_price * 100)
+                if product.purchase_price > 0
+                else 0.0
+            )
+
+            # Get primary image
+            primary_image = None
+            for img in product.images:
+                if img.is_primary:
+                    primary_image = img.image_url
+                    break
+
+            item = ProductListItem(
+                id=product.id,
+                sku=product.sku,
+                name=product.name,
+                barcode=product.barcode,
+                brand=product.brand,
+                model=product.model,
+                category_id=product.category_id,
+                category_name=product.category.name if product.category else "",
+                purchase_price=product.purchase_price,
+                first_sale_price=product.first_sale_price,
+                second_sale_price=product.second_sale_price,
+                third_sale_price=product.third_sale_price,
+                current_stock=product.current_stock,
+                minimum_stock=product.minimum_stock,
+                stock_status=stock_status,
+                profit_margin=profit_margin,
+                margin_percentage=margin_percentage,
+                primary_image=primary_image,
+                is_active=product.is_active,
+                updated_at=product.updated_at,
+            )
+            items.append(item)
+
+        logger.info(f"Found {total} products, returning page {params.page}")
+        return items, total
+
+    def _apply_filters(self, query, filters: ProductFilter):
+        """Apply filters to product query.
+
+        Args:
+            query: SQLAlchemy query object.
+            filters: Product filter parameters.
+
+        Returns:
+            Filtered query.
+        """
+        # Text search
+        if filters.search:
+            search_term = f"%{filters.search}%"
+            query = query.filter(
+                or_(
+                    Product.name.ilike(search_term),
+                    Product.sku.ilike(search_term),
+                    Product.barcode.ilike(search_term),
+                    Product.brand.ilike(search_term),
+                    Product.model.ilike(search_term),
+                )
+            )
+
+        # Category filter
+        if filters.category_ids:
+            query = query.filter(Product.category_id.in_(filters.category_ids))
+
+        # Price range
+        if filters.price_min is not None:
+            query = query.filter(Product.first_sale_price >= filters.price_min)
+        if filters.price_max is not None:
+            query = query.filter(Product.first_sale_price <= filters.price_max)
+
+        # Stock status
+        if filters.stock_status != StockStatus.ALL:
+            if filters.stock_status == StockStatus.OUT_OF_STOCK:
+                query = query.filter(Product.current_stock == 0)
+            elif filters.stock_status == StockStatus.LOW_STOCK:
+                query = query.filter(
+                    and_(
+                        Product.current_stock > 0,
+                        Product.current_stock <= Product.minimum_stock,
+                    )
+                )
+            elif filters.stock_status == StockStatus.IN_STOCK:
+                query = query.filter(Product.current_stock > Product.minimum_stock)
+            elif filters.stock_status == StockStatus.OVERSTOCK:
+                query = query.filter(
+                    and_(
+                        Product.maximum_stock.isnot(None),
+                        Product.current_stock >= Product.maximum_stock,
+                    )
+                )
+
+        # Active status
+        if filters.is_active is not None:
+            query = query.filter(Product.is_active == filters.is_active)
+
+        # Brand filter
+        if filters.brands:
+            query = query.filter(Product.brand.in_(filters.brands))
+
+        return query
+
+    def _apply_sorting(self, query, sort_by: SortField, order: SortOrder):
+        """Apply sorting to product query.
+
+        Args:
+            query: SQLAlchemy query object.
+            sort_by: Field to sort by.
+            order: Sort order (ASC or DESC).
+
+        Returns:
+            Sorted query.
+        """
+        # Map sort fields to model attributes
+        sort_mapping = {
+            SortField.NAME: Product.name,
+            SortField.SKU: Product.sku,
+            SortField.PRICE: Product.first_sale_price,
+            SortField.STOCK: Product.current_stock,
+            SortField.UPDATED: Product.updated_at,
+        }
+
+        # Special handling for category name
+        if sort_by == SortField.CATEGORY:
+            query = query.join(Category)
+            sort_column = Category.name
+        else:
+            sort_column = sort_mapping.get(sort_by, Product.name)
+
+        if order == SortOrder.DESC:
+            return query.order_by(sort_column.desc())
+        else:
+            return query.order_by(sort_column.asc())
+
+    def _calculate_stock_status(self, product: Product) -> str:
+        """Calculate stock status for a product.
+
+        Args:
+            product: Product model instance.
+
+        Returns:
+            Stock status string.
+        """
+        if product.current_stock == 0:
+            return "out_of_stock"
+        elif product.current_stock <= product.minimum_stock:
+            return "low_stock"
+        elif (
+            product.maximum_stock is not None
+            and product.current_stock >= product.maximum_stock
+        ):
+            return "overstock"
+        else:
+            return "normal"
+
+    async def get_filter_options(self) -> dict:
+        """Get available filter options.
+
+        Returns:
+            Dictionary with available brands and price range.
+        """
+        # Get unique brands
+        brands = (
+            self.db.query(Product.brand)
+            .filter(Product.brand.isnot(None))
+            .distinct()
+            .all()
+        )
+
+        # Get price range
+        price_stats = self.db.query(
+            func.min(Product.first_sale_price).label("min_price"),
+            func.max(Product.first_sale_price).label("max_price"),
+        ).first()
+
+        return {
+            "brands": [b[0] for b in brands if b[0]],
+            "price_range": {
+                "min": float(price_stats.min_price or 0),
+                "max": float(price_stats.max_price or 0),
+            },
+        }

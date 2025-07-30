@@ -13,8 +13,12 @@ class TestProductWebRoutes:
     """Test product web routes."""
 
     @pytest.fixture
-    def authenticated_client(self, client: TestClient, test_user: User):
+    def authenticated_client(self, client: TestClient, test_user: User, db_session):
         """Create an authenticated test client."""
+        # Ensure test_user is in the session
+        db_session.add(test_user)
+        db_session.commit()
+
         # Login to get session
         response = client.post(
             "/api/v1/auth/login",
@@ -63,21 +67,44 @@ class TestProductWebRoutes:
             db_session.add(product)
             products.append(product)
         db_session.commit()
+        # Refresh all products to ensure they have IDs
+        for product in products:
+            db_session.refresh(product)
         return products
 
-    def test_products_list_page(self, authenticated_client, test_products):
+    def test_products_list_page(self, authenticated_client, test_products, db_session):
         """Test accessing products list page."""
+        # Verify products exist in DB
+        from app.models.product import Product
+
+        db_products = db_session.query(Product).all()
+        print(f"\nDEBUG: Products in DB before request: {len(db_products)}")
+        for p in db_products:
+            print(f"  - {p.name} (active: {p.is_active})")
+
         response = authenticated_client.get("/products/")
 
         assert response.status_code == 200
         assert "Products" in response.text
         assert "Add Product" in response.text
 
-        # Check that products are displayed
+        # Debug: Check what's in the response
+        if "No products found" in response.text:
+            print("\nDEBUG: No products found in response")
+            print(f"Test products created: {len(test_products)}")
+            for p in test_products:
+                print(f"  - {p.name} (active: {p.is_active})")
+
+        # Check that active products are displayed
+        active_count = 0
         for product in test_products:
             if product.is_active:
+                active_count += 1
                 assert product.name in response.text
                 assert product.sku in response.text
+
+        # Ensure we have active products
+        assert active_count > 0, "No active products found in test data"
 
     def test_products_list_pagination(
         self, authenticated_client, db_session, test_user, test_category
