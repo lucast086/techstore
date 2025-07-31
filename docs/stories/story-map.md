@@ -3,11 +3,11 @@
 ## 🗺️ Complete Story Overview
 
 ### 📊 Story Status Summary
-- **Total Stories**: 26
-- **Sprint 0 (Current)**: 9 stories (Authentication)
+- **Total Stories**: 34
+- **Sprint 0 (Current)**: 10 stories (Authentication)
 - **Sprint 1**: 7 stories (Customers + Products)
-- **Sprint 2**: 8 stories (Sales + Repairs)
-- **Sprint 3**: 2 stories (Dashboard)
+- **Sprint 2**: 14 stories (Sales + Repairs)
+- **Sprint 3**: 3 stories (Dashboard + Navigation)
 
 ### 📁 Story Organization
 
@@ -23,12 +23,16 @@ docs/stories/
 │   ├── STORY-023-user-mgmt.md
 │   ├── STORY-024-access-control.md
 │   ├── STORY-025-dashboard.md
-│   └── STORY-026-logout.md
+│   ├── STORY-026-logout.md
+│   └── STORY-027-database-setup.md
 │
-├── epic-002-customers/             # Sprint 1
-│   ├── STORY-001-register-customer.md
-│   ├── STORY-002-search-customer.md
-│   └── STORY-003-account-balance.md
+├── epic-002-customer-management/   # Sprint 1
+│   ├── STORY-028-customer-model.md
+│   ├── STORY-029-customer-registration.md
+│   ├── STORY-030-customer-search.md
+│   ├── STORY-031-customer-profile.md
+│   ├── STORY-032-customer-account-balance.md
+│   └── STORY-033-payment-recording.md
 │
 ├── epic-003-products/              # Sprint 1
 │   ├── STORY-012-create-product.md
@@ -38,18 +42,25 @@ docs/stories/
 │
 ├── epic-004-sales/                 # Sprint 2
 │   ├── STORY-040-create-sale.md
-│   └── STORY-041-sales-history.md
+│   ├── STORY-041-sales-history.md
+│   ├── STORY-042-payment-processing.md
+│   ├── STORY-043-invoice-management.md
+│   ├── STORY-044-refunds-returns.md
+│   └── STORY-045-sales-analytics.md
 │
 ├── epic-005-repairs/               # Sprint 2
 │   ├── STORY-051-receive-repair.md
 │   ├── STORY-052-diagnose-repair.md
 │   ├── STORY-053-update-status.md
 │   ├── STORY-054-deliver-repair.md
+│   ├── STORY-055-search-repairs.md
 │   ├── STORY-056-session-repair.md
-│   └── STORY-055-search-repairs.md
+│   ├── STORY-057-repair-cost-management.md
+│   └── STORY-058-repair-warranty.md
 │
 └── epic-006-dashboard/             # Sprint 3
-    └── STORY-060-main-dashboard.md
+    ├── STORY-060-main-dashboard.md
+    └── STORY-061-navigation.md
 ```
 
 ## 🚀 Implementation Path
@@ -70,28 +81,34 @@ docs/stories/
 **Duration**: 1.5 weeks
 
 **Week 1**:
-- STORY-001, 002, 003 (Customer module)
+- STORY-028, 029, 030 (Customer foundation)
 - STORY-012, 013 (Product basics)
 
 **Week 2**:
+- STORY-031, 032, 033 (Customer completion)
 - STORY-014, 015 (Product completion)
 
 ### Sprint 2: Business Logic
 **Goal**: Sales and Repair workflows
-**Duration**: 2 weeks
+**Duration**: 3 weeks
 
 **Week 1**:
-- STORY-004, 005, 006 (Sales module)
+- STORY-040, 041, 042 (Core sales)
+- STORY-051, 052 (Repair reception)
 
 **Week 2**:
-- STORY-007, 008, 009, 010, 011 (Repair module)
+- STORY-043, 044, 045 (Sales completion)
+- STORY-053, 054, 055 (Repair workflow)
+
+**Week 3**:
+- STORY-056, 057, 058 (Repair features)
 
 ### Sprint 3: Integration
 **Goal**: Dashboard and polish
 **Duration**: 0.5 week
 
-- STORY-016 (Dashboard)
-- STORY-017 (Navigation)
+- STORY-060 (Main Dashboard)
+- STORY-061 (Navigation)
 
 ## 📋 Story Template
 
