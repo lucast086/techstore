@@ -135,6 +135,30 @@ app/
 - **Docstrings**: Add docstrings for modules, classes, and functions when required by linting
 - **Comments**: NEVER add inline comments unless explicitly requested by the user
 
+### Frontend Development Guidelines
+- **CSS Framework**: Use Tailwind CSS exclusively - NO Bootstrap classes
+- **Icons**: Use inline SVG icons from Heroicons or similar (no icon fonts)
+- **JavaScript**: Use Alpine.js for interactivity, vanilla JS for complex logic
+- **HTMX**: Primary tool for dynamic server interactions
+
+### Template Development Guidelines
+- **Framework**: Jinja2 templates with HTMX attributes
+- **CSS Classes**: ONLY use Tailwind CSS utility classes
+- **Common Jinja2 Syntax Errors to Avoid**:
+  - NEVER use single `=` in conditionals: `{% if var = "value" %}` ❌
+  - ALWAYS use double `==` for comparison: `{% if var == "value" %}` ✅
+  - For "not equal" use `!=`: `{% if var != "value" %}`
+- **Template Structure**:
+  - All templates extend `base.html`
+  - Use blocks for content injection
+  - Keep logic minimal in templates
+- **Form Handling**:
+  - Use HTMX attributes for dynamic forms
+  - Server-side validation with proper error display
+- **Responsive Design**:
+  - Mobile-first approach using Tailwind's responsive prefixes
+  - Test layouts at multiple breakpoints
+
 ### Pre-commit Configuration
 - **Ruff**: Handles Python linting and formatting
 - **Prettier**: Only for frontend files (JS, CSS, HTML, YAML)

@@ -1,5 +1,15 @@
 # Ignore Python files (handled by ruff)
 *.py
 
-# Ignore Jinja2 templates with complex syntax
-src/app/templates/sales/**/*.html
+# Ignore all Jinja2 templates due to syntax conflicts
+src/app/templates/**/*.html
+
+# Ignore generated files
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ignore migration files
+alembic/versions/*.py
