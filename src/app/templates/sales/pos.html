@@ -1,0 +1,423 @@
+{% extends "base.html" %} {% block title %}{{ page_title }}{% endblock %} {%
+block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Product Search and Cart Section -->
+    <div class="lg:col-span-2">
+      <!-- Product Search -->
+      <div class="bg-white rounded-lg shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h5 class="text-lg font-semibold text-gray-900">Product Search</h5>
+        </div>
+        <div class="p-6">
+          <div class="relative">
+            <input
+              type="text"
+              name="q"
+              class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              id="product-search"
+              placeholder="Search by name, SKU, or barcode..."
+              hx-get="/sales/pos/products/search"
+              hx-trigger="keyup changed delay:300ms"
+              hx-target="#search-results"
+              hx-indicator="#search-spinner"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+              <span id="search-spinner" class="htmx-indicator ml-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-primary-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div id="search-results" class="mt-4"></div>
+        </div>
+      </div>
+
+      <!-- Shopping Cart -->
+      <div class="bg-white rounded-lg shadow">
+        <div
+          class="px-6 py-4 border-b border-gray-200 flex justify-between items-center"
+        >
+          <h5 class="text-lg font-semibold text-gray-900">Shopping Cart</h5>
+          <button
+            type="button"
+            class="text-sm text-red-600 hover:text-red-700 font-medium"
+            onclick="clearCart()"
+          >
+            <svg
+              class="inline-block w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              ></path>
+            </svg>
+            Clear Cart
+          </button>
+        </div>
+        <div class="p-6">
+          <form
+            id="checkout-form"
+            hx-post="/sales/pos/checkout"
+            hx-target="#checkout-result"
+          >
+            <div id="cart-items" class="space-y-2 mb-4 min-h-[100px]">
+              <!-- Cart items will be added here -->
+              <p class="text-gray-500 text-center py-8" id="empty-cart-message">
+                Cart is empty
+              </p>
+            </div>
+
+            <div class="border-t pt-4">
+              <table class="w-full text-sm">
+                <tr>
+                  <th class="text-left py-2">Product</th>
+                  <th class="text-center">Quantity</th>
+                  <th class="text-center">Price</th>
+                  <th class="text-right">Total</th>
+                  <th class="w-10"></th>
+                </tr>
+                <tbody id="cart-table-body">
+                  <!-- Cart items will be populated here -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="border-t mt-4 pt-4 space-y-2">
+              <div class="flex justify-between text-sm">
+                <span>Subtotal:</span>
+                <span id="cart-subtotal" class="font-medium">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span>Discount:</span>
+                <span id="cart-discount" class="font-medium">$0.00</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span>Tax:</span>
+                <span id="cart-tax" class="font-medium">$0.00</span>
+              </div>
+              <div
+                class="flex justify-between text-lg font-semibold border-t pt-2"
+              >
+                <span>Total:</span>
+                <span id="cart-total" class="text-primary-600">$0.00</span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout Section -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h5 class="text-lg font-semibold text-gray-900">Checkout</h5>
+        </div>
+        <div class="p-6 space-y-4">
+          <!-- Customer Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Customer</label
+            >
+            <select
+              name="customer_id"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              form="checkout-form"
+              hx-get="/sales/pos/customers"
+              hx-trigger="load"
+              hx-swap="innerHTML"
+            >
+              <option value="">Walk-in Customer</option>
+              <!-- Customer options will be loaded here -->
+            </select>
+          </div>
+
+          <!-- Payment Method -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Payment Method</label
+            >
+            <select
+              name="payment_method"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              form="checkout-form"
+              required
+            >
+              <option value="cash">Cash</option>
+              <option value="credit">Credit</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+
+          <!-- Discount -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Discount Amount</label
+            >
+            <input
+              type="number"
+              name="discount_amount"
+              value="0"
+              min="0"
+              step="0.01"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              form="checkout-form"
+              onchange="updateCartTotals()"
+            />
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Notes</label
+            >
+            <textarea
+              name="notes"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              form="checkout-form"
+              placeholder="Optional sale notes..."
+            ></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-4 space-y-2">
+            <button
+              type="submit"
+              form="checkout-form"
+              class="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 font-medium"
+            >
+              Complete Sale
+            </button>
+            <div id="checkout-result"></div>
+          </div>
+
+          <!-- Quick Products -->
+          <div class="pt-4 border-t">
+            <p class="text-sm text-gray-600 mb-2">Quick Products</p>
+            <p class="text-xs text-gray-500">
+              Quick product buttons will be added in a future update
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sale Information -->
+      <div class="bg-white rounded-lg shadow mt-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h5 class="text-lg font-semibold text-gray-900">Sale Information</h5>
+        </div>
+        <div class="p-6 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Date:</span>
+            <span class="font-medium" id="current-datetime"></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Cashier:</span>
+            <span class="font-medium">{{ current_user.full_name }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Terminal:</span>
+            <span class="font-medium">POS-01</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Cart management
+  let cart = [];
+  let cartItemIndex = 0;
+
+  function addToCart(productId, productName, productSku, price, stock) {
+    const existingItem = cart.find((item) => item.productId === productId);
+
+    if (existingItem) {
+      if (existingItem.quantity < stock) {
+        existingItem.quantity++;
+        updateCartDisplay();
+      } else {
+        alert(`Maximum stock available: ${stock}`);
+      }
+    } else {
+      cart.push({
+        productId: productId,
+        productName: productName,
+        productSku: productSku,
+        price: parseFloat(price),
+        quantity: 1,
+        stock: stock,
+      });
+      updateCartDisplay();
+    }
+  }
+
+  function removeFromCart(productId) {
+    cart = cart.filter((item) => item.productId !== productId);
+    updateCartDisplay();
+  }
+
+  function updateQuantity(productId, newQuantity) {
+    const item = cart.find((item) => item.productId === productId);
+    if (item) {
+      if (newQuantity <= 0) {
+        removeFromCart(productId);
+      } else if (newQuantity <= item.stock) {
+        item.quantity = parseInt(newQuantity);
+        updateCartDisplay();
+      } else {
+        alert(`Maximum stock available: ${item.stock}`);
+        document.getElementById(`qty-${productId}`).value = item.quantity;
+      }
+    }
+  }
+
+  function clearCart() {
+    if (confirm("Are you sure you want to clear the cart?")) {
+      cart = [];
+      updateCartDisplay();
+    }
+  }
+
+  function updateCartDisplay() {
+    const cartTableBody = document.getElementById("cart-table-body");
+    const emptyMessage = document.getElementById("empty-cart-message");
+
+    if (cart.length === 0) {
+      cartTableBody.innerHTML = "";
+      emptyMessage.style.display = "block";
+    } else {
+      emptyMessage.style.display = "none";
+
+      cartTableBody.innerHTML = cart
+        .map(
+          (item, index) => `
+            <tr class="border-t">
+                <td class="py-2">
+                    <input type="hidden" name="product_id_${index}" value="${
+                      item.productId
+                    }" form="checkout-form">
+                    <input type="hidden" name="unit_price_${index}" value="${
+                      item.price
+                    }" form="checkout-form">
+                    <div class="text-sm">
+                        <div class="font-medium">${item.productName}</div>
+                        <div class="text-gray-500">${item.productSku}</div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <input
+                        type="number"
+                        id="qty-${item.productId}"
+                        name="quantity_${index}"
+                        value="${item.quantity}"
+                        min="1"
+                        max="${item.stock}"
+                        class="w-16 px-2 py-1 text-center border border-gray-300 rounded"
+                        form="checkout-form"
+                        onchange="updateQuantity(${item.productId}, this.value)"
+                    >
+                </td>
+                <td class="text-center">$${item.price.toFixed(2)}</td>
+                <td class="text-right">$${(item.price * item.quantity).toFixed(
+                  2,
+                )}</td>
+                <td class="text-center">
+                    <button
+                        type="button"
+                        onclick="removeFromCart(${item.productId})"
+                        class="text-red-600 hover:text-red-700"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </td>
+            </tr>
+        `,
+        )
+        .join("");
+    }
+
+    updateCartTotals();
+  }
+
+  function updateCartTotals() {
+    const subtotal = cart.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+    const discountInput = document.querySelector(
+      'input[name="discount_amount"]',
+    );
+    const discount = parseFloat(discountInput.value) || 0;
+    const taxRate = 0.16; // 16% tax rate
+    const subtotalAfterDiscount = subtotal - discount;
+    const tax = subtotalAfterDiscount * taxRate;
+    const total = subtotalAfterDiscount + tax;
+
+    document.getElementById("cart-subtotal").textContent = `$${subtotal.toFixed(
+      2,
+    )}`;
+    document.getElementById("cart-discount").textContent = `$${discount.toFixed(
+      2,
+    )}`;
+    document.getElementById("cart-tax").textContent = `$${tax.toFixed(2)}`;
+    document.getElementById("cart-total").textContent = `$${total.toFixed(2)}`;
+  }
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", function () {
+    updateCartDisplay();
+
+    // Update datetime
+    function updateDateTime() {
+      const now = new Date();
+      const formatted = now.toISOString().slice(0, 16).replace("T", " ");
+      document.getElementById("current-datetime").textContent = formatted;
+    }
+    updateDateTime();
+    setInterval(updateDateTime, 60000); // Update every minute
+  });
+</script>
+{% endblock %}

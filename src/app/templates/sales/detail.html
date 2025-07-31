@@ -1,0 +1,313 @@
+{% extends "base.html" %} {% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Page Header -->
+  <div class="mb-6 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-900">
+      Sale Details - {{ sale.invoice_number }}
+    </h1>
+    <div class="space-x-2">
+      <a href="/sales" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Sales
+      </a>
+      <a href="/sales/{{ sale.id }}/receipt" class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+        </svg>
+        Print Receipt
+      </a>
+    </div>
+  </div>
+
+  <!-- Sale Status Alert -->
+  {% if sale.is_voided %}
+  <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+    <div class="flex">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+      </svg>
+      <div>
+        <h4 class="font-semibold">This sale has been voided</h4>
+        <p class="text-sm mt-1">Reason: {{ sale.void_reason }}</p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Sale Information -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Sale Information</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-500">Invoice Number</p>
+              <p class="mt-1 text-gray-900">{{ sale.invoice_number }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Date</p>
+              <p class="mt-1 text-gray-900">{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Customer</p>
+              <p class="mt-1 text-gray-900">
+                {% if sale.customer %}
+                  {{ sale.customer.name }}
+                {% else %}
+                  Walk-in Customer
+                {% endif %}
+              </p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Cashier</p>
+              <p class="mt-1 text-gray-900">{{ sale.user.full_name }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Payment Method</p>
+              <p class="mt-1 text-gray-900">{{ sale.payment_method|capitalize }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-500">Payment Status</p>
+              <p class="mt-1">
+                {% if sale.payment_status == 'paid' %}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Paid
+                  </span>
+                {% elif sale.payment_status == 'partial' %}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    Partial
+                  </span>
+                {% elif sale.payment_status == 'pending' %}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                    Pending
+                  </span>
+                {% else %}
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                    {{ sale.payment_status|capitalize }}
+                  </span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+          {% if sale.notes %}
+          <div class="mt-4">
+            <p class="text-sm font-medium text-gray-500">Notes</p>
+            <p class="mt-1 text-gray-900">{{ sale.notes }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sale Items -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Sale Items</h2>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Product
+                </th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Quantity
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Unit Price
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Discount
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              {% for item in sale.items %}
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm">
+                    <div class="font-medium text-gray-900">{{ item.product.name }}</div>
+                    <div class="text-gray-500">{{ item.product.sku }}</div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                  {{ item.quantity }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                  ${{ item.unit_price }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                  {% if item.discount_percentage > 0 or item.discount_amount > 0 %}
+                    {% if item.discount_percentage > 0 %}
+                      {{ item.discount_percentage }}%
+                    {% endif %}
+                    {% if item.discount_amount > 0 %}
+                      ${{ item.discount_amount }}
+                    {% endif %}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                  ${{ item.total_price }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot class="bg-gray-50">
+              <tr>
+                <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-900">
+                  Subtotal:
+                </td>
+                <td class="px-6 py-3 text-right text-sm font-medium text-gray-900">
+                  ${{ sale.subtotal }}
+                </td>
+              </tr>
+              {% if sale.discount_amount > 0 %}
+              <tr>
+                <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-900">
+                  Discount:
+                </td>
+                <td class="px-6 py-3 text-right text-sm font-medium text-red-600">
+                  -${{ sale.discount_amount }}
+                </td>
+              </tr>
+              {% endif %}
+              <tr>
+                <td colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-900">
+                  Tax:
+                </td>
+                <td class="px-6 py-3 text-right text-sm font-medium text-gray-900">
+                  ${{ sale.tax_amount }}
+                </td>
+              </tr>
+              <tr class="bg-primary-50">
+                <td colspan="4" class="px-6 py-3 text-right text-lg font-semibold text-gray-900">
+                  Total:
+                </td>
+                <td class="px-6 py-3 text-right text-lg font-semibold text-primary-600">
+                  ${{ sale.total_amount }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- Payment Information -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Payment Information</h2>
+        </div>
+        <div class="p-6 space-y-4">
+          <div>
+            <p class="text-sm font-medium text-gray-500">Total Amount</p>
+            <p class="mt-1 text-2xl font-semibold text-gray-900">${{ sale.total_amount }}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Amount Paid</p>
+            <p class="mt-1 text-xl font-semibold text-green-600">${{ sale.amount_paid }}</p>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-500">Amount Due</p>
+            <p class="mt-1 text-xl font-semibold {% if sale.amount_due > 0 %}text-red-600{% else %}text-gray-500{% endif %}">
+              ${{ sale.amount_due }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      {% if not sale.is_voided %}
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-semibold text-gray-900">Actions</h2>
+        </div>
+        <div class="p-6 space-y-3">
+          {% if sale.payment_status != 'paid' %}
+          <button type="button" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+            <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            Add Payment
+          </button>
+          {% endif %}
+
+          {% if current_user.is_admin %}
+          <button type="button" onclick="showVoidModal()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+            <svg class="inline-block w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+            </svg>
+            Void Sale
+          </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Void Modal -->
+<div id="voidModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg max-w-md w-full mx-4">
+    <div class="p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Void Sale</h3>
+      <form hx-post="/sales/{{ sale.id }}/void" hx-target="#void-result">
+        <div class="mb-4">
+          <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">
+            Reason for voiding (minimum 10 characters)
+          </label>
+          <textarea
+            id="reason"
+            name="reason"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            required
+            minlength="10"
+          ></textarea>
+        </div>
+        <div id="void-result"></div>
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="hideVoidModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+            Void Sale
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function showVoidModal() {
+  document.getElementById('voidModal').classList.remove('hidden');
+}
+
+function hideVoidModal() {
+  document.getElementById('voidModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('voidModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    hideVoidModal();
+  }
+});
+</script>
+{% endblock %}

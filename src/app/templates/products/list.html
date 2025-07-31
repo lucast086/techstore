@@ -128,8 +128,7 @@ block content %}
                 value="all"
                 {%
                 if
-                stock_status=""
-                ="all"
+                stock_status=="all"
                 %}selected{%
                 endif
                 %}
@@ -140,8 +139,7 @@ block content %}
                 value="in_stock"
                 {%
                 if
-                stock_status=""
-                ="in_stock"
+                stock_status=="in_stock"
                 %}selected{%
                 endif
                 %}
@@ -152,8 +150,7 @@ block content %}
                 value="low_stock"
                 {%
                 if
-                stock_status=""
-                ="low_stock"
+                stock_status=="low_stock"
                 %}selected{%
                 endif
                 %}
@@ -164,8 +161,7 @@ block content %}
                 value="out_of_stock"
                 {%
                 if
-                stock_status=""
-                ="out_of_stock"
+                stock_status=="out_of_stock"
                 %}selected{%
                 endif
                 %}
@@ -176,8 +172,7 @@ block content %}
                 value="overstock"
                 {%
                 if
-                stock_status=""
-                ="overstock"
+                stock_status=="overstock"
                 %}selected{%
                 endif
                 %}
@@ -211,23 +206,21 @@ block content %}
                 value="name"
                 {%
                 if
-                sort_by=""
-                ="name"
+                sort_by=="name"
                 %}selected{%
                 endif
                 %}
               >
                 Name
               </option>
-              <option value="sku" {% if sort_by="" ="sku" %}selected{% endif %}>
+              <option value="sku" {% if sort_by=="sku" %}selected{% endif %}>
                 SKU
               </option>
               <option
                 value="first_sale_price"
                 {%
                 if
-                sort_by=""
-                ="first_sale_price"
+                sort_by=="first_sale_price"
                 %}selected{%
                 endif
                 %}
@@ -238,8 +231,7 @@ block content %}
                 value="current_stock"
                 {%
                 if
-                sort_by=""
-                ="current_stock"
+                sort_by=="current_stock"
                 %}selected{%
                 endif
                 %}
@@ -250,8 +242,7 @@ block content %}
                 value="updated_at"
                 {%
                 if
-                sort_by=""
-                ="updated_at"
+                sort_by=="updated_at"
                 %}selected{%
                 endif
                 %}
@@ -282,8 +273,7 @@ block content %}
                 value="asc"
                 {%
                 if
-                sort_order=""
-                ="asc"
+                sort_order=="asc"
                 %}selected{%
                 endif
                 %}
@@ -294,8 +284,7 @@ block content %}
                 value="desc"
                 {%
                 if
-                sort_order=""
-                ="desc"
+                sort_order=="desc"
                 %}selected{%
                 endif
                 %}

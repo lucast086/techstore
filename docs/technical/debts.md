@@ -21,9 +21,19 @@
 ### Sales
  * │   ├── STORY-041-quick-sale.md
  * Send periodic whatsapp remember account balance (only debt)
+ * check filter behavior
 
 ### Repairs
  * add auto whatsapp when status change
 
 ### Reports
  * Payment report when pay is made. maybe size a5
+
+### Products
+ * Filters does not work propperly
+  * search
+  * reset in categories
+  * order does not work
+  * sort by does not work
+  * stock status
+  * check reset in all
