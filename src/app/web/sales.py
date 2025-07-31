@@ -19,7 +19,7 @@ from app.schemas.sale import SaleCreate, SaleItemCreate
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory="src/app/templates")
 
 
 @router.get("/pos", response_class=HTMLResponse)
