@@ -80,7 +80,7 @@ app.include_router(payments.router, tags=["payments"])
 app.include_router(products.router, tags=["products"])
 
 # Sales routes (HTMX)
-app.include_router(sales.router, tags=["sales"])
+app.include_router(sales.router, prefix="/sales", tags=["sales"])
 
 # Web routes (HTMX)
 app.include_router(web_router)
