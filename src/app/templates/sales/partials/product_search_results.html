@@ -1,0 +1,43 @@
+{% if products %}
+<div class="list-group">
+  {% for product in products %}
+  <button
+    type="button"
+    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+    onclick="addToCart({{ product.id }}, '{{ product.name }}', '{{ product.sku }}', {{ product.first_sale_price }}, {{ product.current_stock }})"
+    {%
+    if
+    product.current_stock=""
+    ="0"
+    %}disabled{%
+    endif
+    %}
+  >
+    <div>
+      <div class="d-flex w-100 justify-content-between">
+        <h6 class="mb-1">{{ product.name }}</h6>
+        <span class="badge bg-primary">${{ product.first_sale_price }}</span>
+      </div>
+      <p class="mb-1">
+        <small class="text-muted">SKU: {{ product.sku }}</small>
+        {% if product.barcode %}
+        <small class="text-muted ms-2">Barcode: {{ product.barcode }}</small>
+        {% endif %}
+      </p>
+      <small>
+        Category: {{ product.category.name }} | Stock:
+        <span
+          class="{% if product.current_stock < 5 %}text-danger{% else %}text-success{% endif %}"
+        >
+          {{ product.current_stock }}
+        </span>
+      </small>
+    </div>
+  </button>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+  <i class="bi bi-info-circle"></i> No products found matching your search.
+</div>
+{% endif %}

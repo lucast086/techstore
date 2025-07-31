@@ -1,0 +1,41 @@
+<tr>
+  <td>
+    <input
+      type="hidden"
+      name="product_id_{{ item.index }}"
+      value="{{ item.product_id }}"
+    />
+    <strong>{{ item.product_sku }}</strong><br />
+    <small>{{ item.product_name }}</small>
+  </td>
+  <td>
+    <input
+      type="number"
+      name="quantity_{{ item.index }}"
+      class="form-control form-control-sm"
+      value="{{ item.quantity }}"
+      min="1"
+      onchange="updateItemTotal(this)"
+    />
+  </td>
+  <td>
+    <input
+      type="number"
+      name="unit_price_{{ item.index }}"
+      class="form-control form-control-sm"
+      value="{{ item.unit_price }}"
+      step="0.01"
+      onchange="updateItemTotal(this)"
+    />
+  </td>
+  <td class="item-total">${{ item.total_price }}</td>
+  <td>
+    <button
+      type="button"
+      class="btn btn-sm btn-danger"
+      onclick="removeItem(this)"
+    >
+      <i class="bi bi-trash"></i>
+    </button>
+  </td>
+</tr>

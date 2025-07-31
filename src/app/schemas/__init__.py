@@ -21,6 +21,20 @@ from .product import (
     ProductSupplierCreate,
     ProductUpdate,
 )
+from .sale import (
+    ProductSearchResult,
+    ReceiptData,
+    SaleCreate,
+    SaleInDB,
+    SaleItemCreate,
+    SaleItemInDB,
+    SaleItemResponse,
+    SaleListResponse,
+    SaleResponse,
+    SaleSummary,
+    SaleUpdate,
+    VoidSaleRequest,
+)
 from .supplier import Supplier, SupplierCreate, SupplierList, SupplierUpdate
 
 __all__ = [
@@ -52,4 +66,17 @@ __all__ = [
     "SupplierCreate",
     "SupplierUpdate",
     "SupplierList",
+    # Sale
+    "SaleCreate",
+    "SaleUpdate",
+    "SaleInDB",
+    "SaleResponse",
+    "SaleListResponse",
+    "SaleItemCreate",
+    "SaleItemInDB",
+    "SaleItemResponse",
+    "ProductSearchResult",
+    "VoidSaleRequest",
+    "ReceiptData",
+    "SaleSummary",
 ]

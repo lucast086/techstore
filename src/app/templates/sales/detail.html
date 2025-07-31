@@ -1,0 +1,253 @@
+{% extends "base.html" %} {% block title %}{{ page_title }}{% endblock %} {%
+block content %}
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col">
+      <h1>Sale {{ sale.invoice_number }}</h1>
+    </div>
+    <div class="col-auto">
+      <a href="/sales" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Sales
+      </a>
+      <a href="/sales/{{ sale.id }}/receipt" class="btn btn-primary">
+        <i class="bi bi-printer"></i> Print Receipt
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Sale Information -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Sale Details</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>Invoice Number:</strong> {{ sale.invoice_number }}</p>
+              <p>
+                <strong>Date:</strong> {{ sale.sale_date.strftime('%Y-%m-%d
+                %H:%M:%S') }}
+              </p>
+              <p><strong>Cashier:</strong> {{ sale.user.full_name }}</p>
+            </div>
+            <div class="col-md-6">
+              <p>
+                <strong>Customer:</strong>
+                {% if sale.customer %}
+                <a href="/customers/{{ sale.customer.id }}"
+                  >{{ sale.customer.name }}</a
+                >
+                {% else %} Walk-in Customer {% endif %}
+              </p>
+              <p>
+                <strong>Payment Method:</strong>
+                <span class="badge bg-secondary"
+                  >{{ sale.payment_method.title() if sale.payment_method else
+                  'N/A' }}</span
+                >
+              </p>
+              <p>
+                <strong>Status:</strong>
+                {% if sale.is_voided %}
+                <span class="badge bg-danger">Voided</span>
+                {% elif sale.payment_status == "paid" %}
+                <span class="badge bg-success">Paid</span>
+                {% elif sale.payment_status == "partial" %}
+                <span class="badge bg-warning">Partial</span>
+                {% else %}
+                <span class="badge bg-danger">Pending</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          {% if sale.notes %}
+          <div class="alert alert-info">
+            <strong>Notes:</strong> {{ sale.notes }}
+          </div>
+          {% endif %} {% if sale.is_voided %}
+          <div class="alert alert-danger">
+            <strong>Void Reason:</strong> {{ sale.void_reason }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sale Items -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Items</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Discount</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in sale.items %}
+                <tr>
+                  <td>
+                    <strong>{{ item.product.sku }}</strong><br />
+                    {{ item.product.name }}
+                  </td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ item.unit_price }}</td>
+                  <td>
+                    {% if item.discount_percentage > 0 %} {{
+                    item.discount_percentage }}% {% endif %} {% if
+                    item.discount_amount > 0 %} ${{ item.discount_amount }} {%
+                    endif %} {% if item.discount_percentage == 0 and
+                    item.discount_amount == 0 %} - {% endif %}
+                  </td>
+                  <td>${{ item.total_price }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-end">
+                    <strong>Subtotal:</strong>
+                  </td>
+                  <td><strong>${{ sale.subtotal }}</strong></td>
+                </tr>
+                {% if sale.discount_amount > 0 %}
+                <tr>
+                  <td colspan="4" class="text-end">
+                    <strong>Discount:</strong>
+                  </td>
+                  <td><strong>-${{ sale.discount_amount }}</strong></td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <td colspan="4" class="text-end"><strong>Tax:</strong></td>
+                  <td><strong>${{ sale.tax_amount }}</strong></td>
+                </tr>
+                <tr class="table-primary">
+                  <td colspan="4" class="text-end"><h5>Total:</h5></td>
+                  <td><h5>${{ sale.total_amount }}</h5></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions and Payment Info -->
+    <div class="col-md-4">
+      <!-- Payment Information -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Payment Information</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Total Amount:</strong> ${{ sale.total_amount }}</p>
+          <p><strong>Amount Paid:</strong> ${{ sale.amount_paid }}</p>
+          <p><strong>Amount Due:</strong> ${{ sale.amount_due }}</p>
+
+          {% if sale.payments %}
+          <h6 class="mt-3">Payment History</h6>
+          <ul class="list-group">
+            {% for payment in sale.payments %}
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between">
+                <span>${{ payment.amount }}</span>
+                <small>{{ payment.payment_date.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <small class="text-muted"
+                >{{ payment.payment_method.title() }}</small
+              >
+            </li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      {% if current_user.is_admin and not sale.is_voided %}
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Actions</h5>
+        </div>
+        <div class="card-body">
+          <button
+            type="button"
+            class="btn btn-danger w-100"
+            data-bs-toggle="modal"
+            data-bs-target="#voidModal"
+          >
+            <i class="bi bi-x-circle"></i> Void Sale
+          </button>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Void Modal -->
+{% if current_user.is_admin and not sale.is_voided %}
+<div
+  class="modal fade"
+  id="voidModal"
+  tabindex="-1"
+  aria-labelledby="voidModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="voidModalLabel">Void Sale</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form hx-post="/sales/{{ sale.id }}/void" hx-swap="none">
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            This action cannot be undone. Voiding this sale will restore
+            inventory levels.
+          </div>
+          <div class="mb-3">
+            <label for="reason" class="form-label"
+              >Reason for voiding (required)</label
+            >
+            <textarea
+              class="form-control"
+              id="reason"
+              name="reason"
+              rows="3"
+              required
+              minlength="10"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-danger">Void Sale</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %}

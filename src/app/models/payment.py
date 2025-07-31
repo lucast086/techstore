@@ -41,6 +41,9 @@ class Payment(BaseModel):
 
     # Payment details
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    sale_id = Column(
+        Integer, ForeignKey("sales.id"), nullable=True
+    )  # For sale-specific payments
     amount = Column(Numeric(10, 2), nullable=False)
     payment_method = Column(String(50), nullable=False)  # cash, transfer, card
     reference_number = Column(String(100), nullable=True)
