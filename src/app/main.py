@@ -75,6 +75,7 @@ app.include_router(payments.router, tags=["payments"])
 # Product routes (HTMX)
 app.include_router(products.router, tags=["products"])
 
+
 # Web routes (HTMX)
 app.include_router(web_router)
 

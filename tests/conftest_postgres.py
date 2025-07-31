@@ -1,4 +1,4 @@
-"""Test configuration for TechStore SaaS."""
+"""Test configuration for TechStore SaaS using PostgreSQL."""
 
 import os
 
@@ -12,16 +12,18 @@ from app.models.user import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 
 # Set test environment variables
 os.environ["LOGIN_RATE_LIMIT_PER_MINUTE"] = "0"  # Disable rate limiting for tests
 os.environ["LOGIN_RATE_LIMIT_PER_HOUR"] = "0"
 
-# Use in-memory SQLite for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# Use PostgreSQL for testing (same as production)
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/test_techstore"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL,
+    poolclass=NullPool,  # Disable connection pooling for tests
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -38,6 +40,8 @@ def override_get_db():
 @pytest.fixture(scope="session")
 def db_engine():
     """Create test database engine."""
+    # Drop and recreate all tables for the test session
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield engine
     Base.metadata.drop_all(bind=engine)
@@ -46,19 +50,15 @@ def db_engine():
 @pytest.fixture(scope="function")
 def db_session(db_engine):
     """Create test database session."""
-    # Clear all tables before each test
-    Base.metadata.drop_all(bind=db_engine)
-    Base.metadata.create_all(bind=db_engine)
-
-    # Create a new session for the test
-    session = TestingSessionLocal()
+    connection = db_engine.connect()
+    transaction = connection.begin()
+    session = TestingSessionLocal(bind=connection)
 
     yield session
 
     session.close()
-    # Clear all data after test
-    Base.metadata.drop_all(bind=db_engine)
-    Base.metadata.create_all(bind=db_engine)
+    transaction.rollback()
+    connection.close()
 
 
 @pytest.fixture(scope="function")

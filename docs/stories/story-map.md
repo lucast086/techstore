@@ -6,7 +6,7 @@
 - **Total Stories**: 26
 - **Sprint 0 (Current)**: 9 stories (Authentication)
 - **Sprint 1**: 7 stories (Customers + Products)
-- **Sprint 2**: 8 stories (Sales + Repairs)  
+- **Sprint 2**: 8 stories (Sales + Repairs)
 - **Sprint 3**: 2 stories (Dashboard)
 
 ### 📁 Story Organization
@@ -17,13 +17,13 @@ docs/stories/
 ├── epic-001-authentication/        # Sprint 0 (CRITICAL)
 │   ├── STORY-018-clean-codebase.md ✅
 │   ├── STORY-019-login-page.md    ✅
-│   ├── STORY-020-auth-system.md    
-│   ├── STORY-021-admin-panel.md    
-│   ├── STORY-022-role-mgmt.md      
-│   ├── STORY-023-user-mgmt.md      
-│   ├── STORY-024-access-control.md 
-│   ├── STORY-025-dashboard.md      
-│   └── STORY-026-logout.md         
+│   ├── STORY-020-auth-system.md
+│   ├── STORY-021-admin-panel.md
+│   ├── STORY-022-role-mgmt.md
+│   ├── STORY-023-user-mgmt.md
+│   ├── STORY-024-access-control.md
+│   ├── STORY-025-dashboard.md
+│   └── STORY-026-logout.md
 │
 ├── epic-002-customers/             # Sprint 1
 │   ├── STORY-001-register-customer.md
@@ -37,26 +37,25 @@ docs/stories/
 │   └── STORY-015-product-list.md
 │
 ├── epic-004-sales/                 # Sprint 2
-│   ├── STORY-004-create-sale.md
-│   ├── STORY-005-quick-sale.md
-│   └── STORY-006-sales-history.md
+│   ├── STORY-040-create-sale.md
+│   └── STORY-041-sales-history.md
 │
 ├── epic-005-repairs/               # Sprint 2
-│   ├── STORY-007-receive-repair.md
-│   ├── STORY-008-diagnose-repair.md
-│   ├── STORY-009-update-status.md
-│   ├── STORY-010-deliver-repair.md
-│   └── STORY-011-search-repairs.md
+│   ├── STORY-051-receive-repair.md
+│   ├── STORY-052-diagnose-repair.md
+│   ├── STORY-053-update-status.md
+│   ├── STORY-054-deliver-repair.md
+│   ├── STORY-056-session-repair.md
+│   └── STORY-055-search-repairs.md
 │
 └── epic-006-dashboard/             # Sprint 3
-    ├── STORY-016-main-dashboard.md
-    └── STORY-017-navigation.md
+    └── STORY-060-main-dashboard.md
 ```
 
 ## 🚀 Implementation Path
 
 ### Current Sprint (Sprint 0): Authentication Foundation
-**Goal**: Clean base + Complete auth system  
+**Goal**: Clean base + Complete auth system
 **Duration**: 1 week
 
 1. **Day 1**: STORY-018 (Clean codebase)
@@ -67,7 +66,7 @@ docs/stories/
 6. **Day 6**: STORY-026 (Logout) + Integration testing
 
 ### Sprint 1: Core Entities
-**Goal**: Customer and Product modules  
+**Goal**: Customer and Product modules
 **Duration**: 1.5 weeks
 
 **Week 1**:
@@ -77,8 +76,8 @@ docs/stories/
 **Week 2**:
 - STORY-014, 015 (Product completion)
 
-### Sprint 2: Business Logic  
-**Goal**: Sales and Repair workflows  
+### Sprint 2: Business Logic
+**Goal**: Sales and Repair workflows
 **Duration**: 2 weeks
 
 **Week 1**:
@@ -88,7 +87,7 @@ docs/stories/
 - STORY-007, 008, 009, 010, 011 (Repair module)
 
 ### Sprint 3: Integration
-**Goal**: Dashboard and polish  
+**Goal**: Dashboard and polish
 **Duration**: 0.5 week
 
 - STORY-016 (Dashboard)

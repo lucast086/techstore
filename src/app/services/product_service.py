@@ -479,10 +479,18 @@ class ProductService:
         logger.info(f"Fetching product list with params: {params}")
 
         # Start with base query
-        query = self.db.query(Product).options(
-            joinedload(Product.category),
-            joinedload(Product.images),
-        )
+        # For SQLite compatibility in tests, only use joinedload if not SQLite
+        db_url = str(self.db.bind.url) if self.db.bind else str(self.db.get_bind().url)
+        logger.info(f"Database URL detected: {db_url}")
+        if "sqlite" in db_url:
+            logger.info("Using simple query for SQLite")
+            query = self.db.query(Product)
+        else:
+            logger.info("Using joinedload query for PostgreSQL")
+            query = self.db.query(Product).options(
+                joinedload(Product.category),
+                joinedload(Product.images),
+            )
 
         # Apply filters
         query = self._apply_filters(query, params.filters)
@@ -516,10 +524,26 @@ class ProductService:
 
             # Get primary image
             primary_image = None
-            for img in product.images:
-                if img.is_primary:
-                    primary_image = img.image_url
-                    break
+            if hasattr(product, "images"):
+                for img in product.images:
+                    if img.is_primary:
+                        primary_image = img.image_url
+                        break
+
+            # For SQLite, manually load category if needed
+            category_name = ""
+            if hasattr(product, "category") and product.category:
+                category_name = product.category.name
+            elif product.category_id:
+                # Manually fetch category for SQLite
+                from app.models.product import Category
+
+                category = (
+                    self.db.query(Category)
+                    .filter(Category.id == product.category_id)
+                    .first()
+                )
+                category_name = category.name if category else ""
 
             item = ProductListItem(
                 id=product.id,
@@ -529,7 +553,7 @@ class ProductService:
                 brand=product.brand,
                 model=product.model,
                 category_id=product.category_id,
-                category_name=product.category.name if product.category else "",
+                category_name=category_name,
                 purchase_price=product.purchase_price,
                 first_sale_price=product.first_sale_price,
                 second_sale_price=product.second_sale_price,

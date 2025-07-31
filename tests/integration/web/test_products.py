@@ -61,6 +61,7 @@ class TestProductWebRoutes:
                 second_sale_price=Decimal("140.00"),
                 third_sale_price=Decimal("130.00"),
                 current_stock=10 + i,
+                minimum_stock=5,
                 created_by=test_user.id,
                 is_active=(i % 2 == 0),
             )

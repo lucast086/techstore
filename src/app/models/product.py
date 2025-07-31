@@ -24,9 +24,13 @@ class Category(BaseModel):
     """Product category model with hierarchical support.
 
     Attributes:
-        name: Category name (unique).
+        name: Category name (unique within parent).
         description: Optional category description.
         parent_id: ID of parent category for hierarchy.
+        icon: Optional icon/emoji for visual identification.
+        display_order: Order for displaying categories.
+        full_path: Materialized path for efficient queries.
+        level: Depth level in hierarchy (0-based).
         is_active: Whether category is active for use.
         parent: Parent category relationship.
         children: Child categories relationship.
@@ -34,14 +38,25 @@ class Category(BaseModel):
     """
 
     __tablename__ = "categories"
+    __table_args__ = (
+        UniqueConstraint("name", "parent_id", name="uq_category_name_parent"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     parent_id: Mapped[Optional[int]] = mapped_column(
-        Integer, ForeignKey("categories.id"), nullable=True
+        Integer, ForeignKey("categories.id"), nullable=True, index=True
     )
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    icon: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    display_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    full_path: Mapped[Optional[str]] = mapped_column(
+        String(500), nullable=True, index=True
+    )
+    level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=False, index=True
+    )
 
     # Relationships
     parent: Mapped[Optional["Category"]] = relationship(

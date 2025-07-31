@@ -25,6 +25,97 @@ router = APIRouter(prefix="/payments", tags=["payments-web"])
 templates = Jinja2Templates(directory="src/app/templates")
 
 
+@router.get("/", response_class=HTMLResponse)
+async def payments_list(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_db),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+) -> HTMLResponse:
+    """Render payments list page.
+
+    Args:
+        request: FastAPI request object.
+        current_user: Currently authenticated user.
+        db: Database session.
+        skip: Number of records to skip.
+        limit: Maximum number of records to return.
+
+    Returns:
+        HTML response with payments list.
+    """
+    # Get recent payments
+    payments = payment_crud.get_recent_payments(db, skip=skip, limit=limit)
+
+    context = {
+        "request": request,
+        "current_user": current_user,
+        "payments": payments,
+        "page_title": "Payment History",
+    }
+
+    return templates.TemplateResponse("payments/list.html", context)
+
+
+@router.get("/new", response_class=HTMLResponse)
+async def payments_new(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Render new payment page to select a customer.
+
+    Args:
+        request: FastAPI request object.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        HTML response with customer selection for new payment.
+    """
+    # Get customers with balances
+    customers = customer_crud.get_customers_with_balance(db)
+
+    context = {
+        "request": request,
+        "current_user": current_user,
+        "customers": customers,
+        "page_title": "New Payment",
+    }
+
+    return templates.TemplateResponse("payments/new.html", context)
+
+
+@router.get("/pending", response_class=HTMLResponse)
+async def payments_pending(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_db),
+) -> HTMLResponse:
+    """Render pending payments page.
+
+    Args:
+        request: FastAPI request object.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        HTML response with customers having pending payments.
+    """
+    # Get customers with positive balances
+    customers = customer_crud.get_customers_with_positive_balance(db)
+
+    context = {
+        "request": request,
+        "current_user": current_user,
+        "customers": customers,
+        "page_title": "Pending Payments",
+    }
+
+    return templates.TemplateResponse("payments/pending.html", context)
+
+
 @router.get("/record/{customer_id}", response_class=HTMLResponse)
 async def payment_form(
     customer_id: int,

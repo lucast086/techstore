@@ -248,5 +248,52 @@ class CustomerCRUD:
 
         return result
 
+    def get_customers_with_balance(self, db: Session) -> list[dict]:
+        """Get all customers with their balance information.
+
+        Args:
+            db: Database session.
+
+        Returns:
+            List of customer dicts with balance information.
+        """
+        customers = (
+            db.query(Customer)
+            .filter(Customer.is_active.is_(True))
+            .order_by(Customer.name)
+            .all()
+        )
+
+        result = []
+        for customer in customers:
+            balance_info = balance_service.get_balance_summary(db, customer.id)
+            result.append({**customer.to_dict(), **balance_info})
+
+        return result
+
+    def get_customers_with_positive_balance(self, db: Session) -> list[dict]:
+        """Get customers with positive balances (pending payments).
+
+        Args:
+            db: Database session.
+
+        Returns:
+            List of customer dicts with positive balance.
+        """
+        customers = (
+            db.query(Customer)
+            .filter(Customer.is_active.is_(True))
+            .order_by(Customer.name)
+            .all()
+        )
+
+        result = []
+        for customer in customers:
+            balance_info = balance_service.get_balance_summary(db, customer.id)
+            if balance_info.get("balance", 0) > 0:
+                result.append({**customer.to_dict(), **balance_info})
+
+        return result
+
 
 customer_crud = CustomerCRUD()

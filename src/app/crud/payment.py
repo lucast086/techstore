@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.payment import Payment
 from app.schemas.payment import PaymentCreate
@@ -84,6 +84,20 @@ class PaymentCRUD:
 
         result = query.scalar()
         return float(result) if result else 0.0
+
+    def get_recent_payments(
+        self, db: Session, skip: int = 0, limit: int = 50
+    ) -> list[Payment]:
+        """Get recent payments with customer data."""
+        return (
+            db.query(Payment)
+            .options(joinedload(Payment.customer))
+            .filter(Payment.voided.is_(False))
+            .order_by(Payment.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def void_payment(
         self, db: Session, payment_id: int, void_reason: str, voided_by_id: int
