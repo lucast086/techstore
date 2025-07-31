@@ -1,0 +1,5 @@
+# Ignore Python files (handled by ruff)
+*.py
+
+# Ignore Jinja2 templates with complex syntax
+src/app/templates/sales/**/*.html
