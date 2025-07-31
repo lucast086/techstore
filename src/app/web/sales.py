@@ -177,7 +177,7 @@ async def process_checkout(
         )
 
 
-@router.get("/sales", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 async def sales_history(
     request: Request,
     page: int = Query(1, ge=1),
@@ -230,7 +230,7 @@ async def sales_history(
     return templates.TemplateResponse("sales/history.html", context)
 
 
-@router.get("/sales/{sale_id}", response_class=HTMLResponse)
+@router.get("/{sale_id}", response_class=HTMLResponse)
 async def sale_detail(
     request: Request,
     sale_id: int,
@@ -256,7 +256,7 @@ async def sale_detail(
     return templates.TemplateResponse("sales/detail.html", context)
 
 
-@router.get("/sales/{sale_id}/receipt", response_class=HTMLResponse)
+@router.get("/{sale_id}/receipt", response_class=HTMLResponse)
 async def sale_receipt(
     request: Request,
     sale_id: int,
@@ -289,7 +289,7 @@ async def sale_receipt(
     return templates.TemplateResponse("sales/receipt.html", context)
 
 
-@router.post("/sales/{sale_id}/void", response_class=HTMLResponse)
+@router.post("/{sale_id}/void", response_class=HTMLResponse)
 async def void_sale_htmx(
     request: Request,
     sale_id: int,
