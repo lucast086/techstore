@@ -13,6 +13,7 @@ block content %}
           <div class="relative">
             <input
               type="text"
+              name="q"
               class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               id="product-search"
               placeholder="Search by name, SKU, or barcode..."
@@ -159,6 +160,9 @@ block content %}
               name="customer_id"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               form="checkout-form"
+              hx-get="/sales/pos/customers"
+              hx-trigger="load"
+              hx-swap="innerHTML"
             >
               <option value="">Walk-in Customer</option>
               <!-- Customer options will be loaded here -->

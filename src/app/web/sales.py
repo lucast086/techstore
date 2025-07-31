@@ -58,6 +58,29 @@ async def search_products_htmx(
     )
 
 
+@router.get("/pos/customers", response_class=HTMLResponse)
+async def get_customers_htmx(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Get customer list for select dropdown."""
+    from app.models.customer import Customer
+
+    customers = (
+        db.query(Customer)
+        .filter(Customer.is_active.is_(True))
+        .order_by(Customer.name)
+        .all()
+    )
+
+    html = '<option value="">Walk-in Customer</option>'
+    for customer in customers:
+        html += f'<option value="{customer.id}">{customer.name}</option>'
+
+    return HTMLResponse(content=html)
+
+
 @router.post("/pos/cart/add", response_class=HTMLResponse)
 async def add_to_cart(
     request: Request,
