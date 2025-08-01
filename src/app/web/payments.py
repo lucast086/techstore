@@ -15,8 +15,9 @@ from app.crud.customer import customer_crud
 from app.crud.payment import payment_crud
 from app.dependencies import get_db
 from app.models.user import User
-from app.schemas.payment import PaymentCreate
+from app.schemas.payment import PaymentCreate, PaymentMethodDetail
 from app.services.balance_service import balance_service
+from app.services.payment_service import payment_service
 from app.services.receipt_service import receipt_service
 
 logger = logging.getLogger(__name__)
@@ -120,6 +121,7 @@ async def payments_pending(
 async def payment_form(
     customer_id: int,
     request: Request,
+    sale_id: int = Query(None),
     current_user: User = Depends(get_current_user_from_cookie),
     db: Session = Depends(get_db),
 ):
@@ -128,6 +130,7 @@ async def payment_form(
     Args:
         customer_id: ID of the customer.
         request: FastAPI request object.
+        sale_id: Optional sale ID for sale-specific payment.
         current_user: Currently authenticated user.
         db: Database session.
 
@@ -142,14 +145,24 @@ async def payment_form(
             status_code=404,
         )
 
+    # Get sale if provided
+    sale = None
+    if sale_id:
+        from app.crud.sale import sale_crud
+
+        sale = sale_crud.get(db, sale_id)
+        if not sale or sale.customer_id != customer_id:
+            sale = None
+
     # Get current balance
     balance_info = balance_service.get_balance_summary(db, customer_id)
 
     return templates.TemplateResponse(
-        "payments/record_payment.html",
+        "payments/form.html",
         {
             "request": request,
             "customer": customer,
+            "sale": sale,
             "balance_info": balance_info,
             "current_user": current_user,
         },
@@ -441,3 +454,119 @@ async def void_payment(
         url=f"/payments/customer/{payment.customer_id}/history?include_voided=true",
         status_code=303,
     )
+
+
+@router.post("/process")
+async def process_payment(
+    request: Request,
+    customer_id: Annotated[int, Form(...)],
+    payment_type: Annotated[str, Form(...)],
+    sale_id: Annotated[int | None, Form()] = None,
+    allow_overpayment: Annotated[bool, Form()] = False,
+    notes: Annotated[str | None, Form()] = None,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db),
+):
+    """Process payment with support for mixed payment methods.
+
+    Args:
+        request: FastAPI request object.
+        customer_id: ID of the customer.
+        payment_type: Type of payment (single or mixed).
+        sale_id: Optional sale ID.
+        allow_overpayment: Whether to allow overpayment.
+        notes: Optional notes.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        Redirect to receipt or error page.
+    """
+    try:
+        # Get form data
+        form_data = await request.form()
+
+        if payment_type == "single":
+            # Single payment method
+            amount = Decimal(form_data.get("amount", "0"))
+            payment_method = form_data.get("payment_method")
+            reference_number = form_data.get("reference_number")
+
+            payment_data = PaymentCreate(
+                amount=amount,
+                payment_method=payment_method,
+                reference_number=reference_number,
+                notes=notes,
+            )
+
+            payment = payment_service.process_payment(
+                db=db,
+                customer_id=customer_id,
+                sale_id=sale_id,
+                payment_data=payment_data,
+                user_id=current_user.id,
+                allow_overpayment=allow_overpayment,
+            )
+        else:
+            # Mixed payment methods
+            payment_methods = []
+
+            for method in ["cash", "transfer", "card"]:
+                if form_data.get(f"method_enabled_{method}"):
+                    amount = Decimal(form_data.get(f"method_amount_{method}", "0"))
+                    if amount > 0:
+                        reference = form_data.get(f"method_reference_{method}")
+                        payment_methods.append(
+                            PaymentMethodDetail(
+                                payment_method=method,
+                                amount=amount,
+                                reference_number=reference,
+                            )
+                        )
+
+            if not payment_methods:
+                raise ValueError("No payment methods selected")
+
+            payment = payment_service.process_mixed_payment(
+                db=db,
+                customer_id=customer_id,
+                sale_id=sale_id,
+                payment_methods=payment_methods,
+                notes=notes,
+                user_id=current_user.id,
+                allow_overpayment=allow_overpayment,
+            )
+
+        logger.info(f"Payment processed: {payment.receipt_number}")
+
+        # Redirect to receipt with print option
+        return RedirectResponse(
+            url=f"/payments/{payment.id}/receipt?print=true", status_code=303
+        )
+
+    except ValueError as e:
+        logger.error(f"Payment validation error: {e}")
+
+        # Get customer and balance info for error display
+        customer = customer_crud.get(db, customer_id)
+        balance_info = balance_service.get_balance_summary(db, customer_id)
+
+        # Get sale if provided
+        sale = None
+        if sale_id:
+            from app.crud.sale import sale_crud
+
+            sale = sale_crud.get(db, sale_id)
+
+        return templates.TemplateResponse(
+            "payments/form.html",
+            {
+                "request": request,
+                "customer": customer,
+                "sale": sale,
+                "balance_info": balance_info,
+                "error": str(e),
+                "current_user": current_user,
+            },
+            status_code=400,
+        )

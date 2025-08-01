@@ -21,7 +21,9 @@
 ### Sales
  * │   ├── STORY-041-quick-sale.md
  * Send periodic whatsapp remember account balance (only debt)
- * check filter behavior
+ * check filter behavior in sales history
+ * when walk-in-customer payment method
+ * send invoice whatsapp when a sales is made
 
 ### Repairs
  * add auto whatsapp when status change

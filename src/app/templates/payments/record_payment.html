@@ -89,43 +89,19 @@
             <option value="">Select method...</option>
             <option
               value="cash"
-              {%
-              if
-              form_data
-              and
-              form_data.payment_method=""
-              ="cash"
-              %}selected{%
-              endif
-              %}
+              {% if form_data and form_data.payment_method == "cash" %}selected{% endif %}
             >
               Cash
             </option>
             <option
               value="transfer"
-              {%
-              if
-              form_data
-              and
-              form_data.payment_method=""
-              ="transfer"
-              %}selected{%
-              endif
-              %}
+              {% if form_data and form_data.payment_method == "transfer" %}selected{% endif %}
             >
               Bank Transfer
             </option>
             <option
               value="card"
-              {%
-              if
-              form_data
-              and
-              form_data.payment_method=""
-              ="card"
-              %}selected{%
-              endif
-              %}
+              {% if form_data and form_data.payment_method == "card" %}selected{% endif %}
             >
               Card
             </option>

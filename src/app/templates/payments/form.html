@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% block title %}Record Payment - {{ customer.name }}{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Record Payment</h1>
+        <p class="text-gray-600">
+          Customer: <span class="font-medium">{{ customer.name }}</span>
+        </p>
+      </div>
+
+      <!-- Current Balance -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-700">Current Balance:</span>
+          {% if balance_info.has_debt %}
+          <span class="text-xl font-bold text-red-600">
+            Owes ${{ "{:,.2f}".format(abs(balance_info.current_balance)) }}
+          </span>
+          {% elif balance_info.has_credit %}
+          <span class="text-xl font-bold text-green-600">
+            Credit ${{ "{:,.2f}".format(balance_info.current_balance) }}
+          </span>
+          {% else %}
+          <span class="text-xl font-bold text-gray-900">$0.00</span>
+          {% endif %}
+        </div>
+        {% if sale %}
+        <div class="mt-2 text-sm text-gray-600">
+          Related Sale: {{ sale.invoice_number }} -
+          <span class="font-medium">${{ "{:,.2f}".format(sale.total_amount) }}</span>
+          (Due: ${{ "{:,.2f}".format(sale.amount_due) }})
+        </div>
+        {% endif %}
+      </div>
+
+      {% if error %}
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <!-- Payment Form -->
+      <form method="POST" action="/payments/process" class="space-y-6">
+        <input type="hidden" name="customer_id" value="{{ customer.id }}">
+        {% if sale %}
+        <input type="hidden" name="sale_id" value="{{ sale.id }}">
+        {% endif %}
+
+        <!-- Payment Type Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Payment Type <span class="text-red-500">*</span>
+          </label>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input type="radio" name="payment_type" value="single"
+                     class="mr-2" checked onchange="togglePaymentType()">
+              <span>Single Payment Method</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="payment_type" value="mixed"
+                     class="mr-2" onchange="togglePaymentType()">
+              <span>Mixed Payment Methods</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Single Payment Method -->
+        <div id="single_payment" class="space-y-4">
+          <!-- Amount -->
+          <div>
+            <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">
+              Payment Amount <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500">$</span>
+              </div>
+              <input type="number" id="amount" name="amount" step="0.01" min="0.01"
+                     value="{{ form_data.amount if form_data else '' }}"
+                     class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                     required>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div>
+            <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-1">
+              Payment Method <span class="text-red-500">*</span>
+            </label>
+            <select id="payment_method" name="payment_method"
+                    onchange="toggleReferenceField()"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    required>
+              <option value="">Select method...</option>
+              <option value="cash">Cash</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="card">Card</option>
+            </select>
+          </div>
+
+          <!-- Reference Number -->
+          <div id="reference_field" style="display: none">
+            <label for="reference_number" class="block text-sm font-medium text-gray-700 mb-1">
+              Reference Number <span id="reference_required" class="text-red-500" style="display: none">*</span>
+            </label>
+            <input type="text" id="reference_number" name="reference_number"
+                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <p class="mt-1 text-sm text-gray-500">Required for bank transfers and card payments</p>
+          </div>
+        </div>
+
+        <!-- Mixed Payment Methods -->
+        <div id="mixed_payment" style="display: none" class="space-y-4">
+          <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md">
+            Enter the amount for each payment method. Total must match the payment amount.
+          </div>
+
+          <!-- Total Amount for Mixed -->
+          <div>
+            <label for="total_amount" class="block text-sm font-medium text-gray-700 mb-1">
+              Total Payment Amount <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500">$</span>
+              </div>
+              <input type="number" id="total_amount" name="total_amount" step="0.01" min="0.01"
+                     class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                     onchange="updateMixedTotal()">
+            </div>
+          </div>
+
+          <!-- Payment Methods Container -->
+          <div id="payment_methods_container" class="space-y-3">
+            <!-- Cash Method -->
+            <div class="border rounded-lg p-4 bg-gray-50">
+              <div class="flex items-center justify-between mb-2">
+                <label class="flex items-center">
+                  <input type="checkbox" name="method_enabled_cash" class="mr-2" onchange="toggleMethod('cash')">
+                  <span class="font-medium">Cash</span>
+                </label>
+              </div>
+              <div id="method_cash" style="display: none" class="space-y-2">
+                <div>
+                  <label class="block text-sm text-gray-700">Amount</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-gray-500">$</span>
+                    </div>
+                    <input type="number" name="method_amount_cash" step="0.01" min="0"
+                           class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           onchange="updateMixedTotal()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transfer Method -->
+            <div class="border rounded-lg p-4 bg-gray-50">
+              <div class="flex items-center justify-between mb-2">
+                <label class="flex items-center">
+                  <input type="checkbox" name="method_enabled_transfer" class="mr-2" onchange="toggleMethod('transfer')">
+                  <span class="font-medium">Bank Transfer</span>
+                </label>
+              </div>
+              <div id="method_transfer" style="display: none" class="space-y-2">
+                <div>
+                  <label class="block text-sm text-gray-700">Amount</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-gray-500">$</span>
+                    </div>
+                    <input type="number" name="method_amount_transfer" step="0.01" min="0"
+                           class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           onchange="updateMixedTotal()">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-700">Reference Number <span class="text-red-500">*</span></label>
+                  <input type="text" name="method_reference_transfer"
+                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Method -->
+            <div class="border rounded-lg p-4 bg-gray-50">
+              <div class="flex items-center justify-between mb-2">
+                <label class="flex items-center">
+                  <input type="checkbox" name="method_enabled_card" class="mr-2" onchange="toggleMethod('card')">
+                  <span class="font-medium">Card</span>
+                </label>
+              </div>
+              <div id="method_card" style="display: none" class="space-y-2">
+                <div>
+                  <label class="block text-sm text-gray-700">Amount</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-gray-500">$</span>
+                    </div>
+                    <input type="number" name="method_amount_card" step="0.01" min="0"
+                           class="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                           onchange="updateMixedTotal()">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-700">Reference Number <span class="text-red-500">*</span></label>
+                  <input type="text" name="method_reference_card"
+                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mixed Total Display -->
+          <div class="bg-yellow-50 rounded-lg p-4">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-700">Sum of Payment Methods:</span>
+              <span id="mixed_total" class="text-xl font-bold text-gray-900">$0.00</span>
+            </div>
+            <div id="mixed_error" class="mt-2 text-sm text-red-600" style="display: none">
+              The sum must equal the total payment amount
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div>
+          <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+            Notes (Optional)
+          </label>
+          <textarea id="notes" name="notes" rows="3"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ form_data.notes if form_data else '' }}</textarea>
+        </div>
+
+        <!-- Authorization for Overpayment -->
+        {% if current_user.is_admin %}
+        <div>
+          <label class="flex items-center">
+            <input type="checkbox" name="allow_overpayment" class="mr-2">
+            <span class="text-sm text-gray-700">Allow overpayment (requires authorization)</span>
+          </label>
+        </div>
+        {% endif %}
+
+        <!-- Buttons -->
+        <div class="flex justify-between pt-4">
+          <a href="/customers/{{ customer.id }}"
+             class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md">
+            Cancel
+          </a>
+          <button type="submit"
+                  class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
+            Process Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function togglePaymentType() {
+    const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+    const singlePayment = document.getElementById('single_payment');
+    const mixedPayment = document.getElementById('mixed_payment');
+
+    if (paymentType === 'single') {
+      singlePayment.style.display = 'block';
+      mixedPayment.style.display = 'none';
+    } else {
+      singlePayment.style.display = 'none';
+      mixedPayment.style.display = 'block';
+    }
+  }
+
+  function toggleReferenceField() {
+    const method = document.getElementById('payment_method').value;
+    const referenceField = document.getElementById('reference_field');
+    const referenceInput = document.getElementById('reference_number');
+    const referenceRequired = document.getElementById('reference_required');
+
+    if (method === 'transfer' || method === 'card') {
+      referenceField.style.display = 'block';
+      referenceInput.required = true;
+      referenceRequired.style.display = 'inline';
+    } else {
+      referenceField.style.display = 'none';
+      referenceInput.required = false;
+      referenceRequired.style.display = 'none';
+      referenceInput.value = '';
+    }
+  }
+
+  function toggleMethod(method) {
+    const checkbox = document.querySelector(`input[name="method_enabled_${method}"]`);
+    const methodDiv = document.getElementById(`method_${method}`);
+
+    if (checkbox.checked) {
+      methodDiv.style.display = 'block';
+    } else {
+      methodDiv.style.display = 'none';
+      // Clear values when unchecked
+      const amountInput = document.querySelector(`input[name="method_amount_${method}"]`);
+      if (amountInput) amountInput.value = '';
+      const refInput = document.querySelector(`input[name="method_reference_${method}"]`);
+      if (refInput) refInput.value = '';
+    }
+
+    updateMixedTotal();
+  }
+
+  function updateMixedTotal() {
+    const methods = ['cash', 'transfer', 'card'];
+    let total = 0;
+
+    methods.forEach(method => {
+      const checkbox = document.querySelector(`input[name="method_enabled_${method}"]`);
+      if (checkbox && checkbox.checked) {
+        const amountInput = document.querySelector(`input[name="method_amount_${method}"]`);
+        if (amountInput && amountInput.value) {
+          total += parseFloat(amountInput.value);
+        }
+      }
+    });
+
+    document.getElementById('mixed_total').textContent = `$${total.toFixed(2)}`;
+
+    // Check if total matches
+    const totalAmount = document.getElementById('total_amount').value;
+    const mixedError = document.getElementById('mixed_error');
+
+    if (totalAmount && Math.abs(total - parseFloat(totalAmount)) > 0.01) {
+      mixedError.style.display = 'block';
+    } else {
+      mixedError.style.display = 'none';
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    togglePaymentType();
+    toggleReferenceField();
+  });
+</script>
+{% endblock %}

@@ -91,6 +91,7 @@ class Payment(BaseModel):
             "receipt_number": self.receipt_number,
             "customer_id": self.customer_id,
             "customer_name": self.customer.name if self.customer else None,
+            "sale_id": self.sale_id,
             "amount": float(self.amount),
             "payment_method": self.payment_method,
             "reference_number": self.reference_number,

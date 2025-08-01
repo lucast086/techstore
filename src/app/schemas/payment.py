@@ -6,17 +6,18 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator
 
 
-class PaymentCreate(BaseModel):
-    """Schema for creating a payment."""
+class PaymentMethodDetail(BaseModel):
+    """Schema for individual payment method in mixed payments."""
 
-    amount: Decimal = Field(..., gt=0, decimal_places=2, description="Payment amount")
     payment_method: str = Field(
         ..., pattern="^(cash|transfer|card)$", description="Payment method"
+    )
+    amount: Decimal = Field(
+        ..., gt=0, decimal_places=2, description="Amount for this method"
     )
     reference_number: str | None = Field(
         None, max_length=100, description="Reference number for non-cash payments"
     )
-    notes: str | None = Field(None, description="Additional notes")
 
     @field_validator("reference_number")
     @classmethod
@@ -28,6 +29,52 @@ class PaymentCreate(BaseModel):
         return v
 
 
+class PaymentCreate(BaseModel):
+    """Schema for creating a payment."""
+
+    amount: Decimal = Field(..., gt=0, decimal_places=2, description="Payment amount")
+    payment_method: str = Field(
+        ..., pattern="^(cash|transfer|card|mixed)$", description="Payment method"
+    )
+    reference_number: str | None = Field(
+        None, max_length=100, description="Reference number for non-cash payments"
+    )
+    notes: str | None = Field(None, description="Additional notes")
+    payment_methods: list[PaymentMethodDetail] | None = Field(
+        None, description="Details for mixed payment methods"
+    )
+
+    @field_validator("reference_number")
+    @classmethod
+    def validate_reference(cls, v: str | None, info) -> str | None:
+        """Validate reference number is required for non-cash payments."""
+        method = info.data.get("payment_method")
+        if method in ["transfer", "card"] and not v:
+            raise ValueError("Reference number required for transfer/card payments")
+        return v
+
+    @field_validator("payment_methods")
+    @classmethod
+    def validate_mixed_payments(
+        cls, v: list[PaymentMethodDetail] | None, info
+    ) -> list[PaymentMethodDetail] | None:
+        """Validate mixed payment methods."""
+        method = info.data.get("payment_method")
+        amount = info.data.get("amount")
+
+        if method == "mixed":
+            if not v or len(v) < 2:
+                raise ValueError("Mixed payment requires at least 2 payment methods")
+
+            total = sum(pm.amount for pm in v)
+            if total != amount:
+                raise ValueError(
+                    f"Sum of payment methods ({total}) must equal total amount ({amount})"
+                )
+
+        return v
+
+
 class PaymentResponse(BaseModel):
     """Schema for payment responses."""
 
@@ -35,6 +82,7 @@ class PaymentResponse(BaseModel):
     receipt_number: str
     customer_id: int
     customer_name: str
+    sale_id: int | None = None
     amount: float
     payment_method: str
     reference_number: str | None

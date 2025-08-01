@@ -15,7 +15,9 @@
       "Bash(./scripts/version.sh:*)",
       "Bash(rm:*)",
       "Bash(touch:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(true)"
     ],
     "deny": []
   }
