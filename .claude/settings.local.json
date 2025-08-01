@@ -18,7 +18,9 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(true)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(poetry lock:*)",
+      "Bash(pip install:*)"
     ],
     "deny": []
   }

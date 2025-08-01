@@ -19,6 +19,7 @@ from app.schemas.sale import (
     SaleSummary,
     VoidSaleRequest,
 )
+from app.services.invoice_service import invoice_service
 
 router = APIRouter()
 
@@ -325,4 +326,74 @@ async def get_receipt(
     return ResponseSchema(
         success=True,
         data=receipt_data,
+    )
+
+
+@router.get("/{sale_id}/invoice/download")
+async def download_invoice(
+    sale_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Download invoice as PDF."""
+    sale = sale_crud.get_with_details(db, id=sale_id)
+
+    if not sale:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sale not found",
+        )
+
+    # Generate PDF
+    pdf_bytes = invoice_service.generate_invoice_pdf(sale)
+
+    from fastapi.responses import Response
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="invoice_{sale.invoice_number}.pdf"'
+        },
+    )
+
+
+@router.post("/{sale_id}/credit-note")
+async def generate_credit_note(
+    sale_id: int,
+    reason: str = Query(..., min_length=10, description="Reason for credit note"),
+    amount: Optional[float] = Query(None, description="Credit amount (if partial)"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Generate a credit note for a sale (admin only)."""
+    # Check if user is admin
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can generate credit notes",
+        )
+
+    sale = sale_crud.get_with_details(db, id=sale_id)
+
+    if not sale:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sale not found",
+        )
+
+    # Generate credit note PDF
+    from decimal import Decimal
+
+    credit_amount = Decimal(str(amount)) if amount else None
+    pdf_bytes = invoice_service.generate_credit_note(sale, reason, credit_amount)
+
+    from fastapi.responses import Response
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="credit_note_{sale.invoice_number}.pdf"'
+        },
     )

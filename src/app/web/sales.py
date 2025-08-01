@@ -15,6 +15,7 @@ from app.crud.sale import sale_crud
 from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.sale import SaleCreate, SaleItemCreate
+from app.services.invoice_service import invoice_service
 
 logger = logging.getLogger(__name__)
 
@@ -338,6 +339,35 @@ async def sale_receipt(
     }
 
     return templates.TemplateResponse("sales/receipt.html", context)
+
+
+@router.get("/{sale_id}/invoice/download")
+async def download_invoice_web(
+    sale_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Download invoice as PDF."""
+    sale = sale_crud.get_with_details(db, id=sale_id)
+
+    if not sale:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sale not found",
+        )
+
+    # Generate PDF
+    pdf_bytes = invoice_service.generate_invoice_pdf(sale)
+
+    from fastapi.responses import Response
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="invoice_{sale.invoice_number}.pdf"'
+        },
+    )
 
 
 @router.post("/{sale_id}/void", response_class=HTMLResponse)
