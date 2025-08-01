@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ repair.repair_number }}</h1>
+            <p class="text-gray-600 mt-1">
+                Customer: <a href="/customers/{{ repair.customer.id }}" class="text-primary-600 hover:text-primary-700">
+                    {{ repair.customer_name }}
+                </a>
+            </p>
+        </div>
+        <div class="flex items-center space-x-3">
+            {% set status_colors = {
+                'received': 'bg-gray-100 text-gray-800',
+                'diagnosing': 'bg-blue-100 text-blue-800',
+                'approved': 'bg-green-100 text-green-800',
+                'repairing': 'bg-yellow-100 text-yellow-800',
+                'testing': 'bg-purple-100 text-purple-800',
+                'ready': 'bg-green-100 text-green-800',
+                'delivered': 'bg-gray-100 text-gray-800',
+                'cancelled': 'bg-red-100 text-red-800'
+            } %}
+            <div id="status-badge">
+                <span class="px-3 py-1 text-sm font-medium rounded-full {{ status_colors.get(repair.status.value, 'bg-gray-100 text-gray-800') }}">
+                    {{ repair.status.value.replace('_', ' ').title() }}
+                </span>
+            </div>
+            {% if repair.is_express %}
+            <span class="px-3 py-1 text-sm font-medium bg-yellow-100 text-yellow-800 rounded-full">
+                Express
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Device Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Device Information</h2>
+                <dl class="grid grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Type</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.device_type.title() }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Brand</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.device_brand }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Model</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.device_model or '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Serial Number</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.serial_number or '-' }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Problem Description -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Problem Description</h2>
+                <p class="text-gray-700 whitespace-pre-wrap">{{ repair.problem_description }}</p>
+
+                {% if repair.device_condition %}
+                <div class="mt-4">
+                    <h3 class="text-sm font-medium text-gray-500">Physical Condition</h3>
+                    <p class="mt-1 text-sm text-gray-700">{{ repair.device_condition }}</p>
+                </div>
+                {% endif %}
+
+                {% if repair.accessories_received %}
+                <div class="mt-4">
+                    <h3 class="text-sm font-medium text-gray-500">Accessories Received</h3>
+                    <p class="mt-1 text-sm text-gray-700">{{ repair.accessories_received }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Diagnosis -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Diagnosis</h2>
+                    {% if repair.status.value == 'received' or repair.status.value == 'diagnosing' %}
+                    <button onclick="showDiagnosisForm()"
+                            class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        {% if repair.diagnosis_notes %}Edit{% else %}Add{% endif %} Diagnosis
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div id="diagnosis-content">
+                    {% if repair.diagnosis_notes %}
+                    <div class="prose max-w-none">
+                        <p class="font-semibold">Diagnosis:</p>
+                        <p>{{ repair.diagnosis_notes }}</p>
+                        {% if repair.estimated_cost %}
+                        <p class="mt-2">
+                            <span class="font-semibold">Estimated Cost:</span>
+                            ${{ repair.estimated_cost }}
+                            {% if repair.labor_cost or repair.parts_cost %}
+                            (Labor: ${{ repair.labor_cost or 0 }}, Parts: ${{ repair.parts_cost or 0 }})
+                            {% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-sm">No diagnosis added yet</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Parts Used -->
+            {% if repair.parts %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Parts Used</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Part</th>
+                                <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Cost</th>
+                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for part in repair.parts %}
+                            <tr>
+                                <td class="px-3 py-2 text-sm">{{ part.part_name }}</td>
+                                <td class="px-3 py-2 text-sm text-center">{{ part.quantity }}</td>
+                                <td class="px-3 py-2 text-sm text-right">${{ part.part_cost }}</td>
+                                <td class="px-3 py-2 text-sm text-right font-medium">
+                                    ${{ "%.2f"|format(part.part_cost * part.quantity) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Status History -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Status History</h2>
+                <div class="space-y-3">
+                    {% for history in repair.status_history|reverse %}
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">
+                                {{ history.status.value.replace('_', ' ').title() }}
+                            </p>
+                            {% if history.notes %}
+                            <p class="text-sm text-gray-600 mt-1">{{ history.notes }}</p>
+                            {% endif %}
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ history.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% if history.user_name %}
+                                by {{ history.user_name }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
+
+                <!-- Update Status -->
+                {% if repair.status.value not in ['delivered', 'cancelled'] %}
+                <form hx-post="/repairs/{{ repair.id }}/status"
+                      hx-target="#status-badge"
+                      hx-swap="outerHTML"
+                      class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
+                    <select name="status"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-2">
+                        {% if repair.status.value == 'received' %}
+                        <option value="diagnosing">Start Diagnosis</option>
+                        <option value="cancelled">Cancel</option>
+                        {% elif repair.status.value == 'diagnosing' %}
+                        <option value="approved">Customer Approved</option>
+                        <option value="ready">Ready (Express)</option>
+                        <option value="cancelled">Cancel</option>
+                        {% elif repair.status.value == 'approved' %}
+                        <option value="repairing">Start Repair</option>
+                        <option value="cancelled">Cancel</option>
+                        {% elif repair.status.value == 'repairing' %}
+                        <option value="testing">Start Testing</option>
+                        <option value="ready">Mark as Ready</option>
+                        <option value="cancelled">Cancel</option>
+                        {% elif repair.status.value == 'testing' %}
+                        <option value="ready">Complete</option>
+                        <option value="repairing">Back to Repair</option>
+                        <option value="cancelled">Cancel</option>
+                        {% elif repair.status.value == 'ready' %}
+                        <option value="delivered">Mark as Delivered</option>
+                        {% endif %}
+                    </select>
+                    <input type="text"
+                           name="notes"
+                           placeholder="Optional notes..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 mb-2">
+                    <button type="submit"
+                            class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg">
+                        Update Status
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- Print Receipt -->
+                <a href="/repairs/{{ repair.id }}/receipt"
+                   target="_blank"
+                   class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg">
+                    Print Receipt
+                </a>
+            </div>
+
+            <!-- Repair Details -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Details</h2>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Received Date</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.received_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+                    </div>
+                    {% if repair.estimated_completion %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Estimated Completion</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.estimated_completion.strftime('%Y-%m-%d') }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if repair.completed_date %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Completed Date</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.completed_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if repair.delivered_date %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Delivered Date</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.delivered_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Warranty</dt>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            {{ repair.warranty_days }} days
+                            {% if repair.warranty_expires %}
+                            <span class="text-xs text-gray-500">(expires {{ repair.warranty_expires.strftime('%Y-%m-%d') }})</span>
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+
+            <!-- Cost Summary -->
+            {% if repair.estimated_cost or repair.final_cost %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Cost Summary</h2>
+                <dl class="space-y-3">
+                    {% if repair.estimated_cost %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Estimated Cost</dt>
+                        <dd class="mt-1 text-lg font-medium text-gray-900">${{ repair.estimated_cost }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if repair.final_cost %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Final Cost</dt>
+                        <dd class="mt-1 text-lg font-medium text-green-600">${{ repair.final_cost }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if repair.amount_due %}
+                    <div class="pt-3 border-t">
+                        <dt class="text-sm font-medium text-gray-500">Amount Due</dt>
+                        <dd class="mt-1 text-lg font-bold text-red-600">${{ repair.amount_due }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+            {% endif %}
+
+            <!-- Personnel -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Personnel</h2>
+                <dl class="space-y-3">
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Received By</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.receiver_name or '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Technician</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.technician_name or 'Not assigned' }}</dd>
+                    </div>
+                    {% if repair.delivered_by %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Delivered By</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.deliverer_name }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diagnosis Modal -->
+<div id="diagnosis-modal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg max-w-2xl w-full mx-4" id="diagnosis-form-container">
+        <!-- Form will be loaded here -->
+    </div>
+</div>
+
+<script>
+function showDiagnosisForm() {
+    // Load diagnosis form via HTMX
+    document.getElementById('diagnosis-form-container').innerHTML = 'Loading...';
+    document.getElementById('diagnosis-modal').classList.remove('hidden');
+
+    fetch('/repairs/{{ repair.id }}/diagnosis')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('diagnosis-form-container').innerHTML = html;
+        });
+}
+
+function closeDiagnosisModal() {
+    document.getElementById('diagnosis-modal').classList.add('hidden');
+}
+
+// Close modal on outside click
+document.getElementById('diagnosis-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDiagnosisModal();
+    }
+});
+</script>
+{% endblock %}
