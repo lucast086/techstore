@@ -7,10 +7,12 @@
 ### Customers
  * View Statement in
  * Add payment button on customer list
+ * customer profile fails
 
 ### Payments
  * Send Whatsapp when pay is made
  * Payment recipe need go back button
+ * new payments section dont show balance well
 
 ### Dashboard
 * Profile (no accede)
@@ -24,6 +26,7 @@
  * check filter behavior in sales history
  * when walk-in-customer payment method
  * send invoice whatsapp when a sales is made
+ * select one of the three prices. when a product is added
 
 ### Repairs
  * add auto whatsapp when status change
