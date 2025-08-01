@@ -165,14 +165,42 @@ async def process_checkout(
             status_code=400,
         )
 
+    # Extract payment information
+    payment_method = form_data.get("payment_method", "cash")
+
+    # Add payment details to notes if applicable
+    notes = form_data.get("notes", "")
+
+    if payment_method == "cash":
+        amount_received = form_data.get("amount_received")
+        if amount_received:
+            notes = f"Amount received: ${amount_received}\n{notes}".strip()
+    elif payment_method == "transfer":
+        reference_number = form_data.get("reference_number")
+        if reference_number:
+            notes = f"Reference: {reference_number}\n{notes}".strip()
+    elif payment_method == "mixed":
+        cash_amount = form_data.get("cash_amount", "0")
+        transfer_amount = form_data.get("transfer_amount", "0")
+        card_amount = form_data.get("card_amount", "0")
+        payment_details = []
+        if float(cash_amount) > 0:
+            payment_details.append(f"Cash: ${cash_amount}")
+        if float(transfer_amount) > 0:
+            payment_details.append(f"Transfer: ${transfer_amount}")
+        if float(card_amount) > 0:
+            payment_details.append(f"Card: ${card_amount}")
+        if payment_details:
+            notes = f"Payment breakdown: {', '.join(payment_details)}\n{notes}".strip()
+
     # Create sale data
     sale_data = SaleCreate(
         customer_id=int(form_data.get("customer_id"))
         if form_data.get("customer_id")
         else None,
-        payment_method=form_data.get("payment_method", "cash"),
+        payment_method=payment_method,
         discount_amount=Decimal(form_data.get("discount_amount", "0")),
-        notes=form_data.get("notes", ""),
+        notes=notes,
         items=items,
     )
 

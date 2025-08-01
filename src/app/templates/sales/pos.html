@@ -176,15 +176,117 @@ block content %}
             >
             <select
               name="payment_method"
+              id="payment_method"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               form="checkout-form"
               required
+              onchange="togglePaymentFields()"
             >
               <option value="cash">Cash</option>
               <option value="credit">Credit</option>
               <option value="transfer">Bank Transfer</option>
               <option value="mixed">Mixed</option>
             </select>
+          </div>
+
+          <!-- Payment Amount (for cash) -->
+          <div id="payment-amount-section" style="display: block;">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Amount Received</label
+            >
+            <input
+              type="number"
+              id="amount_received"
+              name="amount_received"
+              min="0"
+              step="0.01"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              form="checkout-form"
+              placeholder="0.00"
+              onchange="calculateChange()"
+            />
+          </div>
+
+          <!-- Change Due (for cash) -->
+          <div id="change-due-section" style="display: block;">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Change Due</label
+            >
+            <div class="px-3 py-2 bg-gray-100 rounded-lg">
+              <span id="change-due" class="text-lg font-semibold text-green-600">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Reference Number (for transfer) -->
+          <div id="reference-section" style="display: none;">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Reference Number</label
+            >
+            <input
+              type="text"
+              name="reference_number"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              form="checkout-form"
+              placeholder="Transaction reference"
+            />
+          </div>
+
+          <!-- Mixed Payment Details -->
+          <div id="mixed-payment-section" style="display: none;">
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Payment Breakdown</label
+            >
+            <div class="space-y-2">
+              <div class="flex items-center space-x-2">
+                <input
+                  type="number"
+                  name="cash_amount"
+                  min="0"
+                  step="0.01"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  form="checkout-form"
+                  placeholder="Cash amount"
+                  onchange="updateMixedTotal()"
+                />
+                <span class="text-sm text-gray-600">Cash</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  type="number"
+                  name="transfer_amount"
+                  min="0"
+                  step="0.01"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  form="checkout-form"
+                  placeholder="Transfer amount"
+                  onchange="updateMixedTotal()"
+                />
+                <span class="text-sm text-gray-600">Transfer</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  type="number"
+                  name="card_amount"
+                  min="0"
+                  step="0.01"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  form="checkout-form"
+                  placeholder="Card amount"
+                  onchange="updateMixedTotal()"
+                />
+                <span class="text-sm text-gray-600">Card</span>
+              </div>
+              <div class="pt-2 border-t">
+                <div class="flex justify-between">
+                  <span class="text-sm font-medium">Total Paid:</span>
+                  <span id="mixed-total" class="text-sm font-semibold">$0.00</span>
+                </div>
+                <div class="flex justify-between mt-1">
+                  <span class="text-sm font-medium">Required:</span>
+                  <span id="required-amount" class="text-sm font-semibold text-red-600">$0.00</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Discount -->
@@ -404,11 +506,92 @@ block content %}
     )}`;
     document.getElementById("cart-tax").textContent = `$${tax.toFixed(2)}`;
     document.getElementById("cart-total").textContent = `$${total.toFixed(2)}`;
+
+    // Update change calculation if in cash mode
+    if (document.getElementById("payment_method").value === "cash") {
+      calculateChange();
+    }
+    // Update mixed payment required amount if in mixed mode
+    if (document.getElementById("payment_method").value === "mixed") {
+      updateMixedTotal();
+    }
+  }
+
+  // Payment handling functions
+  function togglePaymentFields() {
+    const paymentMethod = document.getElementById("payment_method").value;
+    const amountSection = document.getElementById("payment-amount-section");
+    const changeSection = document.getElementById("change-due-section");
+    const referenceSection = document.getElementById("reference-section");
+    const mixedSection = document.getElementById("mixed-payment-section");
+
+    // Hide all sections first
+    amountSection.style.display = "none";
+    changeSection.style.display = "none";
+    referenceSection.style.display = "none";
+    mixedSection.style.display = "none";
+
+    // Show relevant sections based on payment method
+    switch (paymentMethod) {
+      case "cash":
+        amountSection.style.display = "block";
+        changeSection.style.display = "block";
+        break;
+      case "transfer":
+        referenceSection.style.display = "block";
+        break;
+      case "mixed":
+        mixedSection.style.display = "block";
+        updateMixedTotal();
+        break;
+      case "credit":
+        // No additional fields needed for credit
+        break;
+    }
+  }
+
+  function calculateChange() {
+    const total = parseFloat(document.getElementById("cart-total").textContent.replace("$", "")) || 0;
+    const received = parseFloat(document.getElementById("amount_received").value) || 0;
+    const change = received - total;
+
+    const changeElement = document.getElementById("change-due");
+    if (change >= 0) {
+      changeElement.textContent = `$${change.toFixed(2)}`;
+      changeElement.className = "text-lg font-semibold text-green-600";
+    } else {
+      changeElement.textContent = `-$${Math.abs(change).toFixed(2)}`;
+      changeElement.className = "text-lg font-semibold text-red-600";
+    }
+  }
+
+  function updateMixedTotal() {
+    const cash = parseFloat(document.querySelector('input[name="cash_amount"]').value) || 0;
+    const transfer = parseFloat(document.querySelector('input[name="transfer_amount"]').value) || 0;
+    const card = parseFloat(document.querySelector('input[name="card_amount"]').value) || 0;
+    const total = cash + transfer + card;
+
+    document.getElementById("mixed-total").textContent = `$${total.toFixed(2)}`;
+
+    // Update required amount
+    const cartTotal = parseFloat(document.getElementById("cart-total").textContent.replace("$", "")) || 0;
+    document.getElementById("required-amount").textContent = `$${cartTotal.toFixed(2)}`;
+
+    // Change color based on whether total matches
+    const mixedTotalElement = document.getElementById("mixed-total");
+    if (Math.abs(total - cartTotal) < 0.01) {
+      mixedTotalElement.className = "text-sm font-semibold text-green-600";
+    } else if (total < cartTotal) {
+      mixedTotalElement.className = "text-sm font-semibold text-red-600";
+    } else {
+      mixedTotalElement.className = "text-sm font-semibold text-yellow-600";
+    }
   }
 
   // Initialize
   document.addEventListener("DOMContentLoaded", function () {
     updateCartDisplay();
+    togglePaymentFields(); // Initialize payment fields visibility
 
     // Update datetime
     function updateDateTime() {
