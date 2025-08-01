@@ -18,7 +18,7 @@
           <span class="text-gray-700">Current Balance:</span>
           {% if balance_info.has_debt %}
           <span class="text-xl font-bold text-red-600">
-            Owes ${{ "{:,.2f}".format(abs(balance_info.current_balance)) }}
+            Owes ${{ "{:,.2f}".format(-balance_info.current_balance) }}
           </span>
           {% elif balance_info.has_credit %}
           <span class="text-xl font-bold text-green-600">

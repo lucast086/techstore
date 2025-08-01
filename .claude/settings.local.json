@@ -17,7 +17,8 @@
       "Bash(touch:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

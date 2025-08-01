@@ -166,7 +166,7 @@ Profile{% endblock %} {% block content %}
             {% if balance_info.has_debt %}
             <p class="text-sm text-gray-500 mb-2">Customer owes</p>
             <p class="text-4xl font-bold text-red-600">
-              ${{ "{:,.2f}".format(abs(balance_info.current_balance)) }}
+              ${{ "{:,.2f}".format(-balance_info.current_balance) }}
             </p>
             <div class="mt-4">
               <a
@@ -267,7 +267,7 @@ Profile{% endblock %} {% block content %}
                   none %}
                   <p class="text-xs text-gray-500">
                     Balance: ${{
-                    "{:,.2f}".format(abs(transaction.running_balance)) if
+                    "{:,.2f}".format(-transaction.running_balance) if
                     transaction.running_balance < 0 else
                     "{:,.2f}".format(transaction.running_balance) }}
                   </p>

@@ -230,7 +230,7 @@
             <div class="detail-label">Balance Before Payment:</div>
             <div>
                 {% if balance_before < 0 %}
-                    Owed ${{ "{:,.2f}".format(abs(balance_before)) }}
+                    Owed ${{ "{:,.2f}".format(-balance_before) }}
                 {% elif balance_before > 0 %}
                     Credit ${{ "{:,.2f}".format(balance_before) }}
                 {% else %}
@@ -248,7 +248,7 @@
             <div class="detail-label amount">Current Balance:</div>
             <div class="amount">
                 {% if balance_after < 0 %}
-                    Owes ${{ "{:,.2f}".format(abs(balance_after)) }}
+                    Owes ${{ "{:,.2f}".format(-balance_after) }}
                 {% elif balance_after > 0 %}
                     Credit ${{ "{:,.2f}".format(balance_after) }}
                 {% else %}
