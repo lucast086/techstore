@@ -130,6 +130,36 @@
         </div>
       </div>
 
+      {% if sale.notes and sale.payment_method == 'cash' and 'Amount received:' in sale.notes %}
+        {% set amount_line = sale.notes.split('\n')[0] %}
+        {% if 'Amount received:' in amount_line %}
+          {% set amount_received = amount_line.split('$')[1].strip() %}
+          {% set change = (amount_received|float - sale.total_amount|float) %}
+          <div class="mt-4 space-y-2">
+            <div class="flex justify-between text-sm">
+              <span>Amount Received:</span>
+              <span class="font-semibold">${{ amount_received }}</span>
+            </div>
+            {% if change > 0 %}
+            <div class="flex justify-between text-sm">
+              <span>Change:</span>
+              <span class="font-semibold text-green-600">${{ "%.2f"|format(change) }}</span>
+            </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endif %}
+
+      {% if sale.notes and sale.payment_method == 'mixed' and 'Payment breakdown:' in sale.notes %}
+        {% set payment_line = sale.notes.split('\n')[0] %}
+        {% if 'Payment breakdown:' in payment_line %}
+          <div class="mt-4">
+            <p class="text-sm text-gray-600 mb-1">Payment Breakdown:</p>
+            <p class="text-sm font-semibold">{{ payment_line.replace('Payment breakdown: ', '') }}</p>
+          </div>
+        {% endif %}
+      {% endif %}
+
       {% if sale.payment_status != 'paid' %}
       <div class="mt-4 p-4 bg-yellow-50 rounded-lg">
         <p class="text-sm font-semibold text-yellow-800">Amount Due: ${{ sale.amount_due }}</p>
@@ -142,7 +172,17 @@
       <p class="font-semibold mb-2">Thank you for your business!</p>
       <p>Cashier: {{ sale.user.full_name }}</p>
       {% if sale.notes %}
-      <p class="mt-2 italic">{{ sale.notes }}</p>
+        {% set display_notes = [] %}
+        {% for line in sale.notes.split('\n') %}
+          {% if not ('Amount received:' in line or 'Payment breakdown:' in line or 'Reference:' in line) %}
+            {% if line.strip() %}
+              {% set _ = display_notes.append(line) %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if display_notes %}
+        <p class="mt-2 italic">{{ display_notes|join('\n') }}</p>
+        {% endif %}
       {% endif %}
 
       {% if sale.is_voided %}

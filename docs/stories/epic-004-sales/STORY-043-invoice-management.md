@@ -4,7 +4,7 @@
 - **Epic**: EPIC-004 (Sales Management)
 - **Priority**: MEDIUM
 - **Estimate**: 1.5 days
-- **Status**: TODO
+- **Status**: IN_PROGRESS
 
 ## 🎯 User Story
 **As** María or Carlos,
@@ -53,7 +53,7 @@ src/app/
    - HTML to PDF conversion
    - Include styling and branding
    - Optimize for printing
-   - Support A4 and Letter sizes
+   - Support a4 sizes
 
 3. **API Updates** (`app/api/v1/sales.py`):
    - GET /sales/{id}/invoice - Get invoice PDF

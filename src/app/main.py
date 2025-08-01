@@ -15,6 +15,7 @@ from fastapi.templating import Jinja2Templates
 from app.api.v1 import auth as auth_api
 from app.api.v1 import customers as customers_api
 from app.api.v1 import health as health_api
+from app.api.v1 import payments as payments_api
 from app.api.v1 import sales as sales_api
 from app.api.v1 import temp_setup  # TEMPORARY - DELETE AFTER USE
 from app.middleware.auth_context import AuthContextMiddleware
@@ -59,6 +60,7 @@ async def root():
 app.include_router(health_api.router, prefix="/api/v1")
 app.include_router(auth_api.router)  # Auth API endpoints
 app.include_router(customers_api.router, prefix="/api/v1")  # Customer API endpoints
+app.include_router(payments_api.router, prefix="/api/v1")  # Payment API endpoints
 app.include_router(
     sales_api.router, prefix="/api/v1/sales", tags=["sales"]
 )  # Sales API endpoints

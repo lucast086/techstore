@@ -15,7 +15,12 @@
       "Bash(./scripts/version.sh:*)",
       "Bash(rm:*)",
       "Bash(touch:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(true)",
+      "Bash(curl:*)",
+      "Bash(poetry lock:*)",
+      "Bash(pip install:*)"
     ],
     "deny": []
   }

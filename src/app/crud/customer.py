@@ -272,13 +272,15 @@ class CustomerCRUD:
         return result
 
     def get_customers_with_positive_balance(self, db: Session) -> list[dict]:
-        """Get customers with positive balances (pending payments).
+        """Get customers with outstanding debt (negative balance).
+
+        Note: Method name is misleading - it returns customers who OWE money.
 
         Args:
             db: Database session.
 
         Returns:
-            List of customer dicts with positive balance.
+            List of customer dicts with outstanding debt.
         """
         customers = (
             db.query(Customer)
@@ -290,7 +292,8 @@ class CustomerCRUD:
         result = []
         for customer in customers:
             balance_info = balance_service.get_balance_summary(db, customer.id)
-            if balance_info.get("balance", 0) > 0:
+            # Negative balance means customer owes money
+            if balance_info.get("current_balance", 0) < 0:
                 result.append({**customer.to_dict(), **balance_info})
 
         return result

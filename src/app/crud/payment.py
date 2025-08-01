@@ -13,7 +13,12 @@ class PaymentCRUD:
     """CRUD operations for Payment model."""
 
     def create(
-        self, db: Session, customer_id: int, payment: PaymentCreate, received_by_id: int
+        self,
+        db: Session,
+        customer_id: int,
+        payment: PaymentCreate,
+        received_by_id: int,
+        sale_id: int | None = None,
     ) -> Payment:
         """Record new payment."""
         # Generate receipt number
@@ -21,6 +26,7 @@ class PaymentCRUD:
 
         db_payment = Payment(
             customer_id=customer_id,
+            sale_id=sale_id,
             amount=payment.amount,
             payment_method=payment.payment_method,
             reference_number=payment.reference_number,
@@ -36,11 +42,11 @@ class PaymentCRUD:
         return db_payment
 
     def generate_receipt_number(self, db: Session) -> str:
-        """Generate unique receipt number: REC-YYYYMMDD-XXXX."""
-        today = datetime.now()
-        prefix = f"REC-{today.strftime('%Y%m%d')}"
+        """Generate unique receipt number: PAY-YYYY-NNNNN."""
+        year = datetime.now().year
+        prefix = f"PAY-{year}"
 
-        # Get count of receipts today
+        # Get count of payments this year
         count = (
             db.query(func.count(Payment.id))
             .filter(Payment.receipt_number.like(f"{prefix}%"))
@@ -48,7 +54,7 @@ class PaymentCRUD:
             or 0
         )
 
-        return f"{prefix}-{str(count + 1).zfill(4)}"
+        return f"{prefix}-{str(count + 1).zfill(5)}"
 
     def get(self, db: Session, payment_id: int) -> Payment | None:
         """Get payment by ID."""

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt - {{ payment.receipt_number }}</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none !important; }
+            .page-break { page-break-after: always; }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .receipt-title {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+
+        .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .info-section {
+            flex: 1;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .payment-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+        }
+
+        .amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .balance-section {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .balance-negative {
+            background-color: #ffebee;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .signature-line {
+            margin-top: 50px;
+            border-top: 1px solid #333;
+            width: 250px;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+            padding-top: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .actions {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="actions no-print">
+        <button onclick="window.print()" class="btn btn-primary">Print Receipt</button>
+        <a href="/payments/{{ payment.id }}/whatsapp" class="btn btn-secondary" target="_blank">Send via WhatsApp</a>
+        <a href="/customers/{{ payment.customer_id }}" class="btn btn-secondary">Back to Customer</a>
+    </div>
+
+    <div class="receipt-header">
+        <div class="company-name">TechStore</div>
+        <div>123 Main Street, City, State 12345</div>
+        <div>Phone: (555) 123-4567</div>
+        <div class="receipt-title">PAYMENT RECEIPT</div>
+    </div>
+
+    <div class="receipt-info">
+        <div class="info-section">
+            <div class="info-label">Receipt Number</div>
+            <div class="info-value">{{ payment.receipt_number }}</div>
+
+            <div class="info-label">Date</div>
+            <div class="info-value">{{ payment.created_at.strftime('%B %d, %Y') }}</div>
+
+            <div class="info-label">Time</div>
+            <div class="info-value">{{ payment.created_at.strftime('%I:%M %p') }}</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-label">Customer</div>
+            <div class="info-value">{{ payment.customer.name }}</div>
+
+            <div class="info-label">Phone</div>
+            <div class="info-value">{{ payment.customer.phone }}</div>
+
+            {% if payment.sale %}
+            <div class="info-label">Related Sale</div>
+            <div class="info-value">{{ payment.sale.invoice_number }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="payment-details">
+        <h3>Payment Details</h3>
+
+        <div class="detail-row">
+            <div class="detail-label">Payment Method:</div>
+            <div>{{ payment.payment_method.title() }}</div>
+        </div>
+
+        {% if payment.payment_method == "mixed" and payment.notes %}
+        <div class="detail-row">
+            <div class="detail-label">Method Breakdown:</div>
+            <div>{{ payment.notes }}</div>
+        </div>
+        {% endif %}
+
+        {% if payment.reference_number %}
+        <div class="detail-row">
+            <div class="detail-label">Reference Number:</div>
+            <div>{{ payment.reference_number }}</div>
+        </div>
+        {% endif %}
+
+        <div class="detail-row">
+            <div class="detail-label amount">Amount Received:</div>
+            <div class="amount">${{ "{:,.2f}".format(payment.amount) }}</div>
+        </div>
+    </div>
+
+    <div class="balance-section {% if balance_after < 0 %}balance-negative{% endif %}">
+        <h3>Account Balance</h3>
+
+        <div class="detail-row">
+            <div class="detail-label">Balance Before Payment:</div>
+            <div>
+                {% if balance_before < 0 %}
+                    Owed ${{ "{:,.2f}".format(-balance_before) }}
+                {% elif balance_before > 0 %}
+                    Credit ${{ "{:,.2f}".format(balance_before) }}
+                {% else %}
+                    $0.00
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Payment Applied:</div>
+            <div>${{ "{:,.2f}".format(payment.amount) }}</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label amount">Current Balance:</div>
+            <div class="amount">
+                {% if balance_after < 0 %}
+                    Owes ${{ "{:,.2f}".format(-balance_after) }}
+                {% elif balance_after > 0 %}
+                    Credit ${{ "{:,.2f}".format(balance_after) }}
+                {% else %}
+                    PAID IN FULL
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if payment.notes and payment.payment_method != "mixed" %}
+    <div class="payment-details">
+        <h3>Notes</h3>
+        <p>{{ payment.notes }}</p>
+    </div>
+    {% endif %}
+
+    <div class="signature-line">
+        <div>Received By</div>
+        <div style="margin-top: 5px;">{{ payment.received_by.full_name }}</div>
+    </div>
+
+    <div class="footer">
+        <p>Thank you for your payment!</p>
+        <p>This is a computer-generated receipt and does not require a signature.</p>
+        <p>For questions, please contact us at (555) 123-4567</p>
+    </div>
+
+    {% if print_mode %}
+    <script>
+        window.onload = function() {
+            window.print();
+            setTimeout(function() {
+                window.location.href = '/customers/{{ payment.customer_id }}';
+            }, 1000);
+        }
+    </script>
+    {% endif %}
+</body>
+</html>

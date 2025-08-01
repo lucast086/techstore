@@ -2,9 +2,11 @@
 
 from decimal import Decimal
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.crud.payment import payment_crud
+from app.models.sale import Sale
 
 
 class BalanceService:
@@ -13,24 +15,23 @@ class BalanceService:
     def calculate_balance(self, db: Session, customer_id: int) -> Decimal:
         """Calculate current balance from all transactions.
 
-        MVP: Simple calculation from sales (debt) and payments (credit).
+        Balance = Payments - Credit Sales
         Positive balance = customer has credit
         Negative balance = customer owes money
         """
-        # TODO: When Sale model exists
-        # sales_total = db.query(func.sum(Sale.total)).filter(
-        #     Sale.customer_id == customer_id,
-        #     Sale.payment_method == "credit"
-        # ).scalar() or Decimal("0")
+        # Get total credit sales (only unpaid or partially paid credit sales)
+        credit_sales_total = db.query(func.sum(Sale.total_amount)).filter(
+            Sale.customer_id == customer_id,
+            Sale.payment_method == "credit",
+            Sale.is_voided.is_(False),
+        ).scalar() or Decimal("0")
 
         # Get total payments
         payments_total = payment_crud.get_customer_payment_total(db, customer_id)
 
-        # MVP: Since we don't have sales yet, we'll simulate with a negative balance
-        # In production, this would be: payments_total - sales_total
-        sales_total = Decimal("0")
-
-        return Decimal(str(payments_total)) - sales_total
+        # Balance = Payments - Credit Sales
+        # If customer bought $200 on credit and paid $50: 50 - 200 = -150 (owes $150)
+        return Decimal(str(payments_total)) - Decimal(str(credit_sales_total))
 
     def get_balance_summary(self, db: Session, customer_id: int) -> dict:
         """Get balance with summary information."""
@@ -56,10 +57,7 @@ class BalanceService:
     def get_transaction_history(
         self, db: Session, customer_id: int, limit: int | None = None
     ) -> list[dict]:
-        """Get transaction history with running balance.
-
-        MVP: Return payments only until transaction models exist.
-        """
+        """Get transaction history with running balance."""
         transactions = []
 
         # Get all payments
@@ -80,28 +78,40 @@ class BalanceService:
                 }
             )
 
-        # TODO: When Sale model exists, add sales to transactions
-        # sales = db.query(Sale).filter(
-        #     Sale.customer_id == customer_id
-        # ).all()
-        #
-        # for sale in sales:
-        #     transactions.append({
-        #         "date": sale.created_at,
-        #         "type": "sale",
-        #         "description": f"Sale #{sale.id}",
-        #         "amount": -float(sale.total),  # Negative for debt
-        #         "reference": f"sale_{sale.id}"
-        #     })
+        # Get all credit sales
+        sales = (
+            db.query(Sale)
+            .filter(
+                Sale.customer_id == customer_id,
+                Sale.payment_method == "credit",
+                Sale.is_voided.is_(False),
+            )
+            .all()
+        )
+
+        for sale in sales:
+            transactions.append(
+                {
+                    "date": sale.sale_date,
+                    "type": "sale",
+                    "description": f"Credit Sale - {sale.invoice_number}",
+                    "amount": -float(sale.total_amount),  # Negative for debt
+                    "reference": f"sale_{sale.id}",
+                    "payment_method": "credit",
+                    "reference_number": sale.invoice_number,
+                }
+            )
 
         # Sort by date and calculate running balance
         transactions.sort(key=lambda x: x["date"], reverse=True)
 
         # Calculate running balance (newest to oldest)
-        running_balance = Decimal("0")
-        for transaction in transactions:
-            running_balance += Decimal(str(transaction["amount"]))
+        running_balance = self.calculate_balance(db, customer_id)
+        for i, transaction in enumerate(transactions):
             transaction["running_balance"] = float(running_balance)
+            if i < len(transactions) - 1:
+                # Reverse the effect of this transaction for the next iteration
+                running_balance -= Decimal(str(transaction["amount"]))
 
         if limit:
             transactions = transactions[:limit]
@@ -123,14 +133,42 @@ class BalanceService:
     def get_customers_with_debt(
         self, db: Session, limit: int | None = None
     ) -> list[dict]:
-        """Get list of customers with outstanding debt.
+        """Get list of customers with outstanding debt."""
+        from app.models.customer import Customer
 
-        MVP: Return empty list for now until sales exist.
-        """
-        # TODO: Implement when we can calculate balances with sales
-        # This would query all customers and calculate their balances
-        # filtering only those with negative balances
-        return []
+        # Get all customers with credit sales
+        customers_with_sales = (
+            db.query(Customer)
+            .join(Sale, Customer.id == Sale.customer_id)
+            .filter(
+                Sale.payment_method == "credit",
+                Sale.is_voided.is_(False),
+                Customer.is_active.is_(True),
+            )
+            .distinct()
+            .all()
+        )
+
+        customers_with_debt = []
+
+        for customer in customers_with_sales:
+            balance = self.calculate_balance(db, customer.id)
+            if balance < 0:  # Customer owes money
+                customers_with_debt.append(
+                    {
+                        "customer": customer,
+                        "balance": balance,
+                        "formatted_balance": self.format_balance(balance),
+                    }
+                )
+
+        # Sort by debt amount (most debt first)
+        customers_with_debt.sort(key=lambda x: x["balance"])
+
+        if limit:
+            customers_with_debt = customers_with_debt[:limit]
+
+        return customers_with_debt
 
     def calculate_balance_before_payment(
         self, db: Session, customer_id: int, payment_id: int
@@ -141,20 +179,20 @@ class BalanceService:
             db, customer_id, include_voided=False
         )
 
-        total = Decimal("0")
+        payments_total = Decimal("0")
         for payment in payments:
             if payment.id != payment_id:
-                total += payment.amount
+                payments_total += payment.amount
 
-        # TODO: When Sale model exists, subtract sales total
-        # sales_total = db.query(func.sum(Sale.total)).filter(
-        #     Sale.customer_id == customer_id,
-        #     Sale.payment_method == "credit"
-        # ).scalar() or Decimal("0")
-        # return total - sales_total
+        # Get total credit sales
+        credit_sales_total = db.query(func.sum(Sale.total_amount)).filter(
+            Sale.customer_id == customer_id,
+            Sale.payment_method == "credit",
+            Sale.is_voided.is_(False),
+        ).scalar() or Decimal("0")
 
-        # MVP: Return negative to simulate debt
-        return total - Decimal("1000")  # Simulated debt
+        # Balance before payment = Other Payments - Credit Sales
+        return payments_total - Decimal(str(credit_sales_total))
 
 
 balance_service = BalanceService()
