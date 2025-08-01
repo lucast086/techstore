@@ -8,6 +8,7 @@ from .repair import Repair, RepairPart, RepairPhoto, RepairStatusHistory
 from .sale import Sale, SaleItem
 from .supplier import Supplier
 from .user import User
+from .warranty import Warranty, WarrantyClaim
 
 __all__ = [
     "Base",
@@ -27,4 +28,6 @@ __all__ = [
     "RepairStatusHistory",
     "RepairPart",
     "RepairPhoto",
+    "Warranty",
+    "WarrantyClaim",
 ]
