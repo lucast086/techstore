@@ -310,8 +310,15 @@ class CashClosingService:
         existing_closing = self.get_closing_by_date(db, target_date)
 
         # Get opening balance for the day
-        last_closing = cash_closing.get_last_closing(db)
-        opening_balance = last_closing.cash_count if last_closing else Decimal("0.00")
+        # If there's an existing closing/opening record for today, use its opening balance
+        if existing_closing and existing_closing.opening_balance is not None:
+            opening_balance = existing_closing.opening_balance
+        else:
+            # Otherwise, use the cash count from the last closing
+            last_closing = cash_closing.get_last_closing(db)
+            opening_balance = (
+                last_closing.cash_count if last_closing else Decimal("0.00")
+            )
 
         return {
             "date": target_date,

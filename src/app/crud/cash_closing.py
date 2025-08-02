@@ -175,7 +175,14 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         # Check if already exists for this date
         existing = self.get_by_date(db, closing_date=target_date)
         if existing:
-            raise ValueError(f"Cash register already has a record for {target_date}")
+            # If it's finalized, we cannot open again
+            if existing.is_finalized:
+                raise ValueError(
+                    f"Cash register was already closed for {target_date}. Cannot open again."
+                )
+            # If it's already open (not finalized), we cannot open again
+            else:
+                raise ValueError(f"Cash register is already open for {target_date}")
 
         # Create opening record
         db_obj = CashClosing(
@@ -200,7 +207,12 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
     def is_cash_register_open(self, db: Session, *, target_date: date) -> bool:
         """Check if cash register is open for a specific date."""
         closing = self.get_by_date(db, closing_date=target_date)
-        return closing is not None and closing.opened_at is not None
+        # Cash is open if there's a record with opened_at but not finalized
+        return (
+            closing is not None
+            and closing.opened_at is not None
+            and not closing.is_finalized
+        )
 
 
 # Create instance to use throughout the application

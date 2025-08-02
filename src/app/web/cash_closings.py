@@ -11,6 +11,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
+from app.crud.cash_closing import cash_closing
 from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.cash_closing import CashClosingCreate
@@ -84,14 +85,12 @@ async def cash_opening_form(
     try:
         # Check if already open for today
         today = date.today()
-        if cash_closing_service.cash_closing.is_cash_register_open(
-            db, target_date=today
-        ):
+        if cash_closing.is_cash_register_open(db, target_date=today):
             # Redirect to list if already open
             return RedirectResponse(url="/cash-closings", status_code=302)
 
         # Get last closing for opening balance
-        last_closing = cash_closing_service.cash_closing.get_last_closing(db)
+        last_closing = cash_closing.get_last_closing(db)
         suggested_balance = last_closing.cash_count if last_closing else Decimal("0.00")
 
         return templates.TemplateResponse(
@@ -131,7 +130,7 @@ async def open_cash_register(
 
         # Update notes if provided
         if notes:
-            db_opening = cash_closing_service.cash_closing.get(db, opening.id)
+            db_opening = cash_closing.get(db, opening.id)
             db_opening.notes = f"Opening notes: {notes}"
             db.commit()
 
@@ -145,13 +144,14 @@ async def open_cash_register(
             },
         )
     except ValueError as e:
-        logger.error(f"Error opening cash register: {e}")
+        logger.error(f"ValueError opening cash register: {e}")
+        error_message = str(e) if str(e) else "Failed to open cash register"
         return templates.TemplateResponse(
             "cash_closings/open.html",
             {
                 "request": request,
                 "current_user": current_user,
-                "error": str(e),
+                "error": error_message,
                 "opening_date": date.today(),
                 "opening_balance": opening_balance,
                 "notes": notes,
@@ -159,8 +159,19 @@ async def open_cash_register(
             },
         )
     except Exception as e:
-        logger.error(f"Unexpected error opening cash register: {e}")
-        raise HTTPException(status_code=500, detail="Failed to open cash register")
+        logger.error(f"Unexpected error opening cash register: {e}", exc_info=True)
+        return templates.TemplateResponse(
+            "cash_closings/open.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "error": f"System error: {str(e)}",
+                "opening_date": date.today(),
+                "opening_balance": opening_balance,
+                "notes": notes,
+                "suggested_balance": opening_balance,
+            },
+        )
 
 
 @router.get("/new", response_class=HTMLResponse)
@@ -180,8 +191,12 @@ async def cash_closing_form(
             db=db, target_date=target_date
         )
 
-        # If closing already exists, redirect to view it
-        if status_info["has_closing"]:
+        # If closing already exists AND is finalized, redirect to view it
+        if (
+            status_info["has_closing"]
+            and status_info["closing"]
+            and status_info["closing"].is_finalized
+        ):
             return RedirectResponse(
                 url=f"/cash-closings/{target_date}",
                 status_code=302,
@@ -378,7 +393,7 @@ async def get_daily_summary_htmx(
         )
 
         # Get opening balance
-        last_closing = cash_closing_service.cash_closing.get_last_closing(db)
+        last_closing = cash_closing.get_last_closing(db)
         opening_balance = last_closing.cash_count if last_closing else Decimal("0.00")
 
         return templates.TemplateResponse(
