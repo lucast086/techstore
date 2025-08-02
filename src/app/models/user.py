@@ -1,6 +1,5 @@
 """User model for authentication and authorization."""
 
-
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
@@ -33,7 +32,6 @@ class User(BaseModel):
 
     # Relationships
     creator = relationship("User", remote_side="User.id", backref="created_users")
-    expenses = relationship("Expense", back_populates="user")
 
     def __repr__(self) -> str:
         """String representation of User."""

@@ -2,7 +2,7 @@
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from sqlalchemy import (
     Boolean,
@@ -18,9 +18,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
-
-if TYPE_CHECKING:
-    from app.models.user import User
 
 
 class ExpenseCategory(Base):
@@ -82,4 +79,3 @@ class Expense(Base):
     category: Mapped["ExpenseCategory"] = relationship(
         "ExpenseCategory", back_populates="expenses"
     )
-    user: Mapped["User"] = relationship("User", back_populates="expenses")

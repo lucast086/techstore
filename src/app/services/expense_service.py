@@ -224,11 +224,20 @@ class ExpenseService:
             db, filters=filters, skip=skip, limit=limit
         )
 
+        # Get users for all expenses in a single query
+        user_ids = [exp.created_by for exp in expenses]
+        from app.models.user import User
+
+        users = db.query(User).filter(User.id.in_(user_ids)).all() if user_ids else []
+        user_map = {user.id: user for user in users}
+
         return [
             ExpenseResponse(
                 **exp.__dict__,
                 category_name=exp.category.name,
-                created_by_name=exp.user.full_name,
+                created_by_name=user_map[exp.created_by].full_name
+                if exp.created_by in user_map
+                else "Unknown",
             )
             for exp in expenses
         ]

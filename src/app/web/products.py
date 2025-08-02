@@ -81,7 +81,7 @@ async def products_list(
         "products/list.html",
         {
             "request": request,
-            "user": current_user,
+            "current_user": current_user,
             "products": products,
             "categories": categories,
             "page": page,
@@ -112,7 +112,7 @@ async def create_product_form(
         "products/create.html",
         {
             "request": request,
-            "user": current_user,
+            "current_user": current_user,
             "categories": categories,
         },
     )
@@ -200,7 +200,7 @@ async def create_product(
             "products/_form.html",
             {
                 "request": request,
-                "user": current_user,
+                "current_user": current_user,
                 "categories": categories,
                 "errors": {"general": str(e)},
                 "values": {
@@ -250,7 +250,7 @@ async def product_detail(
         "products/detail.html",
         {
             "request": request,
-            "user": current_user,
+            "current_user": current_user,
             "product": product,
         },
     )

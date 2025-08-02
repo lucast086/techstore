@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.crud.base import CRUDBase
 from app.models.expense import Expense
+from app.models.user import User
 from app.schemas.expense import (
     ExpenseCreate,
     ExpenseFilter,
@@ -69,7 +70,7 @@ class CRUDExpense(CRUDBase[Expense, ExpenseCreate, ExpenseUpdate]):
         """Get expenses within date range."""
         stmt = (
             select(Expense)
-            .options(joinedload(Expense.category), joinedload(Expense.user))
+            .options(joinedload(Expense.category))
             .where(
                 and_(Expense.expense_date >= date_from, Expense.expense_date <= date_to)
             )
@@ -85,7 +86,7 @@ class CRUDExpense(CRUDBase[Expense, ExpenseCreate, ExpenseUpdate]):
         """Get expenses by category."""
         stmt = (
             select(Expense)
-            .options(joinedload(Expense.category), joinedload(Expense.user))
+            .options(joinedload(Expense.category))
             .where(Expense.category_id == category_id)
             .order_by(Expense.expense_date.desc())
             .offset(skip)
@@ -144,9 +145,7 @@ class CRUDExpense(CRUDBase[Expense, ExpenseCreate, ExpenseUpdate]):
         self, db: Session, *, filters: ExpenseFilter, skip: int = 0, limit: int = 100
     ) -> list[Expense]:
         """Get expenses with multiple filters."""
-        stmt = select(Expense).options(
-            joinedload(Expense.category), joinedload(Expense.user)
-        )
+        stmt = select(Expense).options(joinedload(Expense.category))
 
         # Apply filters
         conditions = []
@@ -204,6 +203,13 @@ class CRUDExpense(CRUDBase[Expense, ExpenseCreate, ExpenseUpdate]):
             db.commit()
 
         return count
+
+    def get_expense_user(self, db: Session, *, expense_id: int) -> User | None:
+        """Get the user who created an expense."""
+        expense_obj = db.query(Expense).filter(Expense.id == expense_id).first()
+        if not expense_obj:
+            return None
+        return db.query(User).filter(User.id == expense_obj.created_by).first()
 
 
 # Create instance to use throughout the application

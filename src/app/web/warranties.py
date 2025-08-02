@@ -49,7 +49,7 @@ async def warranty_list(
             "total_pages": total_pages,
             "total": total,
             "search_query": q or "",
-            "user": current_user,
+            "current_user": current_user,
         },
     )
 
@@ -66,7 +66,7 @@ async def warranty_lookup_form(
         "warranties/lookup.html",
         {
             "request": request,
-            "user": current_user,
+            "current_user": current_user,
         },
     )
 
@@ -97,7 +97,7 @@ async def check_warranty(
             {
                 "request": request,
                 "result": result,
-                "user": current_user,
+                "current_user": current_user,
             },
         )
     except ValueError as e:
@@ -129,7 +129,7 @@ async def warranty_detail(
             {
                 "request": request,
                 "warranty": warranty,
-                "user": current_user,
+                "current_user": current_user,
             },
         )
     except ValueError as e:
@@ -157,7 +157,7 @@ async def void_warranty_form(
             {
                 "request": request,
                 "warranty": warranty,
-                "user": current_user,
+                "current_user": current_user,
             },
         )
     except ValueError as e:
@@ -195,7 +195,7 @@ async def void_warranty(
             {
                 "request": request,
                 "warranty": warranty,
-                "user": current_user,
+                "current_user": current_user,
                 "message": "Warranty voided successfully",
             },
         )
@@ -228,7 +228,7 @@ async def warranty_claim_form(
             {
                 "request": request,
                 "warranty": warranty,
-                "user": current_user,
+                "current_user": current_user,
             },
         )
     except ValueError as e:
@@ -270,7 +270,7 @@ async def create_warranty_claim(
             {
                 "request": request,
                 "claim": claim,
-                "user": current_user,
+                "current_user": current_user,
             },
         )
     except ValueError as e:
@@ -296,7 +296,7 @@ async def warranty_terms(
         "warranties/terms.html",
         {
             "request": request,
-            "user": current_user,
+            "current_user": current_user,
         },
     )
 
@@ -323,6 +323,6 @@ async def warranty_statistics(
         {
             "request": request,
             "stats": stats,
-            "user": current_user,
+            "current_user": current_user,
         },
     )

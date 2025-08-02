@@ -6,9 +6,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.auth import RequireRole, get_current_user
+from app.api.v1.auth import get_current_user, require_role
 from app.database import get_async_session as get_db
 from app.models.user import User
+from app.schemas.base import ResponseSchema
 from app.schemas.expense import (
     ExpenseCategoryCreate,
     ExpenseCategoryList,
@@ -20,7 +21,6 @@ from app.schemas.expense import (
     ExpenseSummary,
     ExpenseUpdate,
 )
-from app.schemas.response import ResponseSchema
 from app.services.expense_service import expense_service
 
 router = APIRouter(
@@ -32,7 +32,7 @@ router = APIRouter(
 @router.get(
     "/categories",
     response_model=ResponseSchema[list[ExpenseCategoryResponse]],
-    dependencies=[Depends(RequireRole(["admin", "manager"]))],
+    dependencies=[Depends(require_role(["admin", "manager"]))],
 )
 async def list_expense_categories(
     skip: int = 0,
@@ -70,7 +70,7 @@ async def list_active_categories(
     "/categories",
     response_model=ResponseSchema[ExpenseCategoryResponse],
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(RequireRole(["admin"]))],
+    dependencies=[Depends(require_role(["admin"]))],
 )
 async def create_expense_category(
     category_in: ExpenseCategoryCreate,
@@ -95,7 +95,7 @@ async def create_expense_category(
 @router.put(
     "/categories/{category_id}",
     response_model=ResponseSchema[ExpenseCategoryResponse],
-    dependencies=[Depends(RequireRole(["admin"]))],
+    dependencies=[Depends(require_role(["admin"]))],
 )
 async def update_expense_category(
     category_id: int,
@@ -123,7 +123,7 @@ async def update_expense_category(
 @router.delete(
     "/categories/{category_id}",
     response_model=ResponseSchema[ExpenseCategoryResponse],
-    dependencies=[Depends(RequireRole(["admin"]))],
+    dependencies=[Depends(require_role(["admin"]))],
 )
 async def deactivate_expense_category(
     category_id: int,
@@ -181,6 +181,7 @@ async def create_expense(
         from app.crud.expense import expense as expense_crud
 
         expense = expense_crud.get(db, id=expense.id)
+        user = expense_crud.get_expense_user(db, expense_id=expense.id)
 
         return ResponseSchema(
             success=True,
@@ -188,7 +189,7 @@ async def create_expense(
             data=ExpenseResponse(
                 **expense.__dict__,
                 category_name=expense.category.name,
-                created_by_name=expense.user.full_name,
+                created_by_name=user.full_name if user else "Unknown",
             ),
         )
     except ValueError as e:
@@ -276,13 +277,15 @@ async def get_expense(
             detail="Expense not found",
         )
 
+    user = expense_crud.get_expense_user(db, expense_id=expense.id)
+
     return ResponseSchema(
         success=True,
         message="Expense retrieved successfully",
         data=ExpenseResponse(
             **expense.__dict__,
             category_name=expense.category.name,
-            created_by_name=expense.user.full_name,
+            created_by_name=user.full_name if user else "Unknown",
         ),
     )
 
@@ -306,13 +309,17 @@ async def update_expense(
             current_user=current_user,
         )
 
+        from app.crud.expense import expense as expense_crud
+
+        user = expense_crud.get_expense_user(db, expense_id=expense.id)
+
         return ResponseSchema(
             success=True,
             message="Expense updated successfully",
             data=ExpenseResponse(
                 **expense.__dict__,
                 category_name=expense.category.name,
-                created_by_name=expense.user.full_name,
+                created_by_name=user.full_name if user else "Unknown",
             ),
         )
     except ValueError as e:

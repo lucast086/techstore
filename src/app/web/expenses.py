@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app.core.web_auth import require_admin
+from app.core.web_auth import require_web_role
 from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.expense import ExpenseCategoryCreate, ExpenseCategoryUpdate
@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="src/app/templates")
+
+# Dependency for admin-only routes
+require_admin = require_web_role(["admin"])
 
 
 @router.get("/expenses/categories", response_class=HTMLResponse)

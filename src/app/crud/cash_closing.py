@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.crud.base import CRUDBase
 from app.models.cash_closing import CashClosing
+from app.models.expense import Expense
 from app.models.sale import Sale
 from app.schemas.cash_closing import CashClosingCreate, CashClosingUpdate, DailySummary
 
@@ -111,8 +112,6 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         )
 
         # Get expenses summary for the date
-        from app.models.expense import Expense
-
         expenses_result = (
             db.query(
                 func.coalesce(func.sum(Expense.amount), 0).label("total_expenses"),
