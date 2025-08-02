@@ -43,7 +43,7 @@
   * stock status
   * check reset in all
 
-### Caja y cierres
+### Caja y cierres (epic 006)
 * ahora tengo que poder hacer cierres de caja. y que se genere un documento y un registro.
 * cierre de mes. que suma todos los cierres de caja.
 * seccion gastos con categorias (general, etc)
@@ -52,3 +52,6 @@
 
 * ademas una seccion de estadisticas de ventas, reparaciones, y otras estadisticas que saco del coso de instagram. todas en admin panel.
 STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
+
+
+### all debts are epic 007

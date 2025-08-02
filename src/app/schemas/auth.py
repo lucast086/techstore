@@ -7,6 +7,12 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.core.security import validate_password
 
 
+class TokenData(BaseModel):
+    """Schema for token data extracted from JWT."""
+
+    username: str | None = None
+
+
 class LoginRequest(BaseModel):
     """Schema for login request.
 

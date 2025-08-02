@@ -1,9 +1,11 @@
 """Base schemas for common functionality."""
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Generic, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict
+
+T = TypeVar("T")
 
 
 class BaseSchema(BaseModel):
@@ -23,12 +25,13 @@ class TimestampSchema(BaseSchema):
     updated_at: datetime
 
 
-class ResponseSchema(BaseSchema):
+class ResponseSchema(BaseSchema, Generic[T]):
     """Base schema for API responses."""
 
     success: bool = True
     message: Optional[str] = None
-    data: Optional[Any] = None
+    data: Optional[T] = None
+    meta: Optional[dict[str, Any]] = None
 
 
 class ErrorResponse(BaseSchema):

@@ -1,0 +1,77 @@
+{% if result.found %}
+<div class="space-y-4">
+    <div class="bg-green-50 p-4 rounded-md">
+        <p class="text-sm text-green-800">{{ result.message }}</p>
+    </div>
+
+    {% for warranty in result.warranties %}
+    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+        <div class="flex justify-between items-start">
+            <div class="space-y-2">
+                <div>
+                    <span class="text-sm font-medium text-gray-500">Warranty Number:</span>
+                    <span class="text-sm text-gray-900">{{ warranty.warranty_number }}</span>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-500">Repair Number:</span>
+                    <a href="/repairs/{{ warranty.repair_id }}" class="text-sm text-blue-600 hover:text-blue-800">
+                        {{ warranty.repair_number }}
+                    </a>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-500">Customer:</span>
+                    <span class="text-sm text-gray-900">{{ warranty.customer_name }}</span>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-500">Device:</span>
+                    <span class="text-sm text-gray-900">
+                        {{ warranty.device_brand }} {{ warranty.device_type }}
+                        {% if warranty.device_model %}({{ warranty.device_model }}){% endif %}
+                    </span>
+                </div>
+                <div>
+                    <span class="text-sm font-medium text-gray-500">Status:</span>
+                    {% if warranty.status == "active" and warranty.is_valid %}
+                    <span class="text-sm text-green-600 font-medium">✓ Active</span>
+                    {% elif warranty.status == "expired" %}
+                    <span class="text-sm text-gray-600">Expired</span>
+                    {% elif warranty.status == "claimed" %}
+                    <span class="text-sm text-blue-600">Claimed</span>
+                    {% elif warranty.status == "voided" %}
+                    <span class="text-sm text-red-600">Voided</span>
+                    {% endif %}
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="font-medium text-gray-500">Parts:</span>
+                        {% if warranty.is_parts_valid %}
+                        <span class="text-green-600">Valid ({{ warranty.days_remaining_parts }} days)</span>
+                        {% else %}
+                        <span class="text-red-600">Expired</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="font-medium text-gray-500">Labor:</span>
+                        {% if warranty.is_labor_valid %}
+                        <span class="text-green-600">Valid ({{ warranty.days_remaining_labor }} days)</span>
+                        {% else %}
+                        <span class="text-red-600">Expired</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="/warranties/{{ warranty.id }}"
+                   class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+                    View Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-yellow-50 p-4 rounded-md">
+    <p class="text-sm text-yellow-800">{{ result.message }}</p>
+</div>
+{% endif %}

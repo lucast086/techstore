@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
@@ -20,8 +21,29 @@
       "Bash(true)",
       "Bash(curl:*)",
       "Bash(poetry lock:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(claude mcp:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(cat:*)",
+      "WebFetch(domain:api.ref.tools)",
+      "WebFetch(domain:ref.tools)",
+      "Bash(env)",
+      "mcp__Ref__ref_search_documentation",
+      "mcp__Ref__ref_read_url",
+      "Bash(pipx install:*)",
+      "Bash(export PATH=\"$PATH:/home/developer/.local/bin\")",
+      "Bash(/home/developer/.local/bin/pipx install semgrep-mcp)",
+      "Bash(/home/developer/.local/bin/semgrep-mcp:*)",
+      "Bash(semgrep:*)",
+      "Bash(/home/developer/.local/bin/semgrep --version)",
+      "Bash(export:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(pipx list:*)",
+      "Bash(/home/developer/.local/bin/pipx uninstall semgrep-mcp)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["Ref", "semgrep"]
 }

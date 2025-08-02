@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Warranty Statistics{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="bg-white shadow-sm rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold text-gray-800">Warranty Statistics</h2>
+                <a href="/warranties" class="text-blue-600 hover:text-blue-800">
+                    ← Back to Warranties
+                </a>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <dt class="text-sm font-medium text-gray-500 truncate">
+                        Total Warranties
+                    </dt>
+                    <dd class="mt-1 text-3xl font-semibold text-gray-900">
+                        {{ stats.total_warranties }}
+                    </dd>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-6">
+                    <dt class="text-sm font-medium text-green-600 truncate">
+                        Active Warranties
+                    </dt>
+                    <dd class="mt-1 text-3xl font-semibold text-green-900">
+                        {{ stats.active_warranties }}
+                    </dd>
+                    <p class="text-sm text-green-600 mt-1">
+                        {{ ((stats.active_warranties / stats.total_warranties * 100) if stats.total_warranties > 0 else 0)|round(1) }}% of total
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 rounded-lg p-6">
+                    <dt class="text-sm font-medium text-blue-600 truncate">
+                        Total Claims
+                    </dt>
+                    <dd class="mt-1 text-3xl font-semibold text-blue-900">
+                        {{ stats.total_claims }}
+                    </dd>
+                    <p class="text-sm text-blue-600 mt-1">
+                        {{ stats.approved_claims }} approved
+                    </p>
+                </div>
+
+                <div class="bg-purple-50 rounded-lg p-6">
+                    <dt class="text-sm font-medium text-purple-600 truncate">
+                        Claim Rate
+                    </dt>
+                    <dd class="mt-1 text-3xl font-semibold text-purple-900">
+                        {{ stats.claim_rate }}%
+                    </dd>
+                    <p class="text-sm text-purple-600 mt-1">
+                        {% if stats.average_claim_days %}
+                        Avg: {{ stats.average_claim_days }} days
+                        {% else %}
+                        No claims yet
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Status Breakdown -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Warranty Status Breakdown</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-semibold text-green-600">{{ stats.active_warranties }}</div>
+                        <div class="text-sm text-gray-600">Active</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-semibold text-gray-600">{{ stats.expired_warranties }}</div>
+                        <div class="text-sm text-gray-600">Expired</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-semibold text-blue-600">{{ stats.claimed_warranties }}</div>
+                        <div class="text-sm text-gray-600">Claimed</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-semibold text-red-600">{{ stats.voided_warranties }}</div>
+                        <div class="text-sm text-gray-600">Voided</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Claim Statistics</h3>
+                    <dl class="space-y-3">
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Total Claims Filed</dt>
+                            <dd class="text-sm font-medium text-gray-900">{{ stats.total_claims }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Claims Approved</dt>
+                            <dd class="text-sm font-medium text-gray-900">{{ stats.approved_claims }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Claims Denied</dt>
+                            <dd class="text-sm font-medium text-gray-900">{{ stats.total_claims - stats.approved_claims }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Approval Rate</dt>
+                            <dd class="text-sm font-medium text-gray-900">
+                                {% if stats.total_claims > 0 %}
+                                {{ ((stats.approved_claims / stats.total_claims * 100)|round(1)) }}%
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Performance Metrics</h3>
+                    <dl class="space-y-3">
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Warranties per Repair</dt>
+                            <dd class="text-sm font-medium text-gray-900">
+                                {{ ((stats.total_warranties / stats.total_warranties * 100) if stats.total_warranties > 0 else 0)|round(1) }}%
+                            </dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Average Days to Claim</dt>
+                            <dd class="text-sm font-medium text-gray-900">
+                                {% if stats.average_claim_days %}
+                                {{ stats.average_claim_days }} days
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-600">Void Rate</dt>
+                            <dd class="text-sm font-medium text-gray-900">
+                                {% if stats.total_warranties > 0 %}
+                                {{ ((stats.voided_warranties / stats.total_warranties * 100)|round(1)) }}%
+                                {% else %}
+                                0%
+                                {% endif %}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            {% if user.is_superuser %}
+            <div class="mt-8 bg-yellow-50 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-yellow-900 mb-4">Administrative Actions</h3>
+                <div class="flex space-x-4">
+                    <form hx-post="/api/v1/warranties/update-expired"
+                          hx-confirm="Are you sure you want to update all expired warranties?"
+                          hx-target="#update-result">
+                        <button type="submit"
+                                class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700">
+                            Update Expired Warranties
+                        </button>
+                    </form>
+                    <div id="update-result"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

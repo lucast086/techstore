@@ -41,6 +41,9 @@ class Customer(BaseModel):
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_by = relationship("User", backref="created_customers")
 
+    # Add relationship to repairs
+    repairs = relationship("Repair", back_populates="customer", lazy="select")
+
     # Indexes for search performance
     __table_args__ = (
         Index("idx_customer_search", "name", "phone", "phone_secondary"),

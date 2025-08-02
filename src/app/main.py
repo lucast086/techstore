@@ -16,10 +16,21 @@ from app.api.v1 import auth as auth_api
 from app.api.v1 import customers as customers_api
 from app.api.v1 import health as health_api
 from app.api.v1 import payments as payments_api
+from app.api.v1 import repairs as repairs_api
 from app.api.v1 import sales as sales_api
 from app.api.v1 import temp_setup  # TEMPORARY - DELETE AFTER USE
+from app.api.v1 import warranties as warranties_api
 from app.middleware.auth_context import AuthContextMiddleware
-from app.web import admin, auth, customers, payments, products, sales
+from app.web import (
+    admin,
+    auth,
+    customers,
+    payments,
+    products,
+    repairs,
+    sales,
+    warranties,
+)
 from app.web.main import router as web_router
 
 app = FastAPI(
@@ -64,6 +75,12 @@ app.include_router(payments_api.router, prefix="/api/v1")  # Payment API endpoin
 app.include_router(
     sales_api.router, prefix="/api/v1/sales", tags=["sales"]
 )  # Sales API endpoints
+app.include_router(
+    repairs_api.router, prefix="/api/v1/repairs", tags=["repairs"]
+)  # Repair API endpoints
+app.include_router(
+    warranties_api.router, prefix="/api/v1", tags=["warranties"]
+)  # Warranty API endpoints
 app.include_router(temp_setup.router, prefix="/api/v1")  # TEMPORARY - DELETE AFTER USE
 
 # Auth routes (HTMX)
@@ -83,6 +100,12 @@ app.include_router(products.router, tags=["products"])
 
 # Sales routes (HTMX)
 app.include_router(sales.router, prefix="/sales", tags=["sales"])
+
+# Repair routes (HTMX)
+app.include_router(repairs.router, prefix="/repairs", tags=["repairs"])
+
+# Warranty routes (HTMX)
+app.include_router(warranties.router, prefix="/warranties", tags=["warranties"])
 
 # Web routes (HTMX)
 app.include_router(web_router)

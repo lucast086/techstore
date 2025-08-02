@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">New Repair Order</h1>
+            <p class="text-gray-600">Register a new device for repair</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="/repairs/" class="bg-white rounded-lg shadow-md p-6 space-y-6">
+            <!-- Customer Selection -->
+            <div>
+                <label for="customer_id" class="block text-sm font-medium text-gray-700 mb-1">
+                    Customer <span class="text-red-500">*</span>
+                </label>
+                <select name="customer_id"
+                        id="customer_id"
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">Select a customer...</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}" {% if selected_customer and selected_customer.id == customer.id %}selected{% endif %}>
+                        {{ customer.name }} - {{ customer.phone }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Device Information -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Device Information</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Device Type -->
+                    <div>
+                        <label for="device_type" class="block text-sm font-medium text-gray-700 mb-1">
+                            Device Type <span class="text-red-500">*</span>
+                        </label>
+                        <select name="device_type"
+                                id="device_type"
+                                required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Select type...</option>
+                            <option value="phone">Phone</option>
+                            <option value="laptop">Laptop</option>
+                            <option value="tablet">Tablet</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="printer">Printer</option>
+                            <option value="monitor">Monitor</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Device Brand -->
+                    <div>
+                        <label for="device_brand" class="block text-sm font-medium text-gray-700 mb-1">
+                            Brand <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text"
+                               name="device_brand"
+                               id="device_brand"
+                               required
+                               placeholder="e.g., Samsung, Apple, Dell"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Device Model -->
+                    <div>
+                        <label for="device_model" class="block text-sm font-medium text-gray-700 mb-1">
+                            Model
+                        </label>
+                        <input type="text"
+                               name="device_model"
+                               id="device_model"
+                               placeholder="e.g., Galaxy S21, MacBook Pro"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Serial Number -->
+                    <div>
+                        <label for="serial_number" class="block text-sm font-medium text-gray-700 mb-1">
+                            Serial Number
+                        </label>
+                        <input type="text"
+                               name="serial_number"
+                               id="serial_number"
+                               placeholder="Device serial number"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problem Description -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Problem Details</h3>
+
+                <div>
+                    <label for="problem_description" class="block text-sm font-medium text-gray-700 mb-1">
+                        Problem Description <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="problem_description"
+                              id="problem_description"
+                              rows="4"
+                              required
+                              placeholder="Describe the issue with the device..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
+                </div>
+
+                <!-- Device Condition -->
+                <div class="mt-4">
+                    <label for="device_condition" class="block text-sm font-medium text-gray-700 mb-1">
+                        Physical Condition
+                    </label>
+                    <textarea name="device_condition"
+                              id="device_condition"
+                              rows="2"
+                              placeholder="Note any physical damage, scratches, etc..."
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
+                </div>
+
+                <!-- Accessories -->
+                <div class="mt-4">
+                    <label for="accessories_received" class="block text-sm font-medium text-gray-700 mb-1">
+                        Accessories Received
+                    </label>
+                    <input type="text"
+                           name="accessories_received"
+                           id="accessories_received"
+                           placeholder="e.g., Charger, case, cables..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                </div>
+            </div>
+
+            <!-- Service Details -->
+            <div class="border-t pt-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Service Details</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Estimated Completion -->
+                    <div>
+                        <label for="estimated_completion" class="block text-sm font-medium text-gray-700 mb-1">
+                            Estimated Completion Date
+                        </label>
+                        <input type="date"
+                               name="estimated_completion"
+                               id="estimated_completion"
+                               min="{{ current_user.created_at.date() }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Assigned Technician -->
+                    <div>
+                        <label for="assigned_technician" class="block text-sm font-medium text-gray-700 mb-1">
+                            Assign to Technician
+                        </label>
+                        <select name="assigned_technician"
+                                id="assigned_technician"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Not assigned</option>
+                            {% for tech in technicians %}
+                            <option value="{{ tech.id }}">{{ tech.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Warranty Days -->
+                    <div>
+                        <label for="warranty_days" class="block text-sm font-medium text-gray-700 mb-1">
+                            Warranty Period (days)
+                        </label>
+                        <input type="number"
+                               name="warranty_days"
+                               id="warranty_days"
+                               value="30"
+                               min="0"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Express Service -->
+                    <div>
+                        <label class="flex items-center">
+                            <input type="checkbox"
+                                   name="is_express"
+                                   id="is_express"
+                                   value="true"
+                                   class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Express Service</span>
+                        </label>
+                        <p class="text-xs text-gray-500 mt-1">For repairs while customer waits</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="border-t pt-6 flex justify-between">
+                <a href="/repairs" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg">
+                    Cancel
+                </a>
+                <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-lg">
+                    Create Repair Order
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Add customer search/filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const customerSelect = document.getElementById('customer_id');
+
+    // You could enhance this with a searchable select library
+    // or implement AJAX search for large customer lists
+});
+</script>
+{% endblock %}

@@ -101,3 +101,67 @@ def test_user(db_session):
     db_session.commit()
     db_session.refresh(user)
     return user
+
+
+@pytest.fixture
+def test_customer(db_session):
+    """Create a test customer."""
+    from app.models.customer import Customer
+
+    customer = Customer(
+        name="Test Customer",
+        email="customer@example.com",
+        phone="1234567890",
+        address="123 Test St",
+    )
+    db_session.add(customer)
+    db_session.commit()
+    db_session.refresh(customer)
+    return customer
+
+
+@pytest.fixture
+def test_repair(db_session, test_customer):
+    """Create a test repair."""
+    from app.models.repair import Repair
+
+    repair = Repair(
+        repair_number="REP-2024-00001",
+        customer_id=test_customer.id,
+        device_type="Phone",
+        device_brand="Samsung",
+        device_model="Galaxy S21",
+        problem_description="Screen broken",
+        status="delivered",
+        received_by=1,
+        delivered_by=1,
+        warranty_days=30,
+    )
+    db_session.add(repair)
+    db_session.commit()
+    db_session.refresh(repair)
+    return repair
+
+
+@pytest.fixture
+def test_warranty(db_session, test_repair):
+    """Create a test warranty."""
+    from datetime import date, timedelta
+
+    from app.models.warranty import CoverageType, Warranty, WarrantyStatus
+
+    warranty = Warranty(
+        repair_id=test_repair.id,
+        warranty_number="WRN-2024-00001",
+        coverage_type=CoverageType.FULL,
+        parts_warranty_days=90,
+        labor_warranty_days=30,
+        start_date=date.today(),
+        parts_expiry_date=date.today() + timedelta(days=90),
+        labor_expiry_date=date.today() + timedelta(days=30),
+        status=WarrantyStatus.ACTIVE,
+    )
+    db_session.add(warranty)
+    db_session.commit()
+    db_session.refresh(warranty)
+    return warranty
