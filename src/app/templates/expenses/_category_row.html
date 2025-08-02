@@ -1,0 +1,43 @@
+<tr id="category-row-{{ category.id }}" class="{% if not category.is_active %}bg-gray-50 opacity-60{% endif %}">
+    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {{ category.name }}
+    </td>
+    <td class="px-6 py-4 text-sm text-gray-500">
+        {{ category.description or "-" }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        {% if category.is_active %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                Active
+            </span>
+        {% else %}
+            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                Inactive
+            </span>
+        {% endif %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {{ category.created_at.strftime('%Y-%m-%d') }}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+        {% if category.is_active %}
+            <button type="button"
+                    hx-get="/expenses/categories/{{ category.id }}/edit"
+                    hx-target="#category-form-container"
+                    hx-swap="innerHTML"
+                    class="text-indigo-600 hover:text-indigo-900 mr-4">
+                Edit
+            </button>
+            <button type="button"
+                    hx-delete="/expenses/categories/{{ category.id }}"
+                    hx-target="#category-row-{{ category.id }}"
+                    hx-swap="outerHTML"
+                    hx-confirm="Are you sure you want to deactivate this category?"
+                    class="text-red-600 hover:text-red-900">
+                Deactivate
+            </button>
+        {% else %}
+            <span class="text-gray-400">Deactivated</span>
+        {% endif %}
+    </td>
+</tr>

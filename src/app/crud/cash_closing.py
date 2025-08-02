@@ -110,10 +110,20 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             .first()
         )
 
-        # TODO: Add expenses summary once expense model is available
-        # For now, default to zero expenses
-        total_expenses = Decimal("0.00")
-        expenses_count = 0
+        # Get expenses summary for the date
+        from app.models.expense import Expense
+
+        expenses_result = (
+            db.query(
+                func.coalesce(func.sum(Expense.amount), 0).label("total_expenses"),
+                func.count(Expense.id).label("expenses_count"),
+            )
+            .filter(Expense.expense_date == target_date)
+            .first()
+        )
+
+        total_expenses = expenses_result.total_expenses or Decimal("0.00")
+        expenses_count = expenses_result.expenses_count or 0
 
         # Check if closing exists
         has_closing = self.check_closing_exists(db, closing_date=target_date)
