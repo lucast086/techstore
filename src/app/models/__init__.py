@@ -3,6 +3,7 @@
 from .base import Base, BaseModel, TimestampMixin
 from .cash_closing import CashClosing
 from .customer import Customer
+from .expense import Expense, ExpenseCategory
 from .payment import Payment
 from .product import Category, Product, ProductImage, ProductSupplier
 from .repair import Repair, RepairPart, RepairPhoto, RepairStatusHistory
@@ -32,4 +33,6 @@ __all__ = [
     "Warranty",
     "WarrantyClaim",
     "CashClosing",
+    "Expense",
+    "ExpenseCategory",
 ]

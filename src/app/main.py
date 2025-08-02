@@ -15,6 +15,7 @@ from fastapi.templating import Jinja2Templates
 from app.api.v1 import auth as auth_api
 from app.api.v1 import cash_closings as cash_closings_api
 from app.api.v1 import customers as customers_api
+from app.api.v1 import expenses as expenses_api
 from app.api.v1 import health as health_api
 from app.api.v1 import payments as payments_api
 from app.api.v1 import repairs as repairs_api
@@ -27,6 +28,7 @@ from app.web import (
     auth,
     cash_closings,
     customers,
+    expenses,
     payments,
     products,
     repairs,
@@ -86,6 +88,9 @@ app.include_router(
 app.include_router(
     cash_closings_api.router, prefix="/api/v1/cash-closings", tags=["cash-closings"]
 )  # Cash Closing API endpoints
+app.include_router(
+    expenses_api.router, prefix="/api/v1", tags=["expenses"]
+)  # Expense API endpoints
 app.include_router(temp_setup.router, prefix="/api/v1")  # TEMPORARY - DELETE AFTER USE
 
 # Auth routes (HTMX)
@@ -116,6 +121,9 @@ app.include_router(warranties.router, prefix="/warranties", tags=["warranties"])
 app.include_router(
     cash_closings.router, prefix="/cash-closings", tags=["cash-closings"]
 )
+
+# Expense routes (HTMX)
+app.include_router(expenses.router, tags=["expenses"])
 
 # Web routes (HTMX)
 app.include_router(web_router)

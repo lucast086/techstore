@@ -33,6 +33,7 @@ class User(BaseModel):
 
     # Relationships
     creator = relationship("User", remote_side="User.id", backref="created_users")
+    expenses = relationship("Expense", back_populates="user")
 
     def __repr__(self) -> str:
         """String representation of User."""
