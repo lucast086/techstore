@@ -4,7 +4,7 @@
 - **Epic**: EPIC-005 (Repair Management)
 - **Priority**: HIGH
 - **Estimate**: 1.5 days
-- **Status**: TODO
+- **Status**: READY_FOR_REVIEW
 
 ## 🎯 User Story
 **As** Carlos or María,

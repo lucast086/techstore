@@ -4,7 +4,7 @@
 - **Epic**: EPIC-004 (Sales Management)
 - **Priority**: MEDIUM
 - **Estimate**: 1.5 days
-- **Status**: IN_PROGRESS
+- **Status**: READY_FOR_REVIEW
 
 ## 🎯 User Story
 **As** María or Carlos,
