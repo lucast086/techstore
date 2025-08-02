@@ -52,6 +52,10 @@ class TestAlembicConfiguration:
 
         # Try to create a migration (this will fail if not properly configured)
         try:
+            # First, ensure database is up to date
+            command.upgrade(alembic_cfg, "head")
+
+            # Now try to generate a migration
             command.revision(alembic_cfg, autogenerate=True, message="test_migration")
 
             # Check if migration was created

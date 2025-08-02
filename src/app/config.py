@@ -15,8 +15,8 @@ class Settings(BaseSettings):
         description="PostgreSQL database URL",
     )
     TEST_DATABASE_URL: str = Field(
-        default="postgresql://postgres:postgres@db:5432/test_techstore_db",
-        description="PostgreSQL test database URL",
+        default="postgresql://postgres:postgres@db:5432/techstore_db",
+        description="PostgreSQL test database URL (same as main DB in dev)",
     )
 
     # Security
