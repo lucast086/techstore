@@ -40,7 +40,13 @@
       "Bash(export:*)",
       "mcp__ide__getDiagnostics",
       "Bash(pipx list:*)",
-      "Bash(/home/developer/.local/bin/pipx uninstall semgrep-mcp)"
+      "Bash(/home/developer/.local/bin/pipx uninstall semgrep-mcp)",
+      "Bash(for story in 052 053 054 055)",
+      "Bash(do echo \"=== STORY-$story ===\")",
+      "Bash(done)",
+      "Bash(sed:*)",
+      "Bash(git checkout:*)",
+      "Bash(git stash push:*)"
     ],
     "deny": []
   },
