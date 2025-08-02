@@ -361,8 +361,43 @@ class RepairService:
             for sh in repair.status_history
         ]
 
+        # Create a dict with only the scalar fields from repair
+        repair_data = {
+            "id": repair.id,
+            "repair_number": repair.repair_number,
+            "customer_id": repair.customer_id,
+            "device_type": repair.device_type,
+            "device_brand": repair.device_brand,
+            "device_model": repair.device_model,
+            "serial_number": repair.serial_number,
+            "problem_description": repair.problem_description,
+            "device_condition": repair.device_condition,
+            "accessories_received": repair.accessories_received,
+            "status": repair.status,
+            "diagnosis_notes": repair.diagnosis_notes,
+            "repair_notes": repair.repair_notes,
+            "estimated_cost": repair.estimated_cost,
+            "final_cost": repair.final_cost,
+            "labor_cost": repair.labor_cost,
+            "parts_cost": repair.parts_cost,
+            "received_date": repair.received_date,
+            "estimated_completion": repair.estimated_completion,
+            "completed_date": repair.completed_date,
+            "delivered_date": repair.delivered_date,
+            "warranty_days": repair.warranty_days,
+            "warranty_expires": repair.warranty_expires,
+            "assigned_technician": repair.assigned_technician,
+            "received_by": repair.received_by,
+            "delivered_by": repair.delivered_by,
+            "is_express": repair.is_express,
+            "customer_approved": repair.customer_approved,
+            "approval_date": repair.approval_date,
+            "created_at": repair.created_at,
+            "updated_at": repair.updated_at,
+        }
+
         return RepairResponse(
-            **repair.__dict__,
+            **repair_data,
             customer_name=repair.customer.name,
             customer_phone=repair.customer.phone,
             technician_name=repair.technician.full_name if repair.technician else None,
