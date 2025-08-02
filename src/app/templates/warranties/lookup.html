@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Check Warranty{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white shadow-sm rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-2xl font-semibold text-gray-800">Check Warranty</h2>
+            <p class="mt-1 text-sm text-gray-600">
+                Enter warranty number, repair number, or customer phone to check warranty status
+            </p>
+        </div>
+
+        <form hx-post="/warranties/check"
+              hx-target="#warranty-results"
+              hx-swap="innerHTML"
+              class="px-6 py-4 space-y-4">
+
+            <div>
+                <label for="warranty_number" class="block text-sm font-medium text-gray-700">
+                    Warranty Number
+                </label>
+                <input type="text"
+                       id="warranty_number"
+                       name="warranty_number"
+                       placeholder="e.g., WRN-2024-00001"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+            <div class="text-center text-gray-500 text-sm">
+                — OR —
+            </div>
+
+            <div>
+                <label for="repair_number" class="block text-sm font-medium text-gray-700">
+                    Repair Number
+                </label>
+                <input type="text"
+                       id="repair_number"
+                       name="repair_number"
+                       placeholder="e.g., REP-2024-00001"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+            <div class="text-center text-gray-500 text-sm">
+                — OR —
+            </div>
+
+            <div>
+                <label for="customer_phone" class="block text-sm font-medium text-gray-700">
+                    Customer Phone Number
+                </label>
+                <input type="tel"
+                       id="customer_phone"
+                       name="customer_phone"
+                       placeholder="e.g., 1234567890"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+
+            <div class="pt-4">
+                <button type="submit"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Check Warranty
+                </button>
+            </div>
+        </form>
+
+        <!-- Results will be displayed here -->
+        <div id="warranty-results" class="px-6 py-4">
+            <!-- HTMX will inject results here -->
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="/warranties" class="text-blue-600 hover:text-blue-800">
+            ← Back to Warranty List
+        </a>
+    </div>
+</div>
+{% endblock %}
