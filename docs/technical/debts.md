@@ -1,3 +1,15 @@
+### Caja y cierres (epic 006)
+* ahora tengo que poder hacer cierres de caja. y que se genere un documento y un registro.
+* cierre de mes. que suma todos los cierres de caja.
+* seccion gastos con categorias (general, etc)
+* seccion compras que permite cargar compras con un valor total de factura, ademas de lista de items con cantidad valor unitario y codigo o que
+  permite cargar un producto nuevo si no existe. El valor total se plasma como gasto compras a proveedores. y se agregan los stocks a los productos.
+
+* ademas una seccion de estadisticas de ventas, reparaciones, y otras estadisticas que saco del coso de instagram. todas en admin panel.
+STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
+
+
+### all debts are epic 007
 ## Here are listed all the technical debts
 
 ### Category
@@ -42,16 +54,3 @@
   * sort by does not work
   * stock status
   * check reset in all
-
-### Caja y cierres (epic 006)
-* ahora tengo que poder hacer cierres de caja. y que se genere un documento y un registro.
-* cierre de mes. que suma todos los cierres de caja.
-* seccion gastos con categorias (general, etc)
-* seccion compras que permite cargar compras con un valor total de factura, ademas de lista de items con cantidad valor unitario y codigo o que
-  permite cargar un producto nuevo si no existe. El valor total se plasma como gasto compras a proveedores. y se agregan los stocks a los productos.
-
-* ademas una seccion de estadisticas de ventas, reparaciones, y otras estadisticas que saco del coso de instagram. todas en admin panel.
-STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
-
-
-### all debts are epic 007

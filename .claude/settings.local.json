@@ -46,7 +46,8 @@
       "Bash(done)",
       "Bash(sed:*)",
       "Bash(git checkout:*)",
-      "Bash(git stash push:*)"
+      "Bash(git stash push:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   },
