@@ -2,12 +2,12 @@
 
 from logging.config import fileConfig
 
+# Import all models to ensure they're registered with Base.metadata
+import app.models  # noqa: F401
+
 # Import the database models and settings
 from app.config import settings
-from app.database import Base
-
-# Import all models to ensure they're registered with Base.metadata
-from app.models import *  # noqa: F401, F403
+from app.models.base import Base
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context

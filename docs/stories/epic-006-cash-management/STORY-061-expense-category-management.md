@@ -4,7 +4,7 @@
 - **Epic**: EPIC-006 (Cash Management and Closings)
 - **Priority**: HIGH
 - **Estimate**: 1 day
-- **Status**: TODO
+- **Status**: In Progress
 
 ## 🎯 User Story
 **As** Pedro (admin),
@@ -20,21 +20,21 @@
 
 ## 🔧 Technical Tasks
 ### 1. Create Database Models (AC: 1, 3)
-- [ ] Create `ExpenseCategory` model in `src/app/models/expense.py`
+- [x] Create `ExpenseCategory` model in `src/app/models/expense.py`
   - Fields: id, name, description, is_active, created_at, updated_at
   - Unique constraint on name
   - Add seed data migration for default categories
-- [ ] Create migration with Alembic
+- [x] Create migration with Alembic
 
 ### 2. Create Pydantic Schemas (AC: 3)
-- [ ] Create schemas in `src/app/schemas/expense.py`
+- [x] Create schemas in `src/app/schemas/expense.py`
   - `ExpenseCategoryCreate`: name, description
   - `ExpenseCategoryUpdate`: name, description, is_active
   - `ExpenseCategoryResponse`: Full category details
   - `ExpenseCategoryList`: For dropdown lists (id, name only)
 
 ### 3. Implement CRUD Operations (AC: 1, 4)
-- [ ] Create CRUD in `src/app/crud/expense_category.py`
+- [x] Create CRUD in `src/app/crud/expense_category.py`
   - `get_all_categories()`: Retrieve all categories
   - `get_active_categories()`: Only active for dropdowns
   - `create_category()`: Create new category
@@ -43,14 +43,14 @@
   - `check_category_has_expenses()`: Verify before deletion
 
 ### 4. Implement Service Layer (AC: 2, 4)
-- [ ] Create service in `src/app/services/expense_service.py`
+- [x] Create service in `src/app/services/expense_service.py`
   - `create_default_categories()`: Initialize default categories
   - `manage_category()`: Business logic for category operations
   - `validate_category_deletion()`: Check if category can be deleted
   - `get_categories_for_dropdown()`: Return active categories
 
 ### 5. Create API Endpoints (AC: 1, 5)
-- [ ] Add routes to `src/app/api/v1/expenses.py`
+- [x] Add routes to `src/app/api/v1/expenses.py`
   - `GET /expense-categories`: List all categories
   - `GET /expense-categories/active`: Active categories only
   - `POST /expense-categories`: Create new category
@@ -59,16 +59,16 @@
   - Add admin role check for all endpoints
 
 ### 6. Create Web Routes and Templates (AC: 1, 5)
-- [ ] Add routes to `src/app/web/expenses.py`
+- [x] Add routes to `src/app/web/expenses.py`
   - Route for category management page
   - HTMX endpoints for CRUD operations
-- [ ] Create templates in `src/app/templates/expenses/`
+- [x] Create templates in `src/app/templates/expenses/`
   - `categories.html`: Category management page
   - `_category_row.html`: HTMX partial for table row
   - `_category_form.html`: HTMX partial for add/edit form
 
 ### 7. Add Seed Data (AC: 2)
-- [ ] Create database seeder for default categories
+- [x] Create database seeder for default categories
   - Add to initialization scripts
   - Ensure idempotent operation
 
@@ -137,10 +137,24 @@
 *To be filled by dev agent*
 
 ### Completion Notes
-*To be filled by dev agent*
+- Implemented ExpenseCategory model with soft delete functionality
+- Created full CRUD operations for category management
+- Added service layer with business logic validation
+- Implemented both API and web endpoints with admin role protection
+- Created HTMX-powered web interface for category management
+- Fixed Base class import issue that was causing foreign key errors
 
 ### File List
-*To be filled by dev agent*
+- src/app/models/expense.py (ExpenseCategory model)
+- src/app/schemas/expense.py (ExpenseCategory schemas)
+- src/app/crud/expense_category.py (CRUD operations)
+- src/app/services/expense_service.py (Service layer)
+- src/app/api/v1/expenses.py (API endpoints)
+- src/app/web/expenses.py (Web routes)
+- src/app/templates/expenses/categories.html
+- src/app/templates/expenses/_category_form.html
+- src/app/templates/expenses/_category_row.html
+- alembic/versions/add_expense_category_model.py
 
 ## ✅ QA Results
 *To be filled by QA agent*

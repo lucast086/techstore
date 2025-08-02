@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Expense" if expense else "New Expense" }} - TechStore{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-6">
+                {{ "Edit Expense" if expense else "Register New Expense" }}
+            </h2>
+
+            {% if error %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ '/expenses/' + expense.id|string if expense else '/expenses' }}"
+                  {% if expense %}hx-put="/expenses/{{ expense.id }}"{% endif %}>
+                <!-- Category -->
+                <div class="mb-4">
+                    <label for="category_id" class="block text-gray-700 text-sm font-bold mb-2">
+                        Category <span class="text-red-500">*</span>
+                    </label>
+                    <select name="category_id" id="category_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                            {% if expense %}disabled{% endif %}>
+                        <option value="">Select a category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}"
+                                {% if expense and expense.category_id == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Amount -->
+                <div class="mb-4">
+                    <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">
+                        Amount <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="amount" id="amount" step="0.01" min="0.01" required
+                           value="{{ expense.amount if expense else '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                           placeholder="0.00">
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="description" class="block text-gray-700 text-sm font-bold mb-2">
+                        Description <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="description" id="description" rows="3" required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                              placeholder="Enter expense description">{{ expense.description if expense else '' }}</textarea>
+                </div>
+
+                <!-- Expense Date -->
+                <div class="mb-4">
+                    <label for="expense_date" class="block text-gray-700 text-sm font-bold mb-2">
+                        Date <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="expense_date" id="expense_date" required
+                           value="{{ expense.expense_date.isoformat() if expense else '' }}"
+                           max="{{ current_date }}"
+                           {% if expense %}disabled{% endif %}
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200">
+                </div>
+
+                <!-- Payment Method -->
+                <div class="mb-4">
+                    <label for="payment_method" class="block text-gray-700 text-sm font-bold mb-2">
+                        Payment Method <span class="text-red-500">*</span>
+                    </label>
+                    <select name="payment_method" id="payment_method" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200">
+                        <option value="">Select payment method</option>
+                        <option value="cash" {% if expense and expense.payment_method == "cash" %}selected{% endif %}>Cash</option>
+                        <option value="transfer" {% if expense and expense.payment_method == "transfer" %}selected{% endif %}>Bank Transfer</option>
+                        <option value="card" {% if expense and expense.payment_method == "card" %}selected{% endif %}>Credit/Debit Card</option>
+                    </select>
+                </div>
+
+                <!-- Receipt Number (Optional) -->
+                <div class="mb-4">
+                    <label for="receipt_number" class="block text-gray-700 text-sm font-bold mb-2">
+                        Receipt Number
+                    </label>
+                    <input type="text" name="receipt_number" id="receipt_number"
+                           value="{{ expense.receipt_number if expense and expense.receipt_number else '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                           placeholder="Optional">
+                </div>
+
+                <!-- Supplier Name (Optional) -->
+                <div class="mb-4">
+                    <label for="supplier_name" class="block text-gray-700 text-sm font-bold mb-2">
+                        Supplier Name
+                    </label>
+                    <input type="text" name="supplier_name" id="supplier_name"
+                           value="{{ expense.supplier_name if expense and expense.supplier_name else '' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
+                           placeholder="Optional">
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-between items-center mt-6">
+                    <a href="/expenses" class="text-gray-600 hover:text-gray-800">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
+                        {{ "Update Expense" if expense else "Register Expense" }}
+                    </button>
+                </div>
+            </form>
+
+            {% if expense and expense.is_editable %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold mb-4">Upload Receipt</h3>
+                <form id="receipt-upload-form"
+                      hx-post="/expenses/{{ expense.id }}/receipt"
+                      hx-encoding="multipart/form-data"
+                      hx-target="#receipt-message">
+                    <div class="mb-4">
+                        <input type="file" name="receipt" accept="image/*,application/pdf" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200">
+                    </div>
+                    <div id="receipt-message"></div>
+                    <button type="submit"
+                            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Upload Receipt
+                    </button>
+                </form>
+                {% if expense.receipt_file_path %}
+                <p class="mt-2 text-sm text-gray-600">
+                    Receipt already uploaded:
+                    <a href="/{{ expense.receipt_file_path }}" target="_blank" class="text-blue-500 hover:underline">
+                        View Receipt
+                    </a>
+                </p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set today as default date for new expenses
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('expense_date');
+        if (dateInput && !dateInput.value) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        // Set max date to today
+        if (dateInput) {
+            dateInput.max = new Date().toISOString().split('T')[0];
+        }
+    });
+</script>
+{% endblock %}

@@ -3,11 +3,12 @@
 import os
 
 import pytest
-from app.database import Base, get_db
+from app.database import get_db
 from app.main import app
 
 # Import all models to ensure they're registered
 from app.models import *  # noqa: F401, F403
+from app.models.base import Base
 from app.models.user import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine

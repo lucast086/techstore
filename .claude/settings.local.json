@@ -49,7 +49,9 @@
       "Bash(git stash push:*)",
       "Bash(git push:*)",
       "Bash(ss:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(chmod:*)",
+      "Bash(poetry show:*)"
     ],
     "deny": []
   },

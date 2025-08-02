@@ -3,11 +3,12 @@
 import os
 
 import pytest
-from app.database import Base, get_db
+from app.database import get_db
 from app.main import app
 
 # Import all models to ensure they're registered
 from app.models import *  # noqa: F401, F403
+from app.models.base import Base
 from app.models.user import User
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -79,8 +80,8 @@ def client(db_session):
 
     login_attempts.clear()
 
-    with TestClient(app) as test_client:
-        yield test_client
+    test_client = TestClient(app)
+    yield test_client
 
     app.dependency_overrides.clear()
 
@@ -165,3 +166,40 @@ def test_warranty(db_session, test_repair):
     db_session.commit()
     db_session.refresh(warranty)
     return warranty
+
+
+@pytest.fixture
+def test_expense_category(db_session):
+    """Create a test expense category."""
+    from app.models.expense import ExpenseCategory
+
+    category = ExpenseCategory(
+        name="Test Category",
+        description="Category for testing",
+        is_active=True,
+    )
+    db_session.add(category)
+    db_session.commit()
+    return category
+
+
+@pytest.fixture
+def test_expense(db_session, test_user, test_expense_category):
+    """Create a test expense."""
+    from datetime import date
+    from decimal import Decimal
+
+    from app.models.expense import Expense
+
+    expense = Expense(
+        category_id=test_expense_category.id,
+        amount=Decimal("100.00"),
+        description="Test expense",
+        expense_date=date.today(),
+        payment_method="cash",
+        created_by=test_user.id,
+        is_editable=True,
+    )
+    db_session.add(expense)
+    db_session.commit()
+    return expense

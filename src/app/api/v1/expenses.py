@@ -24,7 +24,6 @@ from app.schemas.expense import (
 from app.services.expense_service import expense_service
 
 router = APIRouter(
-    prefix="/expenses",
     tags=["expenses"],
 )
 

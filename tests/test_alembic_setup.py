@@ -37,7 +37,7 @@ class TestAlembicConfiguration:
             content = f.read()
             # Should import models to ensure they're in metadata
             assert "import app.models" in content
-            assert "from app.database import Base" in content
+            assert "from app.models.base import Base" in content
 
     def test_can_generate_migration(self, tmp_path):
         """Test that we can generate a migration"""

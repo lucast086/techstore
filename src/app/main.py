@@ -23,6 +23,30 @@ from app.api.v1 import sales as sales_api
 from app.api.v1 import temp_setup  # TEMPORARY - DELETE AFTER USE
 from app.api.v1 import warranties as warranties_api
 from app.middleware.auth_context import AuthContextMiddleware
+
+# Import all models to ensure they're registered with SQLAlchemy
+# This prevents "NoReferencedTableError" for foreign keys
+from app.models import (  # noqa: F401
+    CashClosing,
+    Category,
+    Customer,
+    Expense,
+    ExpenseCategory,
+    Payment,
+    Product,
+    ProductImage,
+    ProductSupplier,
+    Repair,
+    RepairPart,
+    RepairPhoto,
+    RepairStatusHistory,
+    Sale,
+    SaleItem,
+    Supplier,
+    User,
+    Warranty,
+    WarrantyClaim,
+)
 from app.web import (
     admin,
     auth,

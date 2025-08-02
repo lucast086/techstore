@@ -4,7 +4,7 @@
 - **Epic**: EPIC-006 (Cash Management and Closings)
 - **Priority**: HIGH
 - **Estimate**: 1.5 days
-- **Status**: TODO
+- **Status**: Completed
 
 ## 🎯 User Story
 **As** María, Carlos, or Pedro,
@@ -29,14 +29,14 @@
 
 ## 🔧 Technical Tasks
 ### 1. Create Database Models (AC: 2, 3, 5)
-- [ ] Extend `src/app/models/expense.py` with `Expense` model
+- [x] Extend `src/app/models/expense.py` with `Expense` model
   - Fields: id, category_id, amount, description, expense_date, payment_method, receipt_number, supplier_name, receipt_file_path, created_by, is_editable
   - Foreign keys: category_id, created_by (user)
   - Indexes on expense_date, category_id for performance
-- [ ] Create migration with Alembic
+- [x] Create migration with Alembic
 
 ### 2. Create Pydantic Schemas (AC: 2, 3)
-- [ ] Extend schemas in `src/app/schemas/expense.py`
+- [x] Extend schemas in `src/app/schemas/expense.py`
   - `ExpenseCreate`: All input fields
   - `ExpenseUpdate`: Editable fields with validation
   - `ExpenseResponse`: Full expense with category name
@@ -44,7 +44,7 @@
   - `ExpenseSummary`: For daily closing aggregation
 
 ### 3. Implement CRUD Operations (AC: 4, 5, 6)
-- [ ] Create CRUD in `src/app/crud/expense.py`
+- [x] Create CRUD in `src/app/crud/expense.py`
   - `create_expense()`: Create new expense
   - `update_expense()`: Update if same day
   - `get_expenses_by_date_range()`: For filtering
@@ -53,7 +53,7 @@
   - `check_expense_editable()`: Verify same-day rule
 
 ### 4. Implement Service Layer (AC: 5, 6)
-- [ ] Extend service in `src/app/services/expense_service.py`
+- [x] Extend service in `src/app/services/expense_service.py`
   - `register_expense()`: Create with validation
   - `update_expense()`: Check edit permissions
   - `get_expense_summary()`: Daily/period summaries
@@ -61,7 +61,7 @@
   - `handle_receipt_upload()`: File management
 
 ### 5. Create API Endpoints (AC: 1, 4)
-- [ ] Extend routes in `src/app/api/v1/expenses.py`
+- [x] Extend routes in `src/app/api/v1/expenses.py`
   - `POST /expenses`: Create new expense
   - `GET /expenses`: List with filters
   - `GET /expenses/{id}`: Get single expense
@@ -70,25 +70,25 @@
   - `GET /expenses/summary`: Period summaries
 
 ### 6. Create Web Routes and Templates (AC: 1, 2, 3, 4)
-- [ ] Extend routes in `src/app/web/expenses.py`
+- [x] Extend routes in `src/app/web/expenses.py`
   - Route for expense form
   - Route for expense list
   - HTMX endpoints for filtering
-- [ ] Create templates in `src/app/templates/expenses/`
+- [x] Create templates in `src/app/templates/expenses/`
   - `expense_form.html`: Registration form
   - `expense_list.html`: List with filters
-  - `_expense_row.html`: Table row partial
-  - `_expense_filters.html`: Filter controls
+  - `_expense_table.html`: Table with expenses
+  - Navigation menu updated
 
 ### 7. Implement File Upload (AC: 3)
-- [ ] Add file upload handling
+- [x] Add file upload handling
   - Configure upload directory
   - Validate file types (images, PDF)
   - Generate unique filenames
   - Store file path in database
 
 ### 8. Integration with Daily Closing (AC: 6)
-- [ ] Modify cash closing service
+- [x] Modify cash closing service
   - Include expense totals in daily summary
   - Group expenses by category
   - Add to closing calculations
@@ -172,10 +172,29 @@
 *To be filled by dev agent*
 
 ### Completion Notes
-*To be filled by dev agent*
+- Implemented Expense model with foreign keys to categories and users
+- Created comprehensive CRUD operations with filtering capabilities
+- Added service layer with business rules (same-day edit, date validation)
+- Implemented both API and web endpoints for expense management
+- Created full web interface with expense form and list with filters
+- Added file upload functionality for receipts
+- Integrated with cash closing for daily expense summaries
+- Fixed SQLAlchemy Base class issue to resolve foreign key errors
 
 ### File List
-*To be filled by dev agent*
+- src/app/models/expense.py (Expense model)
+- src/app/schemas/expense.py (Expense schemas)
+- src/app/crud/expense.py (CRUD operations)
+- src/app/services/expense_service.py (Extended with expense methods)
+- src/app/api/v1/expenses.py (Extended with expense endpoints)
+- src/app/web/expenses.py (Extended with expense routes)
+- src/app/templates/expenses/expense_form.html
+- src/app/templates/expenses/expense_list.html
+- src/app/templates/expenses/_expense_table.html
+- src/app/templates/base.html (Navigation updated)
+- alembic/versions/add_expense_model.py
+- src/app/database.py (Removed duplicate Base)
+- src/app/main.py (Import all models)
 
 ## ✅ QA Results
 *To be filled by QA agent*
