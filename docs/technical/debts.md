@@ -36,9 +36,10 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
  * │   ├── STORY-041-quick-sale.md
  * Send periodic whatsapp remember account balance (only debt)
  * check filter behavior in sales history
- * when walk-in-customer payment method
+ * when walk-in-customer payment method must be only cash
  * send invoice whatsapp when a sales is made
  * select one of the three prices. when a product is added
+ * search bar to customer selection
 
 ### Repairs
  * add auto whatsapp when status change

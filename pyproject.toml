@@ -56,6 +56,7 @@ ignore = [
     "B008",  # do not perform function calls in argument defaults
     "E402",  # module level import not at top of file (for scripts)
     "UP007",  # Use X | Y for type annotations (requires Python 3.10+)
+    "B904",  # Within an except clause, raise exceptions with raise ... from err
 ]
 per-file-ignores = {"scripts/*" = ["E402", "I001"]}
 exclude = [

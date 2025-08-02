@@ -15,6 +15,7 @@ from app.crud.sale import sale_crud
 from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.sale import SaleCreate, SaleItemCreate
+from app.services.cash_closing_service import cash_closing_service
 from app.services.invoice_service import invoice_service
 
 logger = logging.getLogger(__name__)
@@ -206,6 +207,16 @@ async def process_checkout(
     )
 
     try:
+        # Check if cash register is open for today
+        can_process, reason = cash_closing_service.check_can_process_sale(
+            db=db, sale_date=datetime.now().date()
+        )
+        if not can_process:
+            return HTMLResponse(
+                f'<div class="alert alert-danger">{reason}</div>',
+                status_code=400,
+            )
+
         # Create sale
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
 

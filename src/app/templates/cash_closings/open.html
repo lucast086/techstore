@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Open Cash Register - TechStore SaaS{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <div class="flex items-center mb-4">
+      <a href="/cash-closings" class="text-gray-600 hover:text-gray-900 mr-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Open Cash Register</h1>
+        <p class="text-gray-600">Start the day by opening the cash register</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Display -->
+  {% if error %}
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  <!-- Opening Form -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <form action="/cash-closings/open" method="post" class="space-y-4">
+      <!-- Opening Date Display -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Opening Date
+        </label>
+        <div class="text-lg font-semibold text-gray-900">
+          {{ opening_date.strftime('%B %d, %Y') }}
+        </div>
+      </div>
+
+      <!-- Suggested Balance Display -->
+      {% if suggested_balance > 0 %}
+      <div class="p-4 bg-blue-50 rounded-lg">
+        <div class="text-sm text-blue-700">Suggested opening balance from last closing:</div>
+        <div class="text-lg font-semibold text-blue-900">
+          ${{ "{:.2f}".format(suggested_balance) }}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Opening Balance Input -->
+      <div>
+        <label for="opening_balance" class="block text-sm font-medium text-gray-700 mb-1">
+          Opening Balance <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <span class="text-gray-500 sm:text-sm">$</span>
+          </div>
+          <input type="number"
+                 step="0.01"
+                 name="opening_balance"
+                 id="opening_balance"
+                 value="{{ suggested_balance }}"
+                 class="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                 required>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Count the cash in the register and enter the total amount</p>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+          Notes (Optional)
+        </label>
+        <textarea name="notes"
+                  id="notes"
+                  rows="3"
+                  class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Any observations about the opening balance...">{{ notes or '' }}</textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-4">
+        <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+          Open Cash Register
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Information -->
+  <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+    <h3 class="text-sm font-medium text-gray-900 mb-2">Important Notes:</h3>
+    <ul class="text-sm text-gray-600 space-y-1">
+      <li>• The cash register must be opened before processing any sales</li>
+      <li>• Count all cash in the register including the float</li>
+      <li>• The opening balance should match the closing balance from the previous day</li>
+      <li>• Once opened, you can process sales throughout the day</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

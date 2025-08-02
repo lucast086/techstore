@@ -4,7 +4,7 @@
 - **Epic**: EPIC-006 (Cash Management and Closings)
 - **Priority**: HIGH
 - **Estimate**: 2 days
-- **Status**: TODO
+- **Status**: READY_FOR_REVIEW
 
 ## 🎯 User Story
 **As** María or Carlos,
@@ -32,14 +32,14 @@
 
 ## 🔧 Technical Tasks
 ### 1. Create Database Models (AC: 1, 5)
-- [ ] Create `CashClosing` model in `src/app/models/cash_closing.py`
+- [x] Create `CashClosing` model in `src/app/models/cash_closing.py`
   - Fields: id, closing_date, opening_balance, sales_total, expenses_total, cash_count, expected_cash, cash_difference, notes, closed_by, closed_at, is_finalized
   - Relationships: user (closed_by), related sales, related expenses
   - Unique constraint on closing_date to prevent multiple closings
-- [ ] Create migration with Alembic
+- [x] Create migration with Alembic
 
 ### 2. Create Pydantic Schemas (AC: 2, 3)
-- [ ] Create schemas in `src/app/schemas/cash_closing.py`
+- [x] Create schemas in `src/app/schemas/cash_closing.py`
   - `CashClosingCreate`: Input for new closing
   - `CashClosingUpdate`: For editing draft closings
   - `CashClosingResponse`: Full closing details
@@ -47,7 +47,7 @@
   - `DailySummary`: Aggregated daily financial data
 
 ### 3. Implement CRUD Operations (AC: 1, 5, 6)
-- [ ] Create CRUD in `src/app/crud/cash_closing.py`
+- [x] Create CRUD in `src/app/crud/cash_closing.py`
   - `get_by_date()`: Retrieve closing for specific date
   - `get_last_closing()`: Get most recent closing for opening balance
   - `create_closing()`: Create new daily closing
@@ -56,7 +56,7 @@
   - `get_daily_summary()`: Aggregate sales and expenses for a date
 
 ### 4. Implement Service Layer (AC: 2, 3, 6)
-- [ ] Create service in `src/app/services/cash_closing_service.py`
+- [x] Create service in `src/app/services/cash_closing_service.py`
   - `start_daily_closing()`: Initialize closing with calculations
   - `calculate_daily_totals()`: Aggregate sales and expenses
   - `validate_cash_difference()`: Check if difference is within threshold
@@ -65,7 +65,7 @@
   - Add method to prevent operations after closing
 
 ### 5. Create API Endpoints (AC: 1, 2, 3, 5)
-- [ ] Add routes to `src/app/api/v1/cash_closings.py`
+- [x] Add routes to `src/app/api/v1/cash_closings.py`
   - `POST /cash-closings/start`: Initialize new closing
   - `GET /cash-closings/current`: Get today's closing status
   - `PUT /cash-closings/{id}`: Update draft closing
@@ -74,16 +74,16 @@
   - Add role check for Admin/Manager only
 
 ### 6. Create Web Routes and Templates (AC: 1, 2, 3)
-- [ ] Add routes to `src/app/web/cash_closings.py`
+- [x] Add routes to `src/app/web/cash_closings.py`
   - Route for closing form page
   - HTMX endpoints for dynamic updates
-- [ ] Create templates in `src/app/templates/cash_closings/`
+- [x] Create templates in `src/app/templates/cash_closings/`
   - `closing_form.html`: Main closing form
   - `_closing_summary.html`: HTMX partial for summary
   - `_daily_totals.html`: HTMX partial for calculations
 
 ### 7. Implement PDF Generation (AC: 4)
-- [ ] Add PDF generation service
+- [x] Add PDF generation service
   - Use reportlab or weasyprint for PDF creation
   - Create professional closing document template
   - Include all required fields and signature area
@@ -97,7 +97,7 @@
   - Include PDF attachment
 
 ### 9. Add Sales Prevention Logic (AC: 6)
-- [ ] Modify sale creation service
+- [x] Modify sale creation service
   - Check if current date has finalized closing
   - Return appropriate error if closed
   - Add override for next day opening
@@ -180,7 +180,7 @@
 *This section will be populated by the development agent during implementation*
 
 ### Agent Model Used
-*To be filled by dev agent*
+Claude Sonnet 4 (claude-sonnet-4-20250514)
 
 ### Debug Log References
 *To be filled by dev agent*

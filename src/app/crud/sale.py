@@ -43,6 +43,17 @@ class SaleCRUD:
         """Create new sale with items and update inventory."""
         # Start transaction
         try:
+            # Check if sales are allowed for today (cash closing check)
+            from datetime import date
+
+            from app.services.cash_closing_service import cash_closing_service
+
+            can_process, reason = cash_closing_service.check_can_process_sale(
+                db=db, sale_date=date.today()
+            )
+            if not can_process:
+                raise ValueError(reason)
+
             # Generate invoice number
             invoice_number = self.generate_invoice_number(db)
 
