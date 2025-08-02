@@ -91,7 +91,12 @@ class CashClosing(BaseModel):
     )
 
     # Relationships
-    user: Mapped["User"] = relationship("User", backref="cash_closings", lazy="joined")
+    user: Mapped["User"] = relationship(
+        "User", foreign_keys=[closed_by], backref="cash_closings", lazy="joined"
+    )
+    opener: Mapped[Optional["User"]] = relationship(
+        "User", foreign_keys=[opened_by], lazy="joined"
+    )
 
     # Constraints
     __table_args__ = (UniqueConstraint("closing_date", name="uq_cash_closing_date"),)

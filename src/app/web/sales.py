@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
@@ -31,6 +31,17 @@ async def pos_interface(
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Render Point of Sale interface."""
+    # Check if cash register is open for today
+    can_process, reason = cash_closing_service.check_can_process_sale(
+        db=db, sale_date=datetime.now().date()
+    )
+
+    if not can_process:
+        # Redirect to cash closings page with a message
+        return RedirectResponse(
+            url="/cash-closings?message=open_required", status_code=302
+        )
+
     context = {
         "request": request,
         "current_user": current_user,
@@ -213,7 +224,26 @@ async def process_checkout(
         )
         if not can_process:
             return HTMLResponse(
-                f'<div class="alert alert-danger">{reason}</div>',
+                f"""<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Cash Register Not Open</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>{reason}</p>
+                                <p class="mt-2">
+                                    <a href="/cash-closings/open" class="font-medium underline text-red-600 hover:text-red-500">
+                                        Open Cash Register Now →
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>""",
                 status_code=400,
             )
 

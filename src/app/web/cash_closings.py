@@ -38,6 +38,7 @@ def require_admin_or_manager(
 async def cash_closing_list(
     request: Request,
     page: int = Query(1, ge=1),
+    message: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin_or_manager),
 ):
@@ -49,6 +50,13 @@ async def cash_closing_list(
         # Get current status for today
         today_status = cash_closing_service.get_current_closing_status(db=db)
 
+        # Prepare alert message if needed
+        alert_message = None
+        alert_type = None
+        if message == "open_required":
+            alert_message = "You must open the cash register before processing sales."
+            alert_type = "warning"
+
         return templates.TemplateResponse(
             "cash_closings/list.html",
             {
@@ -56,6 +64,8 @@ async def cash_closing_list(
                 "current_user": current_user,
                 "closings": closings,
                 "today_status": today_status,
+                "alert_message": alert_message,
+                "alert_type": alert_type,
                 "page_title": "Cash Closings",
             },
         )

@@ -16,11 +16,20 @@ from app.schemas.cash_closing import CashClosingCreate, CashClosingUpdate, Daily
 class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate]):
     """CRUD operations for cash closings."""
 
+    def get(self, db: Session, id: int) -> Optional[CashClosing]:
+        """Get a cash closing by ID with relationships loaded."""
+        return (
+            db.query(CashClosing)
+            .options(joinedload(CashClosing.user), joinedload(CashClosing.opener))
+            .filter(CashClosing.id == id)
+            .first()
+        )
+
     def get_by_date(self, db: Session, *, closing_date: date) -> Optional[CashClosing]:
         """Retrieve closing for specific date."""
         return (
             db.query(CashClosing)
-            .options(joinedload(CashClosing.user))
+            .options(joinedload(CashClosing.user), joinedload(CashClosing.opener))
             .filter(CashClosing.closing_date == closing_date)
             .first()
         )
@@ -29,7 +38,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         """Get most recent closing for opening balance."""
         return (
             db.query(CashClosing)
-            .options(joinedload(CashClosing.user))
+            .options(joinedload(CashClosing.user), joinedload(CashClosing.opener))
             .filter(CashClosing.is_finalized == True)  # noqa: E712
             .order_by(CashClosing.closing_date.desc())
             .first()
@@ -124,7 +133,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         """Get finalized closings with pagination."""
         return (
             db.query(CashClosing)
-            .options(joinedload(CashClosing.user))
+            .options(joinedload(CashClosing.user), joinedload(CashClosing.opener))
             .filter(CashClosing.is_finalized == True)  # noqa: E712
             .order_by(CashClosing.closing_date.desc())
             .offset(skip)
@@ -138,7 +147,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         """Get closings within date range."""
         return (
             db.query(CashClosing)
-            .options(joinedload(CashClosing.user))
+            .options(joinedload(CashClosing.user), joinedload(CashClosing.opener))
             .filter(
                 and_(
                     CashClosing.closing_date >= start_date,
