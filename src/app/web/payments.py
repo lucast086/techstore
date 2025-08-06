@@ -293,10 +293,12 @@ async def view_receipt(
     balance_after = balance_before + payment.amount
 
     receipt_data = {
+        "request": request,
         "payment": payment,
         "balance_before": float(balance_before),
         "balance_after": float(balance_after),
         "print_mode": print,
+        "current_user": current_user,
     }
 
     if format == "pdf":
@@ -311,26 +313,8 @@ async def view_receipt(
             },
         )
 
-    # Generate HTML receipt using the receipt service
-    html_content = receipt_service.generate_payment_receipt_html(receipt_data)
-
-    # If print mode, add auto-print script
-    if print:
-        html_content = html_content.replace(
-            "</body>",
-            """<script>
-                window.onload = function() {
-                    window.print();
-                    // Redirect to customer list after print dialog
-                    setTimeout(function() {
-                        window.location.href = '/customers';
-                    }, 1000);
-                }
-            </script>
-            </body>""",
-        )
-
-    return HTMLResponse(content=html_content)
+    # Use the template instead of the service for HTML
+    return templates.TemplateResponse("payments/receipt.html", receipt_data)
 
 
 @router.get("/{payment_id}/whatsapp")

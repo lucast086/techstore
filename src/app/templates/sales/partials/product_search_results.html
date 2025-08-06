@@ -20,11 +20,37 @@
         </div>
       </div>
       <div class="text-right ml-4">
-        <div class="text-lg font-semibold text-primary-600">${{ product.first_sale_price }}</div>
+        <div class="space-y-1 mb-2">
+          <div class="flex items-center justify-end space-x-2">
+            <input type="radio" id="price-retail-{{ product.id }}" name="price-{{ product.id }}" value="{{ product.first_sale_price }}" checked class="text-primary-600 focus:ring-primary-500">
+            <label for="price-retail-{{ product.id }}" class="text-sm">
+              <span class="text-gray-600">Retail:</span>
+              <span class="font-semibold">${{ product.first_sale_price }}</span>
+            </label>
+          </div>
+          {% if product.second_sale_price %}
+          <div class="flex items-center justify-end space-x-2">
+            <input type="radio" id="price-wholesale-{{ product.id }}" name="price-{{ product.id }}" value="{{ product.second_sale_price }}" class="text-primary-600 focus:ring-primary-500">
+            <label for="price-wholesale-{{ product.id }}" class="text-sm">
+              <span class="text-gray-600">Wholesale:</span>
+              <span class="font-semibold">${{ product.second_sale_price }}</span>
+            </label>
+          </div>
+          {% endif %}
+          {% if product.third_sale_price %}
+          <div class="flex items-center justify-end space-x-2">
+            <input type="radio" id="price-special-{{ product.id }}" name="price-{{ product.id }}" value="{{ product.third_sale_price }}" class="text-primary-600 focus:ring-primary-500">
+            <label for="price-special-{{ product.id }}" class="text-sm">
+              <span class="text-gray-600">Special:</span>
+              <span class="font-semibold">${{ product.third_sale_price }}</span>
+            </label>
+          </div>
+          {% endif %}
+        </div>
         <button
           type="button"
-          class="mt-1 px-3 py-1 text-sm {% if product.current_stock <= 0 %}bg-gray-400 cursor-not-allowed{% else %}bg-primary-600 hover:bg-primary-700{% endif %} text-white rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
-          onclick="addToCart({{ product.id }}, '{{ product.name }}', '{{ product.sku }}', {{ product.first_sale_price }}, {{ product.current_stock }})"
+          class="w-full px-3 py-1 text-sm {% if product.current_stock <= 0 %}bg-gray-400 cursor-not-allowed{% else %}bg-primary-600 hover:bg-primary-700{% endif %} text-white rounded focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+          onclick="addToCartWithPrice({{ product.id }}, '{{ product.name }}', '{{ product.sku }}', {{ product.current_stock }})"
           {% if product.current_stock <= 0 %}disabled{% endif %}
         >
           {% if product.current_stock > 0 %}

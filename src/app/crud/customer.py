@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -266,8 +268,39 @@ class CustomerCRUD:
 
         result = []
         for customer in customers:
+            # Get balance information
             balance_info = balance_service.get_balance_summary(db, customer.id)
-            result.append({**customer.to_dict(), **balance_info})
+
+            # Calculate sales and payments totals
+            from app.models.payment import Payment
+            from app.models.sale import Sale
+
+            # Get total sales for this customer (credit sales only, since cash sales are paid immediately)
+            sales_total = db.query(func.sum(Sale.total_amount)).filter(
+                Sale.customer_id == customer.id,
+                Sale.payment_method == "credit",
+                Sale.is_voided.is_(False),
+            ).scalar() or Decimal(0)
+
+            # Get total payments from this customer
+            payments_total = db.query(func.sum(Payment.amount)).filter(
+                Payment.customer_id == customer.id, Payment.voided.is_(False)
+            ).scalar() or Decimal(0)
+
+            # Build customer dict with all required fields for template
+            customer_dict = customer.to_dict()
+            customer_dict.update(
+                {
+                    "balance": float(
+                        balance_info["current_balance"]
+                    ),  # Template expects 'balance'
+                    "sales_total": float(sales_total),
+                    "payments_total": float(payments_total),
+                    **balance_info,  # Include other balance info
+                }
+            )
+
+            result.append(customer_dict)
 
         return result
 

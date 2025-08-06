@@ -191,6 +191,13 @@ async def repair_detail(
     if not repair:
         raise HTTPException(status_code=404, detail="Repair not found")
 
+    # Debug logging
+    logger.info(
+        f"Repair {repair_id} data: diagnosis_notes={repair.diagnosis_notes}, "
+        f"estimated_cost={repair.estimated_cost}, labor_cost={repair.labor_cost}, "
+        f"parts_cost={repair.parts_cost}"
+    )
+
     # Get all technicians for assignment
     from app.models.user import User as TechUser
 
@@ -247,19 +254,20 @@ async def update_repair_status_htmx(
             "cancelled": "bg-red-100 text-red-800",
         }
 
-        color_class = status_colors.get(
-            repair.status.value, "bg-gray-100 text-gray-800"
-        )
+        # repair.status is already a string, not an enum
+        color_class = status_colors.get(repair.status, "bg-gray-100 text-gray-800")
 
+        # Return a response that will trigger a page redirect after a short delay
         return HTMLResponse(
             content=f"""
             <div class="flex items-center space-x-2">
                 <span class="px-3 py-1 text-sm font-medium rounded-full {color_class}">
-                    {repair.status.value.title()}
+                    {repair.status.title()}
                 </span>
-                <span class="text-sm text-green-600">Updated!</span>
+                <span class="text-sm text-green-600">Updated! Refreshing...</span>
             </div>
-            """
+            """,
+            headers={"HX-Redirect": f"/repairs/{repair_id}"},
         )
 
     except ValueError as e:
@@ -295,20 +303,35 @@ async def add_diagnosis_htmx(
     request: Request,
     repair_id: int,
     diagnosis_notes: str = Form(...),
-    labor_cost: Decimal = Form(...),
-    parts_cost: Decimal = Form(Decimal("0")),
+    labor_cost: str = Form(...),
+    parts_cost: str = Form("0"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Add diagnosis to repair (HTMX endpoint)."""
     try:
-        estimated_cost = labor_cost + parts_cost
+        # Log received values
+        logger.info(
+            f"Received form params - diagnosis_notes: {diagnosis_notes}, labor_cost: {labor_cost}, parts_cost: {parts_cost}"
+        )
+
+        # Convert string inputs to Decimal
+        labor_cost_decimal = Decimal(labor_cost) if labor_cost else Decimal("0")
+        parts_cost_decimal = Decimal(parts_cost) if parts_cost else Decimal("0")
+
+        # Log received values for debugging
+        logger.info(
+            f"Received diagnosis data - labor_cost: {labor_cost} -> {labor_cost_decimal}, parts_cost: {parts_cost} -> {parts_cost_decimal}"
+        )
+
+        estimated_cost = labor_cost_decimal + parts_cost_decimal
+        logger.info(f"Calculated estimated_cost: {estimated_cost}")
 
         diagnosis = RepairDiagnosis(
             diagnosis_notes=diagnosis_notes,
             estimated_cost=estimated_cost,
-            labor_cost=labor_cost,
-            parts_cost=parts_cost,
+            labor_cost=labor_cost_decimal,
+            parts_cost=parts_cost_decimal,
         )
 
         repair = repair_service.add_diagnosis(
@@ -321,28 +344,32 @@ async def add_diagnosis_htmx(
                 status_code=404,
             )
 
-        # Return success message and updated diagnosis section
+        # Log the repair values after saving
+        logger.info(
+            f"Repair after diagnosis - estimated_cost: {repair.estimated_cost}, labor_cost: {repair.labor_cost}, parts_cost: {repair.parts_cost}"
+        )
+
+        # Return success message and trigger page refresh
         return HTMLResponse(
-            content=f"""
+            content="""
             <div class="bg-green-50 text-green-700 p-4 rounded mb-4">
-                Diagnosis added successfully
+                Diagnosis added successfully! Refreshing...
             </div>
-            <div class="prose max-w-none">
-                <p class="font-semibold">Diagnosis:</p>
-                <p>{repair.diagnosis_notes}</p>
-                <p class="mt-2">
-                    <span class="font-semibold">Estimated Cost:</span>
-                    ${repair.estimated_cost}
-                    (Labor: ${repair.labor_cost}, Parts: ${repair.parts_cost})
-                </p>
-            </div>
-            """
+            """,
+            headers={"HX-Redirect": f"/repairs/{repair_id}"},
         )
 
     except ValueError as e:
+        logger.error(f"ValueError in add_diagnosis: {str(e)}")
         return HTMLResponse(
-            content=f'<div class="bg-red-50 text-red-700 p-4 rounded">{str(e)}</div>',
+            content=f'<div class="bg-red-50 text-red-700 p-4 rounded">Error: {str(e)}</div>',
             status_code=400,
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error in add_diagnosis: {str(e)}", exc_info=True)
+        return HTMLResponse(
+            content=f'<div class="bg-red-50 text-red-700 p-4 rounded">An error occurred: {str(e)}</div>',
+            status_code=500,
         )
 
 

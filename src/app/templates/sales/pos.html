@@ -166,17 +166,27 @@ block content %}
             <label class="block text-sm font-medium text-gray-700 mb-2"
               >Customer</label
             >
-            <select
-              name="customer_id"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              form="checkout-form"
-              hx-get="/sales/pos/customers"
-              hx-trigger="load"
-              hx-swap="innerHTML"
-            >
-              <option value="">Walk-in Customer</option>
-              <!-- Customer options will be loaded here -->
-            </select>
+            <input type="hidden" name="customer_id" id="selected-customer-id" form="checkout-form" value="">
+            <div class="relative">
+              <button
+                type="button"
+                onclick="openCustomerSearch()"
+                class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white hover:bg-gray-50"
+              >
+                <span id="selected-customer-name" class="block truncate">Walk-in Customer</span>
+              </button>
+              <button
+                type="button"
+                id="clear-customer-btn"
+                onclick="clearCustomer()"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                style="display: none;"
+              >
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Payment Method -->
@@ -404,6 +414,17 @@ block content %}
     }
   }
 
+  function addToCartWithPrice(productId, productName, productSku, stock) {
+    // Get the selected price from radio buttons
+    const selectedPriceInput = document.querySelector(`input[name="price-${productId}"]:checked`);
+    if (!selectedPriceInput) {
+      alert('Please select a price option');
+      return;
+    }
+    const price = parseFloat(selectedPriceInput.value);
+    addToCart(productId, productName, productSku, price, stock);
+  }
+
   function removeFromCart(productId) {
     cart = cart.filter((item) => item.productId !== productId);
     updateCartDisplay();
@@ -612,5 +633,102 @@ block content %}
     updateDateTime();
     setInterval(updateDateTime, 60000); // Update every minute
   });
+
+  // Customer search functions
+  function openCustomerSearch() {
+    const modal = document.getElementById('customer-search-modal');
+    if (!modal) {
+      createCustomerSearchModal();
+    } else {
+      modal.style.display = 'block';
+    }
+    // Focus on search input
+    setTimeout(() => {
+      const searchInput = document.getElementById('customer-search-input');
+      if (searchInput) searchInput.focus();
+    }, 100);
+  }
+
+  function createCustomerSearchModal() {
+    const modalHtml = `
+      <div id="customer-search-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 overflow-y-auto z-50" style="display: block;">
+        <div class="flex items-center justify-center min-h-screen p-4">
+          <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+            <div class="px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Select Customer</h3>
+                <button onclick="closeCustomerSearch()" class="text-gray-400 hover:text-gray-600">
+                  <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="mb-4">
+                <input
+                  type="text"
+                  id="customer-search-input"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="Search by name, phone, or email..."
+                  onkeyup="searchCustomers(this.value)"
+                >
+              </div>
+              <div id="customer-search-results" class="max-h-96 overflow-y-auto">
+                <div class="text-center py-4 text-gray-500">
+                  Start typing to search for customers...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  function closeCustomerSearch() {
+    const modal = document.getElementById('customer-search-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function searchCustomers(query) {
+    if (query.length < 2) {
+      document.getElementById('customer-search-results').innerHTML = `
+        <div class="text-center py-4 text-gray-500">
+          Start typing to search for customers...
+        </div>
+      `;
+      return;
+    }
+
+    // Fetch customers via HTMX
+    fetch(`/sales/pos/customers/search?q=${encodeURIComponent(query)}`)
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('customer-search-results').innerHTML = html;
+      })
+      .catch(error => {
+        console.error('Error searching customers:', error);
+        document.getElementById('customer-search-results').innerHTML = `
+          <div class="text-center py-4 text-red-500">
+            Error loading customers. Please try again.
+          </div>
+        `;
+      });
+  }
+
+  function selectCustomer(customerId, customerName) {
+    document.getElementById('selected-customer-id').value = customerId;
+    document.getElementById('selected-customer-name').textContent = customerName;
+    document.getElementById('clear-customer-btn').style.display = 'block';
+    closeCustomerSearch();
+  }
+
+  function clearCustomer() {
+    document.getElementById('selected-customer-id').value = '';
+    document.getElementById('selected-customer-name').textContent = 'Walk-in Customer';
+    document.getElementById('clear-customer-btn').style.display = 'none';
+  }
 </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 """Web routes for TechStore SaaS HTMX interface."""
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
@@ -27,6 +27,35 @@ demo_products = [
 async def welcome_page(request: Request):
     """Página de bienvenida con demos de HTMX."""
     return templates.TemplateResponse("welcome.html", {"request": request})
+
+
+@router.get("/not-implemented", response_class=HTMLResponse)
+async def not_implemented(request: Request, feature: str = Query(None)):
+    """Show 404 page for features not yet implemented.
+
+    Args:
+        request: FastAPI request object.
+        feature: Optional feature name to display in the message.
+
+    Returns:
+        404 page with custom message.
+
+    Usage:
+        /not-implemented - Shows generic "Feature not yet implemented"
+        /not-implemented?feature=reports - Shows "Feature 'reports' coming soon"
+    """
+    message = (
+        f"Feature '{feature}' coming soon" if feature else "Feature not yet implemented"
+    )
+
+    # Get current_user from request state (set by middleware)
+    current_user = getattr(request.state, "current_user", None)
+
+    return templates.TemplateResponse(
+        "404.html",
+        {"request": request, "message": message, "current_user": current_user},
+        status_code=404,
+    )
 
 
 @router.post("/demo/increment", response_class=PlainTextResponse)

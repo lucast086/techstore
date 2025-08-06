@@ -1,5 +1,6 @@
 """Balance service for customer account calculations."""
 
+from datetime import UTC
 from decimal import Decimal
 
 from sqlalchemy import func
@@ -66,9 +67,14 @@ class BalanceService:
         )
 
         for payment in payments:
+            # Ensure datetime is timezone-aware
+            payment_date = payment.created_at
+            if payment_date.tzinfo is None:
+                payment_date = payment_date.replace(tzinfo=UTC)
+
             transactions.append(
                 {
-                    "date": payment.created_at,
+                    "date": payment_date,
                     "type": "payment",
                     "description": f"Payment - {payment.receipt_number}",
                     "amount": float(payment.amount),  # Positive for credit
@@ -90,9 +96,14 @@ class BalanceService:
         )
 
         for sale in sales:
+            # Ensure datetime is timezone-aware
+            sale_date = sale.sale_date
+            if sale_date.tzinfo is None:
+                sale_date = sale_date.replace(tzinfo=UTC)
+
             transactions.append(
                 {
-                    "date": sale.sale_date,
+                    "date": sale_date,
                     "type": "sale",
                     "description": f"Credit Sale - {sale.invoice_number}",
                     "amount": -float(sale.total_amount),  # Negative for debt

@@ -506,7 +506,6 @@ async def admin_categories_create_post(
             name=form.get("name"),
             description=form.get("description", ""),
             parent_id=int(form.get("parent_id")) if form.get("parent_id") else None,
-            icon=form.get("icon", ""),
             display_order=int(form.get("display_order", 0)),
             is_active="is_active" in form,
         )
@@ -571,7 +570,6 @@ async def admin_categories_update_post(
             name=form.get("name"),
             description=form.get("description", ""),
             parent_id=int(form.get("parent_id")) if form.get("parent_id") else None,
-            icon=form.get("icon", ""),
             display_order=int(form.get("display_order", 0)),
             is_active="is_active" in form,
         )

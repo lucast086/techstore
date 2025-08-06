@@ -27,8 +27,8 @@ async def products_list(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
     page: int = 1,
-    search: Optional[str] = None,
-    category_id: Optional[int] = None,
+    search: str = "",
+    category_id: str = "",
     stock_status: str = "all",
     sort_by: str = "name",
     sort_order: str = "asc",
@@ -47,22 +47,47 @@ async def products_list(
     service = ProductService(db)
     category_service = CategoryService(db)
 
+    # Clean up empty string parameters
+    search_term = search if search and search.strip() else None
+    cat_id = int(category_id) if category_id and category_id.isdigit() else None
+
+    # Validate and set defaults for enums
+    try:
+        stock_enum = StockStatus(stock_status) if stock_status else StockStatus.ALL
+    except ValueError:
+        stock_enum = StockStatus.ALL
+
+    try:
+        sort_field = SortField(sort_by) if sort_by else SortField.NAME
+    except ValueError:
+        sort_field = SortField.NAME
+
+    try:
+        sort_ord = SortOrder(sort_order) if sort_order else SortOrder.ASC
+    except ValueError:
+        sort_ord = SortOrder.ASC
+
+    try:
+        view_mode = ViewMode(view) if view else ViewMode.TABLE
+    except ValueError:
+        view_mode = ViewMode.TABLE
+
     # Build filter params
     filters = ProductFilter(
-        search=search,
-        category_ids=[category_id] if category_id else [],
-        stock_status=StockStatus(stock_status),
+        search=search_term,
+        category_ids=[cat_id] if cat_id else [],
+        stock_status=stock_enum,
         is_active=True,  # Only show active products by default
     )
 
     # Build list params
     params = ProductListParams(
         filters=filters,
-        sort_by=SortField(sort_by),
-        sort_order=SortOrder(sort_order),
+        sort_by=sort_field,
+        sort_order=sort_ord,
         page=page,
         page_size=20,
-        view_mode=ViewMode(view),
+        view_mode=view_mode,
     )
 
     # Get products with new method
@@ -269,7 +294,7 @@ async def search_products(
     products = await service.get_products(limit=10, search=q, is_active=True)
 
     return templates.TemplateResponse(
-        "products/_search_results.html",
+        "products/partials/search_results.html",
         {
             "request": request,
             "products": products,

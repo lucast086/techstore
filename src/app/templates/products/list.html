@@ -38,9 +38,9 @@ block content %}
   <!-- Filters -->
   <div class="bg-white shadow rounded-lg mb-6">
     <div class="px-4 py-5 sm:p-6">
-      <form method="GET" action="/products" class="space-y-4">
+      <form method="GET" action="/products" id="filter-form" class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Search -->
+          <!-- Search with Modal -->
           <div class="sm:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700">
               Search
@@ -64,17 +64,13 @@ block content %}
               </div>
               <input
                 type="text"
-                name="search"
-                id="search"
-                value="{{ search or '' }}"
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="Search by name, SKU, or barcode..."
-                hx-get="/products"
-                hx-trigger="keyup changed delay:500ms"
-                hx-target="#products-container"
-                hx-select="#products-container"
-                hx-include="[name='category_id'],[name='stock_status'],[name='sort_by'],[name='sort_order']"
+                id="search-display"
+                readonly
+                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
+                placeholder="Click to search products..."
+                onclick="openProductSearch()"
               />
+              <input type="hidden" name="search" id="search" value="{{ search or '' }}">
             </div>
           </div>
 
@@ -90,11 +86,7 @@ block content %}
               id="category_id"
               name="category_id"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              hx-get="/products"
-              hx-trigger="change"
-              hx-target="#products-container"
-              hx-select="#products-container"
-              hx-include="[name='search'],[name='stock_status'],[name='sort_by'],[name='sort_order']"
+              onchange="document.getElementById('filter-form').submit()"
             >
               <option value="">All Categories</option>
               {% for category in categories %}
@@ -118,17 +110,13 @@ block content %}
               id="stock_status"
               name="stock_status"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              hx-get="/products"
-              hx-trigger="change"
-              hx-target="#products-container"
-              hx-select="#products-container"
-              hx-include="[name='search'],[name='category_id'],[name='sort_by'],[name='sort_order']"
+              onchange="document.getElementById('filter-form').submit()"
             >
               <option
                 value="all"
                 {%
                 if
-                stock_status=="all"
+                stock_status=="all" or not stock_status
                 %}selected{%
                 endif
                 %}
@@ -196,17 +184,13 @@ block content %}
               id="sort_by"
               name="sort_by"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              hx-get="/products"
-              hx-trigger="change"
-              hx-target="#products-container"
-              hx-select="#products-container"
-              hx-include="[name='search'],[name='category_id'],[name='stock_status'],[name='sort_order']"
+              onchange="document.getElementById('filter-form').submit()"
             >
               <option
                 value="name"
                 {%
                 if
-                sort_by=="name"
+                sort_by=="name" or not sort_by
                 %}selected{%
                 endif
                 %}
@@ -263,17 +247,13 @@ block content %}
               id="sort_order"
               name="sort_order"
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              hx-get="/products"
-              hx-trigger="change"
-              hx-target="#products-container"
-              hx-select="#products-container"
-              hx-include="[name='search'],[name='category_id'],[name='stock_status'],[name='sort_by']"
+              onchange="document.getElementById('filter-form').submit()"
             >
               <option
                 value="asc"
                 {%
                 if
-                sort_order=="asc"
+                sort_order=="asc" or not sort_order
                 %}selected{%
                 endif
                 %}
@@ -296,7 +276,6 @@ block content %}
 
           <!-- Clear Filters -->
           <div class="flex items-end">
-            {% if search or category_id or stock_status != 'all' %}
             <a
               href="/products"
               class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -315,7 +294,6 @@ block content %}
               </svg>
               Clear filters
             </a>
-            {% endif %}
           </div>
         </div>
       </form>
@@ -464,14 +442,14 @@ block content %}
         <div class="flex-1 flex justify-between sm:hidden">
           {% if page > 1 %}
           <a
-            href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}"
+            href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
             class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
           >
             Previous
           </a>
           {% endif %} {% if page < total_pages %}
           <a
-            href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}"
+            href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
             class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
           >
             Next
@@ -498,7 +476,7 @@ block content %}
             >
               {% if page > 1 %}
               <a
-                href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}"
+                href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
                 class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
               >
                 <span class="sr-only">Previous</span>
@@ -527,7 +505,7 @@ block content %}
               {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page
               + 2) %}
               <a
-                href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}"
+                href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
                 class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 {{ p }}
@@ -540,7 +518,7 @@ block content %}
               </span>
               {% endif %} {% endfor %} {% if page < total_pages %}
               <a
-                href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}"
+                href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
                 class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
               >
                 <span class="sr-only">Next</span>
@@ -609,4 +587,141 @@ block content %}
     </div>
   </div>
 </div>
+
+<!-- Product Search Modal -->
+<div id="productSearchModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeProductSearch()"></div>
+
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+    <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+      <div>
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+          Search Products
+        </h3>
+        <div class="mt-2">
+          <input
+            type="text"
+            id="productSearchInput"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="Search by name, SKU, or barcode..."
+            onkeyup="searchProducts(this.value)"
+            autofocus
+          >
+        </div>
+
+        <div id="productSearchResults" class="mt-4 max-h-96 overflow-y-auto">
+          <!-- Results will be populated here -->
+        </div>
+      </div>
+
+      <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+        <button
+          type="button"
+          class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-1 sm:text-sm"
+          onclick="closeProductSearch()"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+          onclick="applyProductSearch()"
+        >
+          Apply Search
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let searchTimeout;
+let selectedSearchTerm = '';
+
+function openProductSearch() {
+  document.getElementById('productSearchModal').classList.remove('hidden');
+  document.getElementById('productSearchInput').focus();
+  // Clear input and results
+  document.getElementById('productSearchInput').value = '';
+  document.getElementById('productSearchResults').innerHTML = `
+    <div class="text-center py-8 text-gray-500">
+      <p>Start typing to search products...</p>
+    </div>
+  `;
+}
+
+function closeProductSearch() {
+  document.getElementById('productSearchModal').classList.add('hidden');
+}
+
+function searchProducts(query) {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    if (query.length > 0) {
+      fetch(`/products/search?q=${encodeURIComponent(query)}`)
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById('productSearchResults').innerHTML = html;
+        })
+        .catch(error => {
+          document.getElementById('productSearchResults').innerHTML = `
+            <div class="text-center py-8 text-red-500">
+              <p>Error loading results. Please try again.</p>
+            </div>
+          `;
+        });
+    } else {
+      document.getElementById('productSearchResults').innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+          <p>Start typing to search products...</p>
+        </div>
+      `;
+    }
+  }, 300);
+}
+
+function selectProduct(productName, productSku) {
+  // Set the search term to the selected product
+  const searchTerm = productName;
+  document.getElementById('productSearchInput').value = searchTerm;
+  selectedSearchTerm = searchTerm;
+}
+
+function applyProductSearch() {
+  const searchInput = document.getElementById('productSearchInput');
+  const searchValue = searchInput.value;
+
+  // Update hidden search field
+  document.getElementById('search').value = searchValue;
+  document.getElementById('search-display').value = searchValue || 'Click to search products...';
+
+  // Submit the form
+  document.getElementById('filter-form').submit();
+
+  closeProductSearch();
+}
+
+// Handle Enter key in search input
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize search display
+  const searchValue = document.getElementById('search').value;
+  if (searchValue) {
+    document.getElementById('search-display').value = searchValue;
+  }
+
+  // Add enter key handler for search input
+  const searchInput = document.getElementById('productSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyProductSearch();
+      }
+    });
+  }
+});
+</script>
+
 {% endblock %}

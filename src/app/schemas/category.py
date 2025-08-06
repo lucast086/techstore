@@ -12,7 +12,6 @@ class CategoryBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = None
     parent_id: Optional[int] = None
-    icon: Optional[str] = Field(None, max_length=50)
     display_order: int = Field(default=0)
     is_active: bool = True
 
@@ -29,7 +28,6 @@ class CategoryUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = None
     parent_id: Optional[int] = None
-    icon: Optional[str] = None
     display_order: Optional[int] = None
     is_active: Optional[bool] = None
 

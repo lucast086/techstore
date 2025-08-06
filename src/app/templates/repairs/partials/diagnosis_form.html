@@ -9,8 +9,7 @@
     </div>
 
     <form hx-post="/repairs/{{ repair.id }}/diagnosis"
-          hx-target="#diagnosis-content"
-          hx-on="htmx:afterRequest: closeDiagnosisModal()"
+          hx-redirect="/repairs/{{ repair.id }}"
           class="space-y-4">
         <!-- Diagnosis Notes -->
         <div>
@@ -41,8 +40,8 @@
                            step="0.01"
                            min="0"
                            required
-                           value="{{ repair.labor_cost or '' }}"
-                           onchange="updateTotalCost()"
+                           value="{{ repair.labor_cost or '0.00' }}"
+                           oninput="updateTotalCost()"
                            class="pl-7 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
@@ -60,8 +59,8 @@
                            id="parts_cost"
                            step="0.01"
                            min="0"
-                           value="{{ repair.parts_cost or '0' }}"
-                           onchange="updateTotalCost()"
+                           value="{{ repair.parts_cost or '0.00' }}"
+                           oninput="updateTotalCost()"
                            class="pl-7 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>

@@ -238,11 +238,11 @@ class RepairCRUD:
                 db.add(part)
 
         # Update status to diagnosing
-        if repair.status == RepairStatus.RECEIVED:
-            repair.status = RepairStatus.DIAGNOSING
+        if repair.status == RepairStatus.RECEIVED.value:
+            repair.status = RepairStatus.DIAGNOSING.value
             status_history = RepairStatusHistory(
                 repair_id=repair_id,
-                status=RepairStatus.DIAGNOSING,
+                status=RepairStatus.DIAGNOSING.value,
                 notes="Diagnosis added",
                 changed_by=user_id,
             )

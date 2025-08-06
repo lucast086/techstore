@@ -151,16 +151,6 @@ class RepairDiagnosis(BaseSchema):
     parts_cost: Decimal = Field(..., ge=0, decimal_places=2)
     parts: Optional[list[RepairPartCreate]] = None
 
-    @field_validator("estimated_cost")
-    @classmethod
-    def validate_total_cost(cls, v: Decimal, values: dict) -> Decimal:
-        """Ensure estimated cost matches components."""
-        labor = values.get("labor_cost", Decimal("0"))
-        parts = values.get("parts_cost", Decimal("0"))
-        if v != labor + parts:
-            raise ValueError("Estimated cost must equal labor + parts cost")
-        return v
-
 
 class RepairStatusUpdate(BaseSchema):
     """Schema for updating repair status."""

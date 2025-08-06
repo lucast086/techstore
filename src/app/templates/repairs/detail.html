@@ -103,9 +103,9 @@
                         {% if repair.estimated_cost %}
                         <p class="mt-2">
                             <span class="font-semibold">Estimated Cost:</span>
-                            ${{ repair.estimated_cost }}
+                            ${{ "%.2f"|format(repair.estimated_cost) }}
                             {% if repair.labor_cost or repair.parts_cost %}
-                            (Labor: ${{ repair.labor_cost or 0 }}, Parts: ${{ repair.parts_cost or 0 }})
+                            (Labor: ${{ "%.2f"|format(repair.labor_cost or 0) }}, Parts: ${{ "%.2f"|format(repair.parts_cost or 0) }})
                             {% endif %}
                         </p>
                         {% endif %}
@@ -143,6 +143,35 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Cost Breakdown -->
+            {% if repair.estimated_cost or repair.final_cost %}
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Cost Breakdown</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center py-2 border-b">
+                        <span class="text-gray-600">Labor Cost:</span>
+                        <span class="font-medium">${{ "%.2f"|format(repair.labor_cost or 0) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b">
+                        <span class="text-gray-600">Parts Cost:</span>
+                        <span class="font-medium">${{ "%.2f"|format(repair.parts_cost or 0) }}</span>
+                    </div>
+                    {% if repair.estimated_cost %}
+                    <div class="flex justify-between items-center py-2 text-lg">
+                        <span class="font-semibold text-gray-700">Estimated Total:</span>
+                        <span class="font-bold text-primary-600">${{ "%.2f"|format(repair.estimated_cost) }}</span>
+                    </div>
+                    {% endif %}
+                    {% if repair.final_cost %}
+                    <div class="flex justify-between items-center py-2 text-lg border-t pt-3">
+                        <span class="font-semibold text-gray-700">Final Total:</span>
+                        <span class="font-bold text-green-600">${{ "%.2f"|format(repair.final_cost) }}</span>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -342,6 +371,8 @@ function showDiagnosisForm() {
         .then(response => response.text())
         .then(html => {
             document.getElementById('diagnosis-form-container').innerHTML = html;
+            // Process HTMX on the new content
+            htmx.process(document.getElementById('diagnosis-form-container'));
         });
 }
 

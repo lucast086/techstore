@@ -94,6 +94,43 @@ async def get_customers_htmx(
     return HTMLResponse(content=html)
 
 
+@router.get("/pos/customers/search", response_class=HTMLResponse)
+async def search_customers_htmx(
+    request: Request,
+    q: str = Query(..., min_length=1),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Search customers and return HTMX partial."""
+    from sqlalchemy import or_
+
+    from app.models.customer import Customer
+
+    query = q.lower()
+    customers = (
+        db.query(Customer)
+        .filter(
+            Customer.is_active.is_(True),
+            or_(
+                Customer.name.ilike(f"%{query}%"),
+                Customer.phone.ilike(f"%{query}%"),
+                Customer.email.ilike(f"%{query}%"),
+            ),
+        )
+        .limit(20)
+        .all()
+    )
+
+    context = {
+        "request": request,
+        "customers": customers,
+    }
+
+    return templates.TemplateResponse(
+        "sales/partials/customer_search_results.html", context
+    )
+
+
 @router.post("/pos/cart/add", response_class=HTMLResponse)
 async def add_to_cart(
     request: Request,
@@ -275,7 +312,7 @@ async def sales_history(
     request: Request,
     page: int = Query(1, ge=1),
     search: Optional[str] = None,
-    customer_id: Optional[int] = None,
+    customer_id: Optional[str] = Query(None),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     payment_status: Optional[str] = None,
@@ -287,18 +324,53 @@ async def sales_history(
     skip = (page - 1) * page_size
 
     # Parse dates
-    start_datetime = datetime.fromisoformat(start_date) if start_date else None
-    end_datetime = datetime.fromisoformat(end_date) if end_date else None
+    start_datetime = None
+    end_datetime = None
+
+    if start_date and start_date.strip():
+        try:
+            # Try to parse as date string first (YYYY-MM-DD)
+            start_datetime = datetime.strptime(start_date, "%Y-%m-%d")
+        except ValueError:
+            # Fallback to ISO format if it includes time
+            try:
+                start_datetime = datetime.fromisoformat(start_date)
+            except ValueError:
+                logger.warning(f"Invalid start_date format: {start_date}")
+
+    if end_date and end_date.strip():
+        try:
+            # Try to parse as date string first (YYYY-MM-DD)
+            # Add time to make it end of day for proper filtering
+            end_datetime = datetime.strptime(end_date, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59
+            )
+        except ValueError:
+            # Fallback to ISO format if it includes time
+            try:
+                end_datetime = datetime.fromisoformat(end_date)
+            except ValueError:
+                logger.warning(f"Invalid end_date format: {end_date}")
+
+    # Convert customer_id to int if provided
+    customer_id_int = None
+    if customer_id and customer_id.strip():
+        try:
+            customer_id_int = int(customer_id)
+        except ValueError:
+            logger.warning(f"Invalid customer_id: {customer_id}")
 
     # Get sales
     sales, total = sale_crud.get_multi_with_filters(
         db,
         skip=skip,
         limit=page_size,
-        customer_id=customer_id,
+        customer_id=customer_id_int,
         start_date=start_datetime,
         end_date=end_datetime,
-        payment_status=payment_status,
+        payment_status=payment_status
+        if payment_status and payment_status.strip()
+        else None,
         is_voided=False,
     )
 
@@ -353,6 +425,7 @@ async def sale_detail(
 async def sale_receipt(
     request: Request,
     sale_id: int,
+    print: bool = Query(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
@@ -377,6 +450,7 @@ async def sale_receipt(
             "email": "info@techstore.com",
             "tax_id": "TAX123456",
         },
+        "print_mode": print,
     }
 
     return templates.TemplateResponse("sales/receipt.html", context)
