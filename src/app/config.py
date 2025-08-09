@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         default=8, description="JWT token expiration in hours"
     )
     JWT_REFRESH_EXPIRATION_DAYS: int = Field(
-        default=30, description="JWT refresh token expiration in days"
+        default=7, description="JWT refresh token expiration in days"
     )
 
     # Password Security
