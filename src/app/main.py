@@ -53,6 +53,7 @@ from app.web import (
     cash_closings,
     customers,
     expenses,
+    help,
     payments,
     products,
     repairs,
@@ -148,6 +149,9 @@ app.include_router(
 
 # Expense routes (HTMX)
 app.include_router(expenses.router, tags=["expenses"])
+
+# Help center routes (HTMX)
+app.include_router(help.router, tags=["help"])
 
 # Web routes (HTMX)
 app.include_router(web_router)

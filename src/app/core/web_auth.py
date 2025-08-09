@@ -75,6 +75,53 @@ async def get_current_user_from_cookie(
     return user
 
 
+async def get_current_user_optional(
+    request: Request,
+    access_token: Annotated[str | None, Cookie()] = None,
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Get current authenticated user from cookie-based JWT token.
+
+    Returns None if user is not authenticated instead of raising an exception.
+    This is useful for public pages that need to show different content
+    based on authentication status.
+
+    Args:
+        request: FastAPI request object.
+        access_token: JWT access token from cookie.
+        db: Database session.
+
+    Returns:
+        Current user object or None if not authenticated.
+    """
+    if not access_token:
+        return None
+
+    try:
+        # Decode token
+        payload = decode_token(access_token)
+
+        # Verify token type
+        if not verify_token_type(payload, "access"):
+            return None
+
+        # Get user ID from token
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+
+    except JWTError:
+        return None
+
+    # Get user from database
+    user = db.query(User).filter(User.id == int(user_id)).first()
+
+    if user is None or not user.is_active:
+        return None
+
+    return user
+
+
 def require_web_role(allowed_roles: list[str]):
     """Dependency to require specific roles for web routes.
 

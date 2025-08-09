@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Centro de Ayuda - {{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">📚 Centro de Ayuda</h1>
+        <p class="text-gray-600">Toda la documentación y guías para usar TechStore</p>
+    </div>
+
+    <!-- Quick Start Card -->
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">🚀 ¿Primera vez usando TechStore?</h2>
+                <p class="mb-4">Lee nuestra guía rápida de 5 minutos con todo lo esencial</p>
+                <a href="/ayuda/guia-rapida"
+                   class="inline-block bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-blue-50 transition">
+                    Ir a la Guía Rápida
+                </a>
+            </div>
+            <div class="hidden md:block">
+                <svg class="w-24 h-24 opacity-80" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documentation Sections -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Getting Started -->
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex items-center mb-3">
+                <div class="bg-green-100 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold">Primeros Pasos</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Configuración inicial y navegación básica</p>
+            <div class="space-y-2">
+                <a href="/ayuda/documento/introduccion" class="block text-blue-600 hover:underline">→ Introducción al Sistema</a>
+                <a href="/ayuda/documento/primeros-pasos" class="block text-blue-600 hover:underline">→ Navegación y Acceso</a>
+            </div>
+        </div>
+
+        <!-- Sales -->
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex items-center mb-3">
+                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold">Ventas y Facturación</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Punto de venta, facturas y devoluciones</p>
+            <div class="space-y-2">
+                <a href="/ayuda/documento/ventas" class="block text-blue-600 hover:underline">→ Proceso de Ventas</a>
+                <a href="/ayuda/documento/caja" class="block text-blue-600 hover:underline">→ Control de Caja</a>
+            </div>
+        </div>
+
+        <!-- Customers -->
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex items-center mb-3">
+                <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold">Gestión de Clientes</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Registro, cuentas corrientes y pagos</p>
+            <div class="space-y-2">
+                <a href="/ayuda/documento/clientes" class="block text-blue-600 hover:underline">→ Manual de Clientes</a>
+            </div>
+        </div>
+
+        <!-- Products -->
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex items-center mb-3">
+                <div class="bg-yellow-100 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold">Productos e Inventario</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Catálogo, stock y categorías</p>
+            <div class="space-y-2">
+                <a href="/ayuda/documento/productos" class="block text-blue-600 hover:underline">→ Gestión de Productos</a>
+            </div>
+        </div>
+
+        <!-- Repairs -->
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex items-center mb-3">
+                <div class="bg-orange-100 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold">Reparaciones</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Recepción, seguimiento y entrega</p>
+            <div class="space-y-2">
+                <a href="/ayuda/documento/reparaciones" class="block text-blue-600 hover:underline">→ Sistema de Reparaciones</a>
+                <a href="/ayuda/documento/garantias" class="block text-blue-600 hover:underline">→ Garantías</a>
+            </div>
+        </div>
+
+        <!-- Reports & Settings -->
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition p-6">
+            <div class="flex items-center mb-3">
+                <div class="bg-red-100 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold">Reportes y Configuración</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Análisis, métricas y ajustes del sistema</p>
+            <div class="space-y-2">
+                <a href="/ayuda/documento/reportes" class="block text-blue-600 hover:underline">→ Reportes y Dashboard</a>
+                <a href="/ayuda/documento/configuracion" class="block text-blue-600 hover:underline">→ Configuración</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FAQ and Support -->
+    <div class="mt-8 grid md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-3">❓ Preguntas Frecuentes</h3>
+            <p class="text-gray-600 mb-3">Respuestas a las dudas más comunes</p>
+            <a href="/ayuda/documento/faq" class="text-blue-600 hover:underline">Ver todas las preguntas →</a>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-3">📖 Glosario</h3>
+            <p class="text-gray-600 mb-3">Definiciones de términos del sistema</p>
+            <a href="/ayuda/documento/glosario" class="text-blue-600 hover:underline">Consultar glosario →</a>
+        </div>
+    </div>
+
+    <!-- Footer tip -->
+    <div class="mt-8 text-center text-gray-500 text-sm">
+        💡 Tip: Usa el botón de ayuda (?) en el dashboard para abrir esta documentación en una nueva pestaña
+    </div>
+</div>
+{% endblock %}
