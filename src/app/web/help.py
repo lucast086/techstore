@@ -14,8 +14,8 @@ templates = Jinja2Templates(directory="src/app/templates")
 
 router = APIRouter(prefix="/ayuda", tags=["help"])
 
-# Path to documentation files
-DOCS_PATH = Path("/workspace/docs/user-guide/es")
+# Path to documentation files - relative to project root
+DOCS_PATH = Path(__file__).parent.parent.parent.parent / "docs" / "user-guide" / "es"
 
 
 @router.get("", response_class=HTMLResponse)
