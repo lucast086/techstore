@@ -8,6 +8,7 @@ print(f"[STARTUP] PORT env var: {os.environ.get('PORT', 'NOT SET')}", file=sys.s
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -72,6 +73,24 @@ print("[STARTUP] FastAPI app created successfully", file=sys.stderr)
 
 # Auth context middleware (must be added before CORS)
 app.add_middleware(AuthContextMiddleware)
+
+# Trusted Host middleware for HTTPS behind proxy
+if os.environ.get("RAILWAY_ENVIRONMENT"):
+    # In production, trust Railway's proxy headers
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["*.up.railway.app", "*.railway.app", "*"],
+    )
+
+    # Force HTTPS scheme when behind proxy
+    @app.middleware("http")
+    async def force_https_scheme(request, call_next):
+        # Railway sends X-Forwarded-Proto header
+        if request.headers.get("x-forwarded-proto") == "https":
+            request.scope["scheme"] = "https"
+        response = await call_next(request)
+        return response
+
 
 # CORS middleware
 app.add_middleware(
