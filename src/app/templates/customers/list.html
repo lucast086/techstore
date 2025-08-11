@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Customers - TechStore{% endblock %}
+{% extends "base.html" %} {% block title %}Clientes - TechStore{% endblock %}
 {% block content %}
 <div class="bg-white">
   <!-- Header -->
@@ -9,7 +9,7 @@
       <h1
         class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
       >
-        Customers
+        Clientes
       </h1>
     </div>
     <div class="mt-4 flex sm:mt-0 sm:ml-4">
@@ -29,7 +29,7 @@
             clip-rule="evenodd"
           />
         </svg>
-        Register New Customer
+        Registrar Nuevo Cliente
       </a>
     </div>
   </div>
@@ -38,7 +38,7 @@
   <div class="px-4 py-4 sm:px-6 lg:px-8">
     <form method="GET" action="/customers" class="flex space-x-3">
       <div class="flex-1">
-        <label for="search" class="sr-only">Search customers</label>
+        <label for="search" class="sr-only">Buscar clientes</label>
         <div class="relative">
           <div
             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
@@ -62,7 +62,7 @@
             id="search"
             value="{{ search }}"
             class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Search by name or phone..."
+            placeholder="Buscar por nombre o teléfono..."
           />
         </div>
       </div>
@@ -70,14 +70,14 @@
         type="submit"
         class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
-        Search
+        Buscar
       </button>
       {% if search %}
       <a
         href="/customers"
         class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
-        Clear
+        Limpiar
       </a>
       {% endif %}
     </form>
@@ -128,13 +128,13 @@
                     scope="col"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    Name
+                    Nombre
                   </th>
                   <th
                     scope="col"
                     class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
                   >
-                    Phone
+                    Teléfono
                   </th>
                   <th
                     scope="col"
@@ -146,10 +146,10 @@
                     scope="col"
                     class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900"
                   >
-                    Balance
+                    Saldo
                   </th>
                   <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                    <span class="sr-only">Actions</span>
+                    <span class="sr-only">Acciones</span>
                   </th>
                 </tr>
               </thead>
@@ -179,13 +179,13 @@
                     <span
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
                     >
-                      Owes ${{ "{:,.2f}".format(-customer.current_balance) }}
+                      Debe ${{ "{:,.2f}".format(-customer.current_balance) }}
                     </span>
                     {% elif customer.has_credit %}
                     <span
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
                     >
-                      Credit ${{ "{:,.2f}".format(customer.current_balance) }}
+                      Crédito ${{ "{:,.2f}".format(customer.current_balance) }}
                     </span>
                     {% else %}
                     <span
@@ -202,7 +202,7 @@
                       <a
                         href="/customers/{{ customer.id }}/statement"
                         class="text-gray-600 hover:text-gray-900"
-                        title="View Statement"
+                        title="Ver Estado de Cuenta"
                       >
                         📄
                       </a>
@@ -210,7 +210,7 @@
                       <a
                         href="/payments/record/{{ customer.id }}"
                         class="text-green-600 hover:text-green-900"
-                        title="Record Payment"
+                        title="Registrar Pago"
                       >
                         💰
                       </a>
@@ -219,7 +219,7 @@
                         href="/customers/{{ customer.id }}"
                         class="text-indigo-600 hover:text-indigo-900"
                       >
-                        View<span class="sr-only">, {{ customer.name }}</span>
+                        Ver<span class="sr-only">, {{ customer.name }}</span>
                       </a>
                     </div>
                   </td>
@@ -256,7 +256,7 @@
               clip-rule="evenodd"
             />
           </svg>
-          Previous
+          Anterior
         </a>
         {% endif %}
       </div>
@@ -264,7 +264,7 @@
         <span
           class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500"
         >
-          Page {{ page }} of {{ total_pages }}
+          Página {{ page }} de {{ total_pages }}
         </span>
       </div>
       <div class="-mt-px flex w-0 flex-1 justify-end">
@@ -273,7 +273,7 @@
           href="/customers?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}"
           class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
         >
-          Next
+          Siguiente
           <svg
             class="ml-3 h-5 w-5 text-gray-400"
             xmlns="http://www.w3.org/2000/svg"
@@ -306,10 +306,10 @@
           d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
         />
       </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">No customers found</h3>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">No se encontraron clientes</h3>
       <p class="mt-1 text-sm text-gray-500">
-        {% if search %} No customers match your search. {% else %} Get started
-        by registering your first customer. {% endif %}
+        {% if search %} No hay clientes que coincidan con tu búsqueda. {% else %} Comienza
+        registrando tu primer cliente. {% endif %}
       </p>
       <div class="mt-6">
         <a
@@ -328,7 +328,7 @@
               clip-rule="evenodd"
             />
           </svg>
-          Register First Customer
+          Registrar Primer Cliente
         </a>
       </div>
     </div>

@@ -7,7 +7,7 @@ block content %}
       <svg class="h-5 w-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
       </svg>
-      <span class="text-sm font-medium text-green-800">Cash Register is Open - Sales can be processed</span>
+      <span class="text-sm font-medium text-green-800">Caja Registradora Abierta - Se pueden procesar ventas</span>
     </div>
   </div>
 
@@ -17,7 +17,7 @@ block content %}
       <!-- Product Search -->
       <div class="bg-white rounded-lg shadow mb-6">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h5 class="text-lg font-semibold text-gray-900">Product Search</h5>
+          <h5 class="text-lg font-semibold text-gray-900">Búsqueda de Productos</h5>
         </div>
         <div class="p-6">
           <div class="relative">
@@ -117,7 +117,7 @@ block content %}
             <div class="border-t pt-4">
               <table class="w-full text-sm">
                 <tr>
-                  <th class="text-left py-2">Product</th>
+                  <th class="text-left py-2">Producto</th>
                   <th class="text-center">Quantity</th>
                   <th class="text-center">Price</th>
                   <th class="text-right">Total</th>
@@ -164,7 +164,7 @@ block content %}
           <!-- Customer Selection -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Customer</label
+              >Cliente</label
             >
             <input type="hidden" name="customer_id" id="selected-customer-id" form="checkout-form" value="">
             <div class="relative">
@@ -173,7 +173,7 @@ block content %}
                 onclick="openCustomerSearch()"
                 class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white hover:bg-gray-50"
               >
-                <span id="selected-customer-name" class="block truncate">Walk-in Customer</span>
+                <span id="selected-customer-name" class="block truncate">Cliente de Mostrador</span>
               </button>
               <button
                 type="button"
@@ -192,7 +192,7 @@ block content %}
           <!-- Payment Method -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2"
-              >Payment Method</label
+              >Método de Pago</label
             >
             <select
               name="payment_method"
@@ -202,7 +202,7 @@ block content %}
               required
               onchange="togglePaymentFields()"
             >
-              <option value="cash">Cash</option>
+              <option value="cash">Efectivo</option>
               <option value="credit">Credit</option>
               <option value="transfer">Bank Transfer</option>
               <option value="mixed">Mixed</option>
@@ -265,10 +265,10 @@ block content %}
                   step="0.01"
                   class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   form="checkout-form"
-                  placeholder="Cash amount"
+                  placeholder="Cantidad en efectivo"
                   onchange="updateMixedTotal()"
                 />
-                <span class="text-sm text-gray-600">Cash</span>
+                <span class="text-sm text-gray-600">Efectivo</span>
               </div>
               <div class="flex items-center space-x-2">
                 <input
@@ -298,7 +298,7 @@ block content %}
               </div>
               <div class="pt-2 border-t">
                 <div class="flex justify-between">
-                  <span class="text-sm font-medium">Total Paid:</span>
+                  <span class="text-sm font-medium">Total Pagado:</span>
                   <span id="mixed-total" class="text-sm font-semibold">$0.00</span>
                 </div>
                 <div class="flex justify-between mt-1">
@@ -347,14 +347,14 @@ block content %}
               form="checkout-form"
               class="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 font-medium"
             >
-              Complete Sale
+              Completar Venta
             </button>
             <div id="checkout-result"></div>
           </div>
 
           <!-- Quick Products -->
           <div class="pt-4 border-t">
-            <p class="text-sm text-gray-600 mb-2">Quick Products</p>
+            <p class="text-sm text-gray-600 mb-2">Productos Rápidos</p>
             <p class="text-xs text-gray-500">
               Quick product buttons will be added in a future update
             </p>
@@ -656,7 +656,7 @@ block content %}
           <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
             <div class="px-6 py-4 border-b border-gray-200">
               <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Select Customer</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Seleccionar Cliente</h3>
                 <button onclick="closeCustomerSearch()" class="text-gray-400 hover:text-gray-600">
                   <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -727,7 +727,7 @@ block content %}
 
   function clearCustomer() {
     document.getElementById('selected-customer-id').value = '';
-    document.getElementById('selected-customer-name').textContent = 'Walk-in Customer';
+    document.getElementById('selected-customer-name').textContent = 'Cliente de Mostrador';
     document.getElementById('clear-customer-btn').style.display = 'none';
   }
 </script>

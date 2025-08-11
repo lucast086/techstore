@@ -240,7 +240,7 @@
 
                 <div class="info-right">
                     {% if sale.customer %}
-                    <div class="info-label">Customer</div>
+                    <div class="info-label">Cliente</div>
                     <div class="info-value">{{ sale.customer.name }}</div>
 
                     {% if sale.customer.phone %}
@@ -248,8 +248,8 @@
                     <div class="info-value">{{ sale.customer.phone }}</div>
                     {% endif %}
                     {% else %}
-                    <div class="info-label">Customer</div>
-                    <div class="info-value">Walk-in Customer</div>
+                    <div class="info-label">Cliente</div>
+                    <div class="info-value">Cliente de Mostrador</div>
                     {% endif %}
                 </div>
             </div>
@@ -315,7 +315,7 @@
             <div class="payment-info">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <div>
-                        <span style="font-size: 12px; color: #666;">Payment Method:</span>
+                        <span style="font-size: 12px; color: #666;">Método de Pago:</span>
                         <span style="font-size: 14px; font-weight: 600;">{{ sale.payment_method|capitalize }}</span>
                     </div>
                     <div>
@@ -358,7 +358,7 @@
                     {% set payment_line = sale.notes.split('\n')[0] %}
                     {% if 'Payment breakdown:' in payment_line %}
                         <div style="border-top: 1px solid #dee2e6; padding-top: 8px; margin-top: 8px;">
-                            <div style="font-size: 12px; color: #666;">Payment Breakdown:</div>
+                            <div style="font-size: 12px; color: #666;">Desglose de Pago:</div>
                             <div style="font-size: 13px; font-weight: 600;">{{ payment_line.replace('Payment breakdown: ', '') }}</div>
                         </div>
                     {% endif %}
@@ -381,7 +381,7 @@
             {% endif %}
 
             <div class="footer">
-                <p style="font-weight: bold;">Thank you for your business!</p>
+                <p style="font-weight: bold;">¡Gracias por tu compra!</p>
 
                 {% if sale.notes %}
                     {% set display_notes = [] %}

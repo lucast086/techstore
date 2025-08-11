@@ -1,5 +1,5 @@
-{% extends "base.html" %} {% block title %}{{ "Edit Customer" if customer else
-"Register New Customer" }} - TechStore{% endblock %} {% block content %}
+{% extends "base.html" %} {% block title %}{{ "Editar Cliente" if customer else
+"Registrar Nuevo Cliente" }} - TechStore{% endblock %} {% block content %}
 <div class="bg-white">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Header -->
@@ -20,10 +20,10 @@
             clip-rule="evenodd"
           />
         </svg>
-        Back to List
+        Volver a la Lista
       </a>
       <h1 class="mt-4 text-2xl font-bold text-gray-900">
-        {{ "Edit Customer" if customer else "Register New Customer" }}
+        {{ "Editar Cliente" if customer else "Registrar Nuevo Cliente" }}
       </h1>
     </div>
 
@@ -62,14 +62,14 @@
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h2 class="text-lg font-medium text-gray-900 mb-4">
-            Basic Information
+            Información Básica
           </h2>
 
           <div class="space-y-6">
             <!-- Name Field -->
             <div>
               <label for="name" class="block text-sm font-medium text-gray-700">
-                Customer Name <span class="text-red-500">*</span>
+                Nombre del Cliente <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -81,7 +81,7 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
               <p class="mt-1 text-sm text-gray-500">
-                Full name of the customer
+                Nombre completo del cliente
               </p>
             </div>
 
@@ -92,7 +92,7 @@
                   for="phone"
                   class="block text-sm font-medium text-gray-700"
                 >
-                  Primary Phone <span class="text-red-500">*</span>
+                  Teléfono Principal <span class="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
@@ -122,7 +122,7 @@
                   for="phone_secondary"
                   class="block text-sm font-medium text-gray-700"
                 >
-                  Secondary Phone
+                  Teléfono Secundario
                 </label>
                 <input
                   type="tel"
@@ -142,7 +142,7 @@
                 for="email"
                 class="block text-sm font-medium text-gray-700"
               >
-                Email Address
+                Dirección de Email
               </label>
               <input
                 type="email"
@@ -172,7 +172,7 @@
                 for="address"
                 class="block text-sm font-medium text-gray-700"
               >
-                Address
+                Dirección
               </label>
               <textarea
                 id="address"
@@ -194,7 +194,7 @@
                 for="notes"
                 class="block text-sm font-medium text-gray-700"
               >
-                Notes
+                Notas
               </label>
               <textarea
                 id="notes"
@@ -219,7 +219,7 @@
           href="/customers"
           class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Cancel
+          Cancelar
         </a>
         <button
           type="submit"
@@ -237,7 +237,7 @@
               clip-rule="evenodd"
             />
           </svg>
-          {{ "Update Customer" if customer else "Register Customer" }}
+          {{ "Actualizar Cliente" if customer else "Registrar Cliente" }}
         </button>
       </div>
     </form>

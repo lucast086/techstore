@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Edit Product - {{ product.name }} - TechStore{% endblock %}
+{% block title %}Editar Producto - {{ product.name }} - TechStore{% endblock %}
 
 {% block content %}
 <div class="bg-white">
@@ -22,11 +22,11 @@
             clip-rule="evenodd"
           />
         </svg>
-        Back to Product
+        Volver al Producto
       </a>
-      <h1 class="mt-4 text-2xl font-bold text-gray-900">Edit Product</h1>
+      <h1 class="mt-4 text-2xl font-bold text-gray-900">Editar Producto</h1>
       <p class="mt-1 text-sm text-gray-600">
-        Update product information for: <strong>{{ product.name }}</strong>
+        Actualizar información del producto: <strong>{{ product.name }}</strong>
       </p>
     </div>
 
@@ -68,7 +68,7 @@
       <!-- Basic Information Section -->
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Información Básica</h2>
 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <!-- SKU Field -->
@@ -85,13 +85,13 @@
                 required
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
-              <p class="mt-1 text-sm text-gray-500">Alphanumeric and hyphens only</p>
+              <p class="mt-1 text-sm text-gray-500">Solo alfanumérico y guiones</p>
             </div>
 
             <!-- Name Field -->
             <div>
               <label for="name" class="block text-sm font-medium text-gray-700">
-                Product Name <span class="text-red-500">*</span>
+                Nombre del Producto <span class="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -106,7 +106,7 @@
             <!-- Category Field -->
             <div>
               <label for="category_id" class="block text-sm font-medium text-gray-700">
-                Category <span class="text-red-500">*</span>
+                Categoría <span class="text-red-500">*</span>
               </label>
               <select
                 id="category_id"
@@ -125,7 +125,7 @@
             <!-- Brand Field -->
             <div>
               <label for="brand" class="block text-sm font-medium text-gray-700">
-                Brand
+                Marca
               </label>
               <input
                 type="text"
@@ -139,7 +139,7 @@
             <!-- Model Field -->
             <div>
               <label for="model" class="block text-sm font-medium text-gray-700">
-                Model
+                Modelo
               </label>
               <input
                 type="text"
@@ -153,7 +153,7 @@
             <!-- Barcode Field -->
             <div>
               <label for="barcode" class="block text-sm font-medium text-gray-700">
-                Barcode
+                Código de Barras
               </label>
               <input
                 type="text"
@@ -168,7 +168,7 @@
           <!-- Description Field -->
           <div class="mt-6">
             <label for="description" class="block text-sm font-medium text-gray-700">
-              Description
+              Descripción
             </label>
             <textarea
               id="description"
@@ -183,13 +183,13 @@
       <!-- Pricing Section -->
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Pricing</h2>
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Precios</h2>
 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <!-- Purchase Price -->
             <div>
               <label for="purchase_price" class="block text-sm font-medium text-gray-700">
-                Purchase Price <span class="text-red-500">*</span>
+                Precio de Compra <span class="text-red-500">*</span>
               </label>
               <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -211,7 +211,7 @@
             <!-- First Sale Price -->
             <div>
               <label for="first_sale_price" class="block text-sm font-medium text-gray-700">
-                Primary Sale Price <span class="text-red-500">*</span>
+                Precio de Venta Principal <span class="text-red-500">*</span>
               </label>
               <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -228,13 +228,13 @@
                   class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
-              <p class="mt-1 text-sm text-gray-500">Regular price</p>
+              <p class="mt-1 text-sm text-gray-500">Precio regular</p>
             </div>
 
             <!-- Second Sale Price -->
             <div>
               <label for="second_sale_price" class="block text-sm font-medium text-gray-700">
-                Secondary Sale Price <span class="text-red-500">*</span>
+                Precio de Venta Secundario <span class="text-red-500">*</span>
               </label>
               <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -251,13 +251,13 @@
                   class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
-              <p class="mt-1 text-sm text-gray-500">Wholesale price</p>
+              <p class="mt-1 text-sm text-gray-500">Precio mayorista</p>
             </div>
 
             <!-- Third Sale Price -->
             <div>
               <label for="third_sale_price" class="block text-sm font-medium text-gray-700">
-                Tertiary Sale Price <span class="text-red-500">*</span>
+                Precio de Venta Terciario <span class="text-red-500">*</span>
               </label>
               <div class="mt-1 relative rounded-md shadow-sm">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -274,13 +274,13 @@
                   class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
-              <p class="mt-1 text-sm text-gray-500">Special price</p>
+              <p class="mt-1 text-sm text-gray-500">Precio especial</p>
             </div>
 
             <!-- Tax Rate -->
             <div>
               <label for="tax_rate" class="block text-sm font-medium text-gray-700">
-                Tax Rate (%)
+                Tasa de Impuesto (%)
               </label>
               <input
                 type="number"
@@ -292,7 +292,7 @@
                 step="0.01"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
-              <p class="mt-1 text-sm text-gray-500">Default: 16%</p>
+              <p class="mt-1 text-sm text-gray-500">Por defecto: 16%</p>
             </div>
           </div>
         </div>
@@ -301,13 +301,13 @@
       <!-- Inventory Section -->
       <div class="bg-white shadow sm:rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Inventory</h2>
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Inventario</h2>
 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <!-- Current Stock -->
             <div>
               <label for="current_stock" class="block text-sm font-medium text-gray-700">
-                Current Stock
+                Stock Actual
               </label>
               <input
                 type="number"
@@ -322,7 +322,7 @@
             <!-- Minimum Stock -->
             <div>
               <label for="minimum_stock" class="block text-sm font-medium text-gray-700">
-                Minimum Stock
+                Stock Mínimo
               </label>
               <input
                 type="number"
@@ -332,13 +332,13 @@
                 min="0"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
-              <p class="mt-1 text-sm text-gray-500">Alert level</p>
+              <p class="mt-1 text-sm text-gray-500">Nivel de alerta</p>
             </div>
 
             <!-- Maximum Stock -->
             <div>
               <label for="maximum_stock" class="block text-sm font-medium text-gray-700">
-                Maximum Stock
+                Stock Máximo
               </label>
               <input
                 type="number"
@@ -353,7 +353,7 @@
             <!-- Location -->
             <div>
               <label for="location" class="block text-sm font-medium text-gray-700">
-                Location
+                Ubicación
               </label>
               <input
                 type="text"
@@ -380,7 +380,7 @@
               class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
             />
             <label for="is_active" class="text-sm font-medium text-gray-700">
-              Product is active and available for sale
+              El producto está activo y disponible para la venta
             </label>
           </div>
         </div>
@@ -392,13 +392,13 @@
           href="/products/{{ product.id }}"
           class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Cancel
+          Cancelar
         </a>
         <button
           type="submit"
           class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Update Product
+          Actualizar Producto
         </button>
       </div>
     </form>

@@ -16,7 +16,7 @@ endblock %} {% block content %}
               d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"
             />
           </svg>
-          <span class="sr-only">Products</span>
+          <span class="sr-only">Productos</span>
         </a>
       </li>
       <li class="flex items-center">
@@ -35,7 +35,7 @@ endblock %} {% block content %}
         <a
           href="/products"
           class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700"
-          >Products</a
+          >Productos</a
         >
       </li>
       <li class="flex items-center">
@@ -66,7 +66,7 @@ endblock %} {% block content %}
           <h1 class="text-2xl font-bold text-gray-900">{{ product.name }}</h1>
           <p class="mt-1 text-sm text-gray-500">
             SKU: <span class="font-medium">{{ product.sku }}</span> {% if
-            product.barcode %} | Barcode:
+            product.barcode %} | Código de Barras:
             <span class="font-medium">{{ product.barcode }}</span>
             {% endif %}
           </p>
@@ -76,13 +76,13 @@ endblock %} {% block content %}
           <span
             class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800"
           >
-            Active
+            Activo
           </span>
           {% else %}
           <span
             class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
           >
-            Inactive
+            Inactivo
           </span>
           {% endif %}
         </div>
@@ -104,7 +104,7 @@ endblock %} {% block content %}
               d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
             />
           </svg>
-          Edit Product
+          Editar Producto
         </a>
         <button
           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -117,7 +117,7 @@ endblock %} {% block content %}
           >
             <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
           </svg>
-          Print Label
+          Imprimir Etiqueta
         </button>
       </div>
     </div>
@@ -129,14 +129,14 @@ endblock %} {% block content %}
       <!-- Basic Information -->
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h2 class="text-lg font-medium text-gray-900">Basic Information</h2>
+          <h2 class="text-lg font-medium text-gray-900">Información Básica</h2>
         </div>
         <div class="border-t border-gray-200">
           <dl>
             <div
               class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500">Category</dt>
+              <dt class="text-sm font-medium text-gray-500">Categoría</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ product.category.name }}
               </dd>
@@ -145,7 +145,7 @@ endblock %} {% block content %}
             <div
               class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500">Brand</dt>
+              <dt class="text-sm font-medium text-gray-500">Marca</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ product.brand }}
               </dd>
@@ -154,7 +154,7 @@ endblock %} {% block content %}
             <div
               class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500">Model</dt>
+              <dt class="text-sm font-medium text-gray-500">Modelo</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ product.model }}
               </dd>
@@ -163,7 +163,7 @@ endblock %} {% block content %}
             <div
               class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500">Description</dt>
+              <dt class="text-sm font-medium text-gray-500">Descripción</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ product.description }}
               </dd>
@@ -176,14 +176,14 @@ endblock %} {% block content %}
       <!-- Pricing Information -->
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h2 class="text-lg font-medium text-gray-900">Pricing</h2>
+          <h2 class="text-lg font-medium text-gray-900">Precios</h2>
         </div>
         <div class="border-t border-gray-200">
           <dl>
             <div
               class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500">Purchase Price</dt>
+              <dt class="text-sm font-medium text-gray-500">Precio de Compra</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 ${{ "{:,.2f}".format(product.purchase_price) }}
               </dd>
@@ -192,14 +192,14 @@ endblock %} {% block content %}
               class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
               <dt class="text-sm font-medium text-gray-500">
-                Primary Sale Price
+                Precio de Venta Principal
               </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 ${{ "{:,.2f}".format(product.first_sale_price) }}
                 <span class="ml-2 text-sm text-gray-500"
                   >({{ "{:.1f}".format(((product.first_sale_price -
                   product.purchase_price) / product.purchase_price * 100) if
-                  product.purchase_price > 0 else 0) }}% margin)</span
+                  product.purchase_price > 0 else 0) }}% margen)</span
                 >
               </dd>
             </div>
@@ -207,7 +207,7 @@ endblock %} {% block content %}
               class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
               <dt class="text-sm font-medium text-gray-500">
-                Secondary Sale Price
+                Precio de Venta Secundario
               </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 ${{ "{:,.2f}".format(product.second_sale_price) }}
@@ -217,7 +217,7 @@ endblock %} {% block content %}
               class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
               <dt class="text-sm font-medium text-gray-500">
-                Tertiary Sale Price
+                Precio de Venta Terciario
               </dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 ${{ "{:,.2f}".format(product.third_sale_price) }}
@@ -226,7 +226,7 @@ endblock %} {% block content %}
             <div
               class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500">Tax Rate</dt>
+              <dt class="text-sm font-medium text-gray-500">Tasa de Impuesto</dt>
               <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {{ product.tax_rate }}%
               </dd>
@@ -241,37 +241,37 @@ endblock %} {% block content %}
       <!-- Inventory Status -->
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h2 class="text-lg font-medium text-gray-900">Inventory</h2>
+          <h2 class="text-lg font-medium text-gray-900">Inventario</h2>
         </div>
         <div class="border-t border-gray-200">
           <dl>
             <div class="bg-white px-4 py-5">
-              <dt class="text-sm font-medium text-gray-500">Current Stock</dt>
+              <dt class="text-sm font-medium text-gray-500">Stock Actual</dt>
               <dd
                 class="mt-1 text-2xl font-semibold {% if product.current_stock <= product.minimum_stock %}text-red-600{% else %}text-gray-900{% endif %}"
               >
                 {{ product.current_stock }}
               </dd>
               {% if product.current_stock <= product.minimum_stock %}
-              <p class="mt-1 text-sm text-red-600">Below minimum stock level</p>
+              <p class="mt-1 text-sm text-red-600">Debajo del nivel mínimo de stock</p>
               {% endif %}
             </div>
             <div class="bg-gray-50 px-4 py-5">
-              <dt class="text-sm font-medium text-gray-500">Minimum Stock</dt>
+              <dt class="text-sm font-medium text-gray-500">Stock Mínimo</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 {{ product.minimum_stock }}
               </dd>
             </div>
             {% if product.maximum_stock %}
             <div class="bg-white px-4 py-5">
-              <dt class="text-sm font-medium text-gray-500">Maximum Stock</dt>
+              <dt class="text-sm font-medium text-gray-500">Stock Máximo</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 {{ product.maximum_stock }}
               </dd>
             </div>
             {% endif %} {% if product.location %}
             <div class="bg-gray-50 px-4 py-5">
-              <dt class="text-sm font-medium text-gray-500">Location</dt>
+              <dt class="text-sm font-medium text-gray-500">Ubicación</dt>
               <dd class="mt-1 text-sm text-gray-900">{{ product.location }}</dd>
             </div>
             {% endif %}
@@ -293,7 +293,7 @@ endblock %} {% block content %}
                 clip-rule="evenodd"
               />
             </svg>
-            Adjust Stock
+            Ajustar Stock
           </button>
         </div>
       </div>
@@ -301,24 +301,24 @@ endblock %} {% block content %}
       <!-- Quick Actions -->
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h2 class="text-lg font-medium text-gray-900">Quick Actions</h2>
+          <h2 class="text-lg font-medium text-gray-900">Acciones Rápidas</h2>
         </div>
         <div class="border-t border-gray-200">
           <div class="px-4 py-4 space-y-3">
             <button
               class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              View Stock History
+              Ver Historial de Stock
             </button>
             <button
               class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Generate Barcode
+              Generar Código de Barras
             </button>
             <button
               class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Duplicate Product
+              Duplicar Producto
             </button>
           </div>
         </div>
@@ -327,18 +327,18 @@ endblock %} {% block content %}
       <!-- Metadata -->
       <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6">
-          <h2 class="text-lg font-medium text-gray-900">Information</h2>
+          <h2 class="text-lg font-medium text-gray-900">Información</h2>
         </div>
         <div class="border-t border-gray-200">
           <dl>
             <div class="bg-gray-50 px-4 py-5">
-              <dt class="text-sm font-medium text-gray-500">Created</dt>
+              <dt class="text-sm font-medium text-gray-500">Creado</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 {{ product.created_at.strftime('%B %d, %Y at %I:%M %p') }}
               </dd>
             </div>
             <div class="bg-white px-4 py-5">
-              <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
+              <dt class="text-sm font-medium text-gray-500">Última Actualización</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 {{ product.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
               </dd>

@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}{{ customer.name }} - Customer
+{% extends "base.html" %} {% block title %}{{ customer.name }} - Cliente
 Profile{% endblock %} {% block content %}
 <div class="bg-white">
   <!-- Header -->
@@ -63,7 +63,7 @@ Profile{% endblock %} {% block content %}
               clip-rule="evenodd"
             />
           </svg>
-          Record Payment
+          Registrar Pago
         </a>
         {% endif %}
         <a
@@ -82,7 +82,7 @@ Profile{% endblock %} {% block content %}
               clip-rule="evenodd"
             />
           </svg>
-          View Statement
+          Ver Estado de Cuenta
         </a>
       </div>
     </div>
@@ -160,7 +160,7 @@ Profile{% endblock %} {% block content %}
       <div class="bg-white overflow-hidden shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Account Balance
+            Saldo de Cuenta
           </h3>
           <div class="text-center py-8">
             {% if balance_info.has_debt %}
@@ -284,7 +284,7 @@ Profile{% endblock %} {% block content %}
           href="/payments/customer/{{ customer.id }}/history"
           class="text-sm text-indigo-600 hover:text-indigo-500"
         >
-          View all transactions →
+          Ver todas las transacciones →
         </a>
       </div>
     </div>

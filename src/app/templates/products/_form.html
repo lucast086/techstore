@@ -1,7 +1,7 @@
 <!-- Basic Information Section -->
 <div class="bg-white shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:p-6">
-    <h2 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Información Básica</h2>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
       <!-- SKU Field -->
@@ -19,7 +19,7 @@
           placeholder="PRD-001"
           class="mt-1"
         />
-        <p class="mt-1 text-sm text-gray-500">Alphanumeric and hyphens only</p>
+        <p class="mt-1 text-sm text-gray-500">Solo alfanuméricos y guiones</p>
         {% if errors and errors.get('sku') %}
         <p class="mt-1 text-sm text-red-600">{{ errors.sku }}</p>
         {% endif %}
@@ -28,7 +28,7 @@
       <!-- Name Field -->
       <div>
         <label for="name" class="block text-sm font-medium text-gray-700">
-          Product Name <span class="text-red-500">*</span>
+          Nombre del Producto <span class="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -49,10 +49,10 @@
           for="category_id"
           class="block text-sm font-medium text-gray-700"
         >
-          Category <span class="text-red-500">*</span>
+          Categoría <span class="text-red-500">*</span>
         </label>
         <select id="category_id" name="category_id" required>
-          <option value="">Select a category</option>
+          <option value="">Selecciona una categoría</option>
           {% for category in categories %}
           <!-- prettier-ignore -->
           <option value="{{ category.id }}" {% if values and values.category_id == category.id %}selected{% endif %}>
@@ -68,7 +68,7 @@
       <!-- Brand Field -->
       <div>
         <label for="brand" class="block text-sm font-medium text-gray-700">
-          Brand
+          Marca
         </label>
         <input
           type="text"
@@ -82,7 +82,7 @@
       <!-- Model Field -->
       <div>
         <label for="model" class="block text-sm font-medium text-gray-700">
-          Model
+          Modelo
         </label>
         <input
           type="text"
@@ -96,7 +96,7 @@
       <!-- Barcode Field -->
       <div>
         <label for="barcode" class="block text-sm font-medium text-gray-700">
-          Barcode
+          Código de Barras
         </label>
         <input
           type="text"
@@ -111,13 +111,13 @@
     <!-- Description Field -->
     <div class="mt-6">
       <label for="description" class="block text-sm font-medium text-gray-700">
-        Description
+        Descripción
       </label>
       <textarea
         id="description"
         name="description"
         rows="3"
-        placeholder="Product description..."
+        placeholder="Descripción del producto..."
       >
 {{ values.description if values else '' }}</textarea
       >
@@ -128,7 +128,7 @@
 <!-- Pricing Section -->
 <div class="bg-white shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:p-6">
-    <h2 class="text-lg font-medium text-gray-900 mb-4">Pricing</h2>
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Precios</h2>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <!-- Purchase Price -->
@@ -137,7 +137,7 @@
           for="purchase_price"
           class="block text-sm font-medium text-gray-700"
         >
-          Purchase Price <span class="text-red-500">*</span>
+          Precio de Compra <span class="text-red-500">*</span>
         </label>
         <div class="mt-1 relative rounded-md shadow-sm">
           <div
@@ -168,7 +168,7 @@
           for="first_sale_price"
           class="block text-sm font-medium text-gray-700"
         >
-          Primary Sale Price <span class="text-red-500">*</span>
+          Precio de Venta Principal <span class="text-red-500">*</span>
         </label>
         <div class="mt-1 relative rounded-md shadow-sm">
           <div
@@ -188,7 +188,7 @@
             class="pl-7"
           />
         </div>
-        <p class="mt-1 text-sm text-gray-500">Regular price</p>
+        <p class="mt-1 text-sm text-gray-500">Precio regular</p>
         {% if errors and errors.get('first_sale_price') %}
         <p class="mt-1 text-sm text-red-600">{{ errors.first_sale_price }}</p>
         {% endif %}
@@ -200,7 +200,7 @@
           for="second_sale_price"
           class="block text-sm font-medium text-gray-700"
         >
-          Secondary Sale Price <span class="text-red-500">*</span>
+          Precio de Venta Secundario <span class="text-red-500">*</span>
         </label>
         <div class="mt-1 relative rounded-md shadow-sm">
           <div
@@ -220,7 +220,7 @@
             class="pl-7"
           />
         </div>
-        <p class="mt-1 text-sm text-gray-500">Wholesale price</p>
+        <p class="mt-1 text-sm text-gray-500">Precio mayorista</p>
         {% if errors and errors.get('second_sale_price') %}
         <p class="mt-1 text-sm text-red-600">{{ errors.second_sale_price }}</p>
         {% endif %}
@@ -232,7 +232,7 @@
           for="third_sale_price"
           class="block text-sm font-medium text-gray-700"
         >
-          Tertiary Sale Price <span class="text-red-500">*</span>
+          Precio de Venta Terciario <span class="text-red-500">*</span>
         </label>
         <div class="mt-1 relative rounded-md shadow-sm">
           <div
@@ -252,7 +252,7 @@
             class="pl-7"
           />
         </div>
-        <p class="mt-1 text-sm text-gray-500">Special price</p>
+        <p class="mt-1 text-sm text-gray-500">Precio especial</p>
         {% if errors and errors.get('third_sale_price') %}
         <p class="mt-1 text-sm text-red-600">{{ errors.third_sale_price }}</p>
         {% endif %}
@@ -261,7 +261,7 @@
       <!-- Tax Rate -->
       <div>
         <label for="tax_rate" class="block text-sm font-medium text-gray-700">
-          Tax Rate (%)
+          Tasa de Impuesto (%)
         </label>
         <input
           type="number"
@@ -273,7 +273,7 @@
           step="0.01"
           placeholder="16.00"
         />
-        <p class="mt-1 text-sm text-gray-500">Default: 16%</p>
+        <p class="mt-1 text-sm text-gray-500">Por defecto: 16%</p>
       </div>
     </div>
   </div>
@@ -282,7 +282,7 @@
 <!-- Inventory Section -->
 <div class="bg-white shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:p-6">
-    <h2 class="text-lg font-medium text-gray-900 mb-4">Inventory</h2>
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Inventario</h2>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Current Stock -->
@@ -291,7 +291,7 @@
           for="current_stock"
           class="block text-sm font-medium text-gray-700"
         >
-          Initial Stock
+          Stock Inicial
         </label>
         <input
           type="number"
@@ -309,7 +309,7 @@
           for="minimum_stock"
           class="block text-sm font-medium text-gray-700"
         >
-          Minimum Stock
+          Stock Mínimo
         </label>
         <input
           type="number"
@@ -319,7 +319,7 @@
           min="0"
           placeholder="0"
         />
-        <p class="mt-1 text-sm text-gray-500">Alert level</p>
+        <p class="mt-1 text-sm text-gray-500">Nivel de alerta</p>
       </div>
 
       <!-- Maximum Stock -->
@@ -328,7 +328,7 @@
           for="maximum_stock"
           class="block text-sm font-medium text-gray-700"
         >
-          Maximum Stock
+          Stock Máximo
         </label>
         <input
           type="number"
@@ -336,14 +336,14 @@
           name="maximum_stock"
           value="{{ values.maximum_stock if values else '' }}"
           min="0"
-          placeholder="Optional"
+          placeholder="Opcional"
         />
       </div>
 
       <!-- Location -->
       <div>
         <label for="location" class="block text-sm font-medium text-gray-700">
-          Location
+          Ubicación
         </label>
         <input
           type="text"
@@ -364,7 +364,7 @@
       <!-- prettier-ignore -->
       <input type="checkbox" id="is_active" name="is_active" value="true" {% if not values or values.is_active %}checked{% endif %} class="mr-2" />
       <label for="is_active" class="text-sm font-medium text-gray-700">
-        Product is active and available for sale
+        El producto está activo y disponible para la venta
       </label>
     </div>
   </div>

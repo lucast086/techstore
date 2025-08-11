@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Products - TechStore{% endblock %} {%
+{% extends "base.html" %} {% block title %}Productos - TechStore{% endblock %} {%
 block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <!-- Header -->
@@ -7,10 +7,10 @@ block content %}
       <h1
         class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate"
       >
-        Products
+        Productos
       </h1>
       <p class="mt-1 text-sm text-gray-500">
-        Manage your product inventory catalog
+        Gestiona tu catálogo de inventario de productos
       </p>
     </div>
     <div class="mt-4 flex md:mt-0 md:ml-4">
@@ -30,7 +30,7 @@ block content %}
             clip-rule="evenodd"
           />
         </svg>
-        Add Product
+        Agregar Producto
       </a>
     </div>
   </div>
@@ -43,7 +43,7 @@ block content %}
           <!-- Search with Modal -->
           <div class="sm:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700">
-              Search
+              Buscar
             </label>
             <div class="mt-1 relative">
               <div
@@ -67,7 +67,7 @@ block content %}
                 id="search-display"
                 readonly
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
-                placeholder="Click to search products..."
+                placeholder="Haz clic para buscar productos..."
                 onclick="openProductSearch()"
               />
               <input type="hidden" name="search" id="search" value="{{ search or '' }}">
@@ -80,7 +80,7 @@ block content %}
               for="category_id"
               class="block text-sm font-medium text-gray-700"
             >
-              Category
+              Categoría
             </label>
             <select
               id="category_id"
@@ -88,7 +88,7 @@ block content %}
               class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               onchange="document.getElementById('filter-form').submit()"
             >
-              <option value="">All Categories</option>
+              <option value="">Todas las Categorías</option>
               {% for category in categories %}
               <!-- prettier-ignore -->
               <option value="{{ category.id }}" {% if category_id and category_id|string == category.id|string %}selected{% endif %}>
@@ -104,7 +104,7 @@ block content %}
               for="stock_status"
               class="block text-sm font-medium text-gray-700"
             >
-              Stock Status
+              Estado de Stock
             </label>
             <select
               id="stock_status"
@@ -121,7 +121,7 @@ block content %}
                 endif
                 %}
               >
-                All
+                Todos
               </option>
               <option
                 value="in_stock"
@@ -132,7 +132,7 @@ block content %}
                 endif
                 %}
               >
-                In Stock
+                En Stock
               </option>
               <option
                 value="low_stock"
@@ -143,7 +143,7 @@ block content %}
                 endif
                 %}
               >
-                Low Stock
+                Stock Bajo
               </option>
               <option
                 value="out_of_stock"
@@ -154,7 +154,7 @@ block content %}
                 endif
                 %}
               >
-                Out of Stock
+                Sin Stock
               </option>
               <option
                 value="overstock"
@@ -165,7 +165,7 @@ block content %}
                 endif
                 %}
               >
-                Overstock
+                Exceso de Stock
               </option>
             </select>
           </div>
@@ -178,7 +178,7 @@ block content %}
               for="sort_by"
               class="block text-sm font-medium text-gray-700"
             >
-              Sort By
+              Ordenar por
             </label>
             <select
               id="sort_by"
@@ -195,7 +195,7 @@ block content %}
                 endif
                 %}
               >
-                Name
+                Nombre
               </option>
               <option value="sku" {% if sort_by=="sku" %}selected{% endif %}>
                 SKU
@@ -209,7 +209,7 @@ block content %}
                 endif
                 %}
               >
-                Price
+                Precio
               </option>
               <option
                 value="current_stock"
@@ -231,7 +231,7 @@ block content %}
                 endif
                 %}
               >
-                Last Updated
+                Última Actualización
               </option>
             </select>
           </div>
@@ -241,7 +241,7 @@ block content %}
               for="sort_order"
               class="block text-sm font-medium text-gray-700"
             >
-              Order
+              Orden
             </label>
             <select
               id="sort_order"
@@ -258,7 +258,7 @@ block content %}
                 endif
                 %}
               >
-                Ascending
+                Ascendente
               </option>
               <option
                 value="desc"
@@ -269,7 +269,7 @@ block content %}
                 endif
                 %}
               >
-                Descending
+                Descendente
               </option>
             </select>
           </div>
@@ -292,7 +292,7 @@ block content %}
                   clip-rule="evenodd"
                 />
               </svg>
-              Clear filters
+              Limpiar filtros
             </a>
           </div>
         </div>
@@ -312,7 +312,7 @@ block content %}
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Product
+              Producto
             </th>
             <th
               scope="col"
@@ -324,7 +324,7 @@ block content %}
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Category
+              Categoría
             </th>
             <th
               scope="col"
@@ -336,16 +336,16 @@ block content %}
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Price
+              Precio
             </th>
             <th
               scope="col"
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Status
+              Estado
             </th>
             <th scope="col" class="relative px-6 py-3">
-              <span class="sr-only">Actions</span>
+              <span class="sr-only">Acciones</span>
             </th>
           </tr>
         </thead>
@@ -384,19 +384,19 @@ block content %}
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
                   >
-                    Out of Stock
+                    Sin Stock
                   </span>
                   {% elif product.stock_status == 'low_stock' %}
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800"
                   >
-                    Low Stock
+                    Stock Bajo
                   </span>
                   {% elif product.stock_status == 'overstock' %}
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800"
                   >
-                    Overstock
+                    Exceso de Stock
                   </span>
                   {% endif %}
                 </div>
@@ -410,13 +410,13 @@ block content %}
               <span
                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
               >
-                Active
+                Activo
               </span>
               {% else %}
               <span
                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800"
               >
-                Inactive
+                Inactivo
               </span>
               {% endif %}
             </td>
@@ -426,7 +426,7 @@ block content %}
               <a
                 href="/products/{{ product.id }}"
                 class="text-indigo-600 hover:text-indigo-900"
-                >View</a
+                >Ver</a
               >
             </td>
           </tr>
@@ -445,14 +445,14 @@ block content %}
             href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
             class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
           >
-            Previous
+            Anterior
           </a>
           {% endif %} {% if page < total_pages %}
           <a
             href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
             class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
           >
-            Next
+            Siguiente
           </a>
           {% endif %}
         </div>
@@ -461,12 +461,12 @@ block content %}
         >
           <div>
             <p class="text-sm text-gray-700">
-              Showing page <span class="font-medium">{{ page }}</span> of
+              Mostrando página <span class="font-medium">{{ page }}</span> de
               <span class="font-medium">{{ total_pages }}</span> (<span
                 class="font-medium"
                 >{{ total }}</span
               >
-              total products)
+              productos totales)
             </p>
           </div>
           <div>
@@ -479,7 +479,7 @@ block content %}
                 href="?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
                 class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
               >
-                <span class="sr-only">Previous</span>
+                <span class="sr-only">Anterior</span>
                 <svg
                   class="h-5 w-5"
                   xmlns="http://www.w3.org/2000/svg"
@@ -521,7 +521,7 @@ block content %}
                 href="?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category_id %}&category_id={{ category_id }}{% endif %}{% if stock_status %}&stock_status={{ stock_status }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}{% if sort_order %}&sort_order={{ sort_order }}{% endif %}"
                 class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
               >
-                <span class="sr-only">Next</span>
+                <span class="sr-only">Siguiente</span>
                 <svg
                   class="h-5 w-5"
                   xmlns="http://www.w3.org/2000/svg"
@@ -556,11 +556,10 @@ block content %}
           />
         </svg>
         <h3 class="mt-2 text-sm font-medium text-gray-900">
-          No products found
+          No se encontraron productos
         </h3>
         <p class="mt-1 text-sm text-gray-500">
-          {% if search or category_id %} Try adjusting your filters or search
-          terms. {% else %} Get started by creating a new product. {% endif %}
+          {% if search or category_id %} Intenta ajustar tus filtros o términos de búsqueda. {% else %} Comienza creando un nuevo producto. {% endif %}
         </p>
         <div class="mt-6">
           <a
@@ -579,7 +578,7 @@ block content %}
                 clip-rule="evenodd"
               />
             </svg>
-            Add Product
+            Agregar Producto
           </a>
         </div>
       </div>
@@ -598,14 +597,14 @@ block content %}
     <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
       <div>
         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-          Search Products
+          Buscar Productos
         </h3>
         <div class="mt-2">
           <input
             type="text"
             id="productSearchInput"
             class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Search by name, SKU, or barcode..."
+            placeholder="Buscar por nombre, SKU, o código de barras..."
             onkeyup="searchProducts(this.value)"
             autofocus
           >
@@ -622,14 +621,14 @@ block content %}
           class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-1 sm:text-sm"
           onclick="closeProductSearch()"
         >
-          Cancel
+          Cancelar
         </button>
         <button
           type="button"
           class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
           onclick="applyProductSearch()"
         >
-          Apply Search
+          Aplicar Búsqueda
         </button>
       </div>
     </div>
@@ -647,7 +646,7 @@ function openProductSearch() {
   document.getElementById('productSearchInput').value = '';
   document.getElementById('productSearchResults').innerHTML = `
     <div class="text-center py-8 text-gray-500">
-      <p>Start typing to search products...</p>
+      <p>Comienza a escribir para buscar productos...</p>
     </div>
   `;
 }
@@ -668,14 +667,14 @@ function searchProducts(query) {
         .catch(error => {
           document.getElementById('productSearchResults').innerHTML = `
             <div class="text-center py-8 text-red-500">
-              <p>Error loading results. Please try again.</p>
+              <p>Error cargando resultados. Por favor inténtalo de nuevo.</p>
             </div>
           `;
         });
     } else {
       document.getElementById('productSearchResults').innerHTML = `
         <div class="text-center py-8 text-gray-500">
-          <p>Start typing to search products...</p>
+          <p>Comienza a escribir para buscar productos...</p>
         </div>
       `;
     }
@@ -695,7 +694,7 @@ function applyProductSearch() {
 
   // Update hidden search field
   document.getElementById('search').value = searchValue;
-  document.getElementById('search-display').value = searchValue || 'Click to search products...';
+  document.getElementById('search-display').value = searchValue || 'Haz clic para buscar productos...';
 
   // Submit the form
   document.getElementById('filter-form').submit();
