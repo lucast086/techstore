@@ -170,6 +170,14 @@ async def create_product(
     service = ProductService(db)
     category_service = CategoryService(db)
 
+    # Log incoming form data for debugging
+    logger.info("[CREATE PRODUCT] Incoming form data:")
+    logger.info(f"  SKU: {sku}, Name: {name}, Category: {category_id}")
+    logger.info(f"  Purchase Price: {purchase_price}")
+    logger.info(
+        f"  Sale Prices: {first_sale_price}, {second_sale_price}, {third_sale_price}"
+    )
+
     try:
         # Create product data
         product_data = ProductCreate(
@@ -220,6 +228,11 @@ async def create_product(
         # Get categories for re-rendering form
         categories = await category_service.get_categories(is_active=True)
 
+        # Provide more specific error message
+        error_msg = str(e)
+        if "Sale price cannot be less than purchase price" in error_msg:
+            error_msg = "Error: Los precios de venta deben ser mayores o iguales al precio de compra"
+
         # Return form with error
         return templates.TemplateResponse(
             "products/_form.html",
@@ -227,7 +240,7 @@ async def create_product(
                 "request": request,
                 "current_user": current_user,
                 "categories": categories,
-                "errors": {"general": str(e)},
+                "errors": {"general": error_msg},
                 "values": {
                     "sku": sku,
                     "name": name,
@@ -252,9 +265,46 @@ async def create_product(
         )
     except Exception as e:
         logger.error(f"Unexpected error creating product: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail="Error interno al crear el producto"
-        ) from e
+        logger.error(f"Error type: {type(e).__name__}")
+        import traceback
+
+        logger.error(f"Traceback: {traceback.format_exc()}")
+
+        # Get categories for re-rendering form
+        categories = await category_service.get_categories(is_active=True)
+
+        # Return form with generic error
+        return templates.TemplateResponse(
+            "products/_form.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "categories": categories,
+                "errors": {
+                    "general": f"Error inesperado: {str(e)}. Por favor, contacte al administrador."
+                },
+                "values": {
+                    "sku": sku,
+                    "name": name,
+                    "description": description,
+                    "category_id": category_id,
+                    "brand": brand,
+                    "model": model,
+                    "barcode": barcode,
+                    "purchase_price": purchase_price,
+                    "first_sale_price": first_sale_price,
+                    "second_sale_price": second_sale_price,
+                    "third_sale_price": third_sale_price,
+                    "tax_rate": tax_rate,
+                    "current_stock": current_stock,
+                    "minimum_stock": minimum_stock,
+                    "maximum_stock": maximum_stock,
+                    "location": location,
+                    "is_active": is_active,
+                },
+            },
+            status_code=500,
+        )
 
 
 @router.get("/{product_id}", response_class=HTMLResponse)
@@ -279,6 +329,161 @@ async def product_detail(
             "product": product,
         },
     )
+
+
+@router.get("/{product_id}/edit", response_class=HTMLResponse)
+async def edit_product_form(
+    request: Request,
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Display the edit product form."""
+    service = ProductService(db)
+    category_service = CategoryService(db)
+
+    product = await service.get_product(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    categories = await category_service.get_categories(is_active=True)
+
+    return templates.TemplateResponse(
+        "products/edit.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "product": product,
+            "categories": categories,
+        },
+    )
+
+
+@router.post("/{product_id}/edit", response_class=HTMLResponse)
+async def update_product(
+    request: Request,
+    product_id: int,
+    sku: str = Form(...),
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    category_id: int = Form(...),
+    brand: Optional[str] = Form(None),
+    model: Optional[str] = Form(None),
+    barcode: Optional[str] = Form(None),
+    purchase_price: Decimal = Form(...),
+    first_sale_price: Decimal = Form(...),
+    second_sale_price: Decimal = Form(...),
+    third_sale_price: Decimal = Form(...),
+    tax_rate: Decimal = Form(Decimal("16.00")),
+    current_stock: int = Form(0),
+    minimum_stock: int = Form(0),
+    maximum_stock: Optional[int] = Form(None),
+    location: Optional[str] = Form(None),
+    is_active: bool = Form(True),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Handle product update."""
+    from app.schemas.product import ProductUpdate
+
+    service = ProductService(db)
+    category_service = CategoryService(db)
+
+    logger.info(f"[UPDATE PRODUCT] Updating product {product_id}")
+    logger.info(f"  SKU: {sku}, Name: {name}, Category: {category_id}")
+
+    try:
+        # Create update data
+        update_data = ProductUpdate(
+            sku=sku,
+            name=name,
+            description=description,
+            category_id=category_id,
+            brand=brand,
+            model=model,
+            barcode=barcode,
+            purchase_price=purchase_price,
+            first_sale_price=first_sale_price,
+            second_sale_price=second_sale_price,
+            third_sale_price=third_sale_price,
+            tax_rate=tax_rate,
+            current_stock=current_stock,
+            minimum_stock=minimum_stock,
+            maximum_stock=maximum_stock,
+            location=location,
+            is_active=is_active,
+        )
+
+        # Update product
+        product = await service.update_product(product_id, update_data)
+
+        if not product:
+            raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+        logger.info(
+            f"Product updated successfully: {product_id} by user {current_user.id}"
+        )
+
+        # Return success with redirect
+        return HTMLResponse(
+            f"""
+            <div id="success-message" class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle"></i>
+                Producto actualizado exitosamente: <strong>{product.name}</strong>
+            </div>
+            """,
+            status_code=200,
+            headers={
+                "HX-Trigger": "productUpdated",
+                "HX-Redirect": f"/products/{product_id}",
+            },
+        )
+
+    except ValueError as e:
+        logger.error(f"Validation error updating product: {str(e)}")
+
+        # Get categories for re-rendering form
+        categories = await category_service.get_categories(is_active=True)
+
+        # Provide more specific error message
+        error_msg = str(e)
+        if "Sale price cannot be less than purchase price" in error_msg:
+            error_msg = "Error: Los precios de venta deben ser mayores o iguales al precio de compra"
+
+        # Get current product data for form
+        product = await service.get_product(product_id)
+
+        return templates.TemplateResponse(
+            "products/edit.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "product": product,
+                "categories": categories,
+                "errors": {"general": error_msg},
+            },
+            status_code=400,
+        )
+
+    except Exception as e:
+        logger.error(f"Unexpected error updating product: {str(e)}")
+        logger.error(f"Error type: {type(e).__name__}")
+
+        # Get categories and product for re-rendering form
+        categories = await category_service.get_categories(is_active=True)
+        product = await service.get_product(product_id)
+
+        return templates.TemplateResponse(
+            "products/edit.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "product": product,
+                "categories": categories,
+                "errors": {"general": f"Error inesperado: {str(e)}"},
+            },
+            status_code=500,
+        )
 
 
 @router.get("/search", response_class=HTMLResponse)

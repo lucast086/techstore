@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+{% block title %}Edit Product - {{ product.name }} - TechStore{% endblock %}
+
+{% block content %}
+<div class="bg-white">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <a
+        href="/products/{{ product.id }}"
+        class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+      >
+        <svg
+          class="mr-1 h-5 w-5"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        Back to Product
+      </a>
+      <h1 class="mt-4 text-2xl font-bold text-gray-900">Edit Product</h1>
+      <p class="mt-1 text-sm text-gray-600">
+        Update product information for: <strong>{{ product.name }}</strong>
+      </p>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="form-messages">
+      {% if errors and errors.general %}
+      <div class="rounded-md bg-red-50 p-4 mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg
+              class="h-5 w-5 text-red-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium text-red-800">{{ errors.general }}</p>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Form -->
+    <form
+      id="product-form"
+      hx-post="/products/{{ product.id }}/edit"
+      hx-target="#form-messages"
+      hx-swap="innerHTML"
+      class="space-y-8"
+    >
+      <!-- Basic Information Section -->
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h2>
+
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <!-- SKU Field -->
+            <div>
+              <label for="sku" class="block text-sm font-medium text-gray-700">
+                SKU <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="sku"
+                name="sku"
+                pattern="^[A-Za-z0-9-]+$"
+                value="{{ product.sku }}"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+              <p class="mt-1 text-sm text-gray-500">Alphanumeric and hyphens only</p>
+            </div>
+
+            <!-- Name Field -->
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700">
+                Product Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value="{{ product.name }}"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <!-- Category Field -->
+            <div>
+              <label for="category_id" class="block text-sm font-medium text-gray-700">
+                Category <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="category_id"
+                name="category_id"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              >
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if product.category_id == category.id %}selected{% endif %}>
+                  {{ category.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Brand Field -->
+            <div>
+              <label for="brand" class="block text-sm font-medium text-gray-700">
+                Brand
+              </label>
+              <input
+                type="text"
+                id="brand"
+                name="brand"
+                value="{{ product.brand or '' }}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <!-- Model Field -->
+            <div>
+              <label for="model" class="block text-sm font-medium text-gray-700">
+                Model
+              </label>
+              <input
+                type="text"
+                id="model"
+                name="model"
+                value="{{ product.model or '' }}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <!-- Barcode Field -->
+            <div>
+              <label for="barcode" class="block text-sm font-medium text-gray-700">
+                Barcode
+              </label>
+              <input
+                type="text"
+                id="barcode"
+                name="barcode"
+                value="{{ product.barcode or '' }}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <!-- Description Field -->
+          <div class="mt-6">
+            <label for="description" class="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              rows="3"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >{{ product.description or '' }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing Section -->
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Pricing</h2>
+
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Purchase Price -->
+            <div>
+              <label for="purchase_price" class="block text-sm font-medium text-gray-700">
+                Purchase Price <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  id="purchase_price"
+                  name="purchase_price"
+                  value="{{ product.purchase_price }}"
+                  min="0"
+                  step="0.01"
+                  required
+                  class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <!-- First Sale Price -->
+            <div>
+              <label for="first_sale_price" class="block text-sm font-medium text-gray-700">
+                Primary Sale Price <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  id="first_sale_price"
+                  name="first_sale_price"
+                  value="{{ product.first_sale_price }}"
+                  min="0"
+                  step="0.01"
+                  required
+                  class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Regular price</p>
+            </div>
+
+            <!-- Second Sale Price -->
+            <div>
+              <label for="second_sale_price" class="block text-sm font-medium text-gray-700">
+                Secondary Sale Price <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  id="second_sale_price"
+                  name="second_sale_price"
+                  value="{{ product.second_sale_price }}"
+                  min="0"
+                  step="0.01"
+                  required
+                  class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Wholesale price</p>
+            </div>
+
+            <!-- Third Sale Price -->
+            <div>
+              <label for="third_sale_price" class="block text-sm font-medium text-gray-700">
+                Tertiary Sale Price <span class="text-red-500">*</span>
+              </label>
+              <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span class="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  id="third_sale_price"
+                  name="third_sale_price"
+                  value="{{ product.third_sale_price }}"
+                  min="0"
+                  step="0.01"
+                  required
+                  class="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Special price</p>
+            </div>
+
+            <!-- Tax Rate -->
+            <div>
+              <label for="tax_rate" class="block text-sm font-medium text-gray-700">
+                Tax Rate (%)
+              </label>
+              <input
+                type="number"
+                id="tax_rate"
+                name="tax_rate"
+                value="{{ product.tax_rate }}"
+                min="0"
+                max="100"
+                step="0.01"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+              <p class="mt-1 text-sm text-gray-500">Default: 16%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory Section -->
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h2 class="text-lg font-medium text-gray-900 mb-4">Inventory</h2>
+
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <!-- Current Stock -->
+            <div>
+              <label for="current_stock" class="block text-sm font-medium text-gray-700">
+                Current Stock
+              </label>
+              <input
+                type="number"
+                id="current_stock"
+                name="current_stock"
+                value="{{ product.current_stock }}"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <!-- Minimum Stock -->
+            <div>
+              <label for="minimum_stock" class="block text-sm font-medium text-gray-700">
+                Minimum Stock
+              </label>
+              <input
+                type="number"
+                id="minimum_stock"
+                name="minimum_stock"
+                value="{{ product.minimum_stock }}"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+              <p class="mt-1 text-sm text-gray-500">Alert level</p>
+            </div>
+
+            <!-- Maximum Stock -->
+            <div>
+              <label for="maximum_stock" class="block text-sm font-medium text-gray-700">
+                Maximum Stock
+              </label>
+              <input
+                type="number"
+                id="maximum_stock"
+                name="maximum_stock"
+                value="{{ product.maximum_stock or '' }}"
+                min="0"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <!-- Location -->
+            <div>
+              <label for="location" class="block text-sm font-medium text-gray-700">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                value="{{ product.location or '' }}"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Section -->
+      <div class="bg-white shadow sm:rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_active"
+              name="is_active"
+              value="true"
+              {% if product.is_active %}checked{% endif %}
+              class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-2"
+            />
+            <label for="is_active" class="text-sm font-medium text-gray-700">
+              Product is active and available for sale
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="flex justify-end space-x-3 pt-6 border-t">
+        <a
+          href="/products/{{ product.id }}"
+          class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Update Product
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
