@@ -44,10 +44,22 @@ class PaymentService:
         Raises:
             ValueError: If payment validation fails.
         """
-        # Validate payment amount
-        self.validate_payment_amount(
+        from app.models.payment import PaymentType
+
+        # Validate payment amount and determine payment type
+        payment_type = self.validate_payment_amount(
             db, customer_id, payment_data.amount, allow_overpayment
         )
+
+        # If it's an advance payment, require notes
+        if payment_type == PaymentType.ADVANCE_PAYMENT and not payment_data.notes:
+            raise ValueError(
+                "Notes are required for advance payments. Please specify the purpose of this advance payment."
+            )
+
+        # Set the payment type if not already specified
+        if not payment_data.payment_type:
+            payment_data.payment_type = payment_type
 
         # Create payment record
         payment = payment_crud.create(
@@ -137,8 +149,8 @@ class PaymentService:
         customer_id: int,
         payment_amount: Decimal,
         allow_overpayment: bool = False,
-    ) -> None:
-        """Validate payment amount against customer balance.
+    ):
+        """Validate payment amount against customer balance and determine payment type.
 
         Args:
             db: Database session.
@@ -146,22 +158,29 @@ class PaymentService:
             payment_amount: Amount being paid.
             allow_overpayment: Whether to allow overpayment.
 
+        Returns:
+            PaymentType: The determined type of payment.
+
         Raises:
             ValueError: If payment amount is invalid.
         """
+        from app.models.payment import PaymentType
+
         # Get current balance (negative means customer owes money)
         current_balance = balance_service.calculate_balance(db, customer_id)
 
-        # Check if customer has debt
+        # Determine payment type based on balance
         if current_balance >= 0:
-            raise ValueError("Customer has no outstanding balance to pay")
-
-        # Check for overpayment
-        debt_amount = abs(current_balance)
-        if payment_amount > debt_amount and not allow_overpayment:
-            raise ValueError(
-                f"Payment amount (${payment_amount}) exceeds outstanding balance (${debt_amount})"
-            )
+            # Customer has no debt or has credit - this is an advance payment
+            return PaymentType.ADVANCE_PAYMENT
+        else:
+            # Customer has debt
+            debt_amount = abs(current_balance)
+            if payment_amount > debt_amount and not allow_overpayment:
+                raise ValueError(
+                    f"Payment amount (${payment_amount}) exceeds outstanding balance (${debt_amount})"
+                )
+            return PaymentType.PAYMENT
 
     def update_sale_payment_status(self, db: Session, sale: Sale) -> None:
         """Update sale payment status based on payments received.

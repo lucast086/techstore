@@ -24,16 +24,23 @@ class PaymentCRUD:
         # Generate receipt number
         receipt_number = self.generate_receipt_number(db)
 
-        db_payment = Payment(
-            customer_id=customer_id,
-            sale_id=sale_id,
-            amount=payment.amount,
-            payment_method=payment.payment_method,
-            reference_number=payment.reference_number,
-            notes=payment.notes,
-            receipt_number=receipt_number,
-            received_by_id=received_by_id,
-        )
+        # Create payment with type if provided
+        payment_data = {
+            "customer_id": customer_id,
+            "sale_id": sale_id,
+            "amount": payment.amount,
+            "payment_method": payment.payment_method,
+            "reference_number": payment.reference_number,
+            "notes": payment.notes,
+            "receipt_number": receipt_number,
+            "received_by_id": received_by_id,
+        }
+
+        # Add payment_type if it's in the schema
+        if hasattr(payment, "payment_type") and payment.payment_type:
+            payment_data["payment_type"] = payment.payment_type
+
+        db_payment = Payment(**payment_data)
 
         db.add(db_payment)
         db.commit()

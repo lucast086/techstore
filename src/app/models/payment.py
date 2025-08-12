@@ -1,10 +1,12 @@
 """Payment model for TechStore SaaS."""
 
+import enum
 
 from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Enum,
     ForeignKey,
     Index,
     Integer,
@@ -15,6 +17,14 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.models.base import BaseModel
+
+
+class PaymentType(enum.Enum):
+    """Payment type enumeration."""
+
+    PAYMENT = "payment"  # Regular payment for debt
+    ADVANCE_PAYMENT = "advance_payment"  # Advance payment (credit)
+    REFUND = "refund"  # Refund to customer
 
 
 class Payment(BaseModel):
@@ -46,6 +56,9 @@ class Payment(BaseModel):
     )  # For sale-specific payments
     amount = Column(Numeric(10, 2), nullable=False)
     payment_method = Column(String(50), nullable=False)  # cash, transfer, card
+    payment_type = Column(
+        Enum(PaymentType), nullable=False, default=PaymentType.PAYMENT
+    )  # payment, advance_payment, refund
     reference_number = Column(String(100), nullable=True)
     notes = Column(Text, nullable=True)
 
@@ -94,6 +107,7 @@ class Payment(BaseModel):
             "sale_id": self.sale_id,
             "amount": float(self.amount),
             "payment_method": self.payment_method,
+            "payment_type": self.payment_type.value if self.payment_type else "payment",
             "reference_number": self.reference_number,
             "notes": self.notes,
             "received_by": self.received_by.full_name if self.received_by else None,

@@ -97,6 +97,9 @@ async def create_payment(
             sale_id=payment.sale_id,
             amount=float(payment.amount),
             payment_method=payment.payment_method,
+            payment_type=payment.payment_type.value
+            if hasattr(payment, "payment_type") and payment.payment_type
+            else "payment",
             reference_number=payment.reference_number,
             notes=payment.notes,
             received_by=payment.received_by.full_name,
@@ -167,6 +170,9 @@ async def get_customer_payments(
             sale_id=payment.sale_id,
             amount=float(payment.amount),
             payment_method=payment.payment_method,
+            payment_type=payment.payment_type.value
+            if hasattr(payment, "payment_type") and payment.payment_type
+            else "payment",
             reference_number=payment.reference_number,
             notes=payment.notes,
             received_by=payment.received_by.full_name,

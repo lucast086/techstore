@@ -2,8 +2,17 @@
 
 from datetime import datetime
 from decimal import Decimal
+from enum import Enum
 
 from pydantic import BaseModel, Field, field_validator
+
+
+class PaymentType(str, Enum):
+    """Payment type enumeration."""
+
+    PAYMENT = "payment"
+    ADVANCE_PAYMENT = "advance_payment"
+    REFUND = "refund"
 
 
 class PaymentMethodDetail(BaseModel):
@@ -35,6 +44,9 @@ class PaymentCreate(BaseModel):
     amount: Decimal = Field(..., gt=0, decimal_places=2, description="Payment amount")
     payment_method: str = Field(
         ..., pattern="^(cash|transfer|card|mixed)$", description="Payment method"
+    )
+    payment_type: PaymentType | None = Field(
+        None, description="Type of payment (auto-determined if not provided)"
     )
     reference_number: str | None = Field(
         None, max_length=100, description="Reference number for non-cash payments"
@@ -85,6 +97,7 @@ class PaymentResponse(BaseModel):
     sale_id: int | None = None
     amount: float
     payment_method: str
+    payment_type: str = "payment"  # Default for backward compatibility
     reference_number: str | None
     notes: str | None
     received_by: str
