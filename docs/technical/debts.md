@@ -1,10 +1,11 @@
 ## Epic 8 - new features and technical debts in order
 
-### dashboard
-* new lateral bar
+###
+ * traduction to spanish   DONE
 
 ### Products
   * improve product search
+  * edition view              DONE
 
 ### Reports
 Payment report when pay is made. maybe size a5
@@ -39,3 +40,7 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
  * check filter behavior in sales history (customers, payment status, DATE)
  * when walk-in-customer payment method must be only cash
  * send invoice whatsapp when a sales is made
+
+
+### dashboard
+* new lateral bar
