@@ -24,7 +24,7 @@ templates = Jinja2Templates(directory="src/app/templates")
 
 
 def require_admin_or_manager(
-    current_user: User = Depends(get_current_user_from_cookie)
+    current_user: User = Depends(get_current_user_from_cookie),
 ) -> User:
     """Require Admin or Manager role for cash closing operations."""
     if current_user.role not in ["admin", "manager"]:

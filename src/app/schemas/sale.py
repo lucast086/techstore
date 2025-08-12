@@ -46,9 +46,7 @@ class SaleBase(BaseModel):
     """Base schema for sales."""
 
     customer_id: Optional[int] = None
-    payment_method: Optional[str] = Field(
-        None, pattern="^(cash|credit|transfer|mixed)$"
-    )
+    payment_method: Optional[str] = Field(None, pattern="^(cash|transfer|card|mixed)$")
     notes: Optional[str] = None
 
 
@@ -57,6 +55,7 @@ class SaleCreate(SaleBase):
 
     items: list[SaleItemCreate] = Field(min_length=1)
     discount_amount: Decimal = Field(default=Decimal("0"), ge=0)
+    amount_paid: Optional[Decimal] = Field(default=None, ge=0)
 
     @field_validator("items")
     @classmethod
@@ -68,6 +67,14 @@ class SaleCreate(SaleBase):
         if len(product_ids) != len(set(product_ids)):
             raise ValueError("Duplicate products not allowed in same sale")
         return items
+
+    @field_validator("amount_paid")
+    @classmethod
+    def validate_amount_paid(cls, amount_paid: Optional[Decimal]) -> Optional[Decimal]:
+        """Validate amount paid."""
+        if amount_paid is not None and amount_paid < Decimal("0"):
+            raise ValueError("Amount paid cannot be negative")
+        return amount_paid
 
 
 class SaleUpdate(BaseModel):

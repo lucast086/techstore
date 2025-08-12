@@ -86,7 +86,7 @@ class Product(BaseModel):
         first_sale_price: Primary selling price.
         second_sale_price: Secondary selling price.
         third_sale_price: Tertiary selling price.
-        tax_rate: Tax rate percentage (default 16%).
+        tax_rate: Tax rate percentage (default 0%).
         current_stock: Current stock quantity.
         minimum_stock: Minimum stock level for alerts.
         maximum_stock: Maximum stock level.
@@ -120,7 +120,7 @@ class Product(BaseModel):
     second_sale_price: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
     third_sale_price: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
     tax_rate: Mapped[Decimal] = mapped_column(
-        DECIMAL(5, 2), nullable=False, default=Decimal("16.00")
+        DECIMAL(5, 2), nullable=False, default=Decimal("0.00")
     )
     current_stock: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     minimum_stock: Mapped[int] = mapped_column(Integer, nullable=False, default=0)

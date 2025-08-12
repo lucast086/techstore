@@ -16,23 +16,22 @@ class BalanceService:
     def calculate_balance(self, db: Session, customer_id: int) -> Decimal:
         """Calculate current balance from all transactions.
 
-        Balance = Payments - Credit Sales
+        Balance = Total Payments - Total Sales
         Positive balance = customer has credit
         Negative balance = customer owes money
         """
-        # Get total credit sales (only unpaid or partially paid credit sales)
-        credit_sales_total = db.query(func.sum(Sale.total_amount)).filter(
+        # Get ALL sales for this customer (not just unpaid)
+        total_sales = db.query(func.sum(Sale.total_amount)).filter(
             Sale.customer_id == customer_id,
-            Sale.payment_method == "credit",
             Sale.is_voided.is_(False),
         ).scalar() or Decimal("0")
 
-        # Get total payments
+        # Get total payments made by customer
         payments_total = payment_crud.get_customer_payment_total(db, customer_id)
 
-        # Balance = Payments - Credit Sales
-        # If customer bought $200 on credit and paid $50: 50 - 200 = -150 (owes $150)
-        return Decimal(str(payments_total)) - Decimal(str(credit_sales_total))
+        # Balance = Payments - Sales
+        # If customer bought $200 total and paid $150 total: 150 - 200 = -50 (owes $50)
+        return Decimal(str(payments_total)) - Decimal(str(total_sales))
 
     def get_balance_summary(self, db: Session, customer_id: int) -> dict:
         """Get balance with summary information."""
@@ -84,12 +83,11 @@ class BalanceService:
                 }
             )
 
-        # Get all credit sales
+        # Get ALL sales for this customer
         sales = (
             db.query(Sale)
             .filter(
                 Sale.customer_id == customer_id,
-                Sale.payment_method == "credit",
                 Sale.is_voided.is_(False),
             )
             .all()
@@ -105,11 +103,12 @@ class BalanceService:
                 {
                     "date": sale_date,
                     "type": "sale",
-                    "description": f"Credit Sale - {sale.invoice_number}",
+                    "description": f"Sale - {sale.invoice_number}",
                     "amount": -float(sale.total_amount),  # Negative for debt
                     "reference": f"sale_{sale.id}",
-                    "payment_method": "credit",
+                    "payment_method": sale.payment_method,
                     "reference_number": sale.invoice_number,
+                    "payment_status": sale.payment_status,
                 }
             )
 
@@ -147,12 +146,11 @@ class BalanceService:
         """Get list of customers with outstanding debt."""
         from app.models.customer import Customer
 
-        # Get all customers with credit sales
+        # Get all customers with any sales
         customers_with_sales = (
             db.query(Customer)
             .join(Sale, Customer.id == Sale.customer_id)
             .filter(
-                Sale.payment_method == "credit",
                 Sale.is_voided.is_(False),
                 Customer.is_active.is_(True),
             )
@@ -195,15 +193,14 @@ class BalanceService:
             if payment.id != payment_id:
                 payments_total += payment.amount
 
-        # Get total credit sales
-        credit_sales_total = db.query(func.sum(Sale.total_amount)).filter(
+        # Get ALL sales for this customer
+        total_sales = db.query(func.sum(Sale.total_amount)).filter(
             Sale.customer_id == customer_id,
-            Sale.payment_method == "credit",
             Sale.is_voided.is_(False),
         ).scalar() or Decimal("0")
 
-        # Balance before payment = Other Payments - Credit Sales
-        return payments_total - Decimal(str(credit_sales_total))
+        # Balance before payment = Other Payments - All Sales
+        return payments_total - Decimal(str(total_sales))
 
 
 balance_service = BalanceService()

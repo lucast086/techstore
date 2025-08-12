@@ -1,5 +1,6 @@
 """CRUD operations for sales management."""
 
+import logging
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
@@ -8,11 +9,12 @@ from sqlalchemy import and_, case, desc, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.models.customer import Customer
 from app.models.payment import Payment
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.schemas.sale import SaleCreate
+
+logger = logging.getLogger(__name__)
 
 
 class SaleCRUD:
@@ -108,10 +110,35 @@ class SaleCRUD:
 
             total_amount = subtotal_after_discount + tax_amount
 
-            # Determine payment status
-            payment_status = (
-                "paid" if sale_in.payment_method in ["cash", "transfer"] else "pending"
-            )
+            # Determine payment status based on amount paid
+            # If amount_paid is not specified, default to full payment for walk-in customers
+            # and to the amount based on payment method for registered customers
+            if sale_in.amount_paid is not None:
+                amount_paid = sale_in.amount_paid
+            else:
+                # Default behavior when amount_paid is not specified:
+                # For walk-in customers (no customer_id), assume full payment
+                # For registered customers, the frontend should always specify amount_paid
+                if not sale_in.customer_id:
+                    amount_paid = total_amount  # Walk-in customers must pay in full
+                else:
+                    # For registered customers, amount_paid should always be specified
+                    # If not specified, assume full payment to maintain backward compatibility
+                    amount_paid = total_amount
+
+            # Validate walk-in customers must pay in full
+            if not sale_in.customer_id and amount_paid < total_amount:
+                raise ValueError(
+                    f"Walk-in customers must pay in full. "
+                    f"Total: ${total_amount:.2f}, Paid: ${amount_paid:.2f}"
+                )
+
+            if amount_paid >= total_amount:
+                payment_status = "paid"
+            elif amount_paid > Decimal("0"):
+                payment_status = "partial"
+            else:
+                payment_status = "pending"
 
             # Create sale
             sale = Sale(
@@ -158,30 +185,34 @@ class SaleCRUD:
                 product.current_stock -= item.quantity
                 db.add(product)
 
-            # If credit sale, update customer balance
-            if sale_in.customer_id and sale_in.payment_method == "credit":
-                customer = (
-                    db.query(Customer)
-                    .filter(Customer.id == sale_in.customer_id)
-                    .first()
-                )
-                if customer:
-                    # Customer balance would need to be added to the Customer model
-                    # For now, we'll just track via payment status
-                    pass
-
-            # If immediate payment, create payment record
-            if payment_status == "paid" and sale_in.customer_id:
-                # Only create payment record for registered customers
+            # Handle payment creation and debt generation
+            if sale_in.customer_id and amount_paid > Decimal("0"):
+                # Create payment record for any amount paid
                 payment = Payment(
                     customer_id=sale_in.customer_id,
                     sale_id=sale.id,
-                    amount=total_amount,
+                    amount=amount_paid,
                     payment_method=sale_in.payment_method or "cash",
                     receipt_number=f"REC-{invoice_number}",
                     received_by_id=user_id,
+                    notes=f"Payment for sale {invoice_number}"
+                    + (
+                        f" (Partial: ${amount_paid} of ${total_amount})"
+                        if amount_paid < total_amount
+                        else ""
+                    ),
                 )
                 db.add(payment)
+
+            # Handle debt generation for partial payments
+            if sale_in.customer_id and amount_paid < total_amount:
+                # Debt is automatically tracked via the balance service
+                # The unpaid portion becomes customer debt
+                debt_amount = total_amount - amount_paid
+                logger.info(
+                    f"Debt of ${debt_amount} generated for customer {sale_in.customer_id} "
+                    f"from sale {invoice_number}"
+                )
 
             db.commit()
             db.refresh(sale)

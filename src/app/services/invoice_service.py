@@ -192,7 +192,8 @@ class InvoiceService:
         totals_data.append(["Subtotal:", f"${sale.subtotal:.2f}"])
         if sale.discount_amount > 0:
             totals_data.append(["Discount:", f"-${sale.discount_amount:.2f}"])
-        totals_data.append(["Tax (16%):", f"${sale.tax_amount:.2f}"])
+        if sale.tax_amount > 0:
+            totals_data.append(["Tax:", f"${sale.tax_amount:.2f}"])
         totals_data.append(["Total:", f"${sale.total_amount:.2f}"])
 
         totals_table = Table(totals_data, colWidths=[5 * inch, 1 * inch])

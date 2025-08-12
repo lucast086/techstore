@@ -257,6 +257,27 @@ async def update_repair_status_htmx(
         # repair.status is already a string, not an enum
         color_class = status_colors.get(repair.status, "bg-gray-100 text-gray-800")
 
+        # Check if status is "delivered" and repair hasn't been invoiced yet
+        if repair.status == "delivered" and not repair.sale_id:
+            # Return a response that will redirect to POS with repair pre-loaded
+            pos_url = f"/sales/pos?repair_id={repair.id}"
+            return HTMLResponse(
+                content=f"""
+                <div class="flex items-center space-x-2">
+                    <span class="px-3 py-1 text-sm font-medium rounded-full {color_class}">
+                        {repair.status.title()}
+                    </span>
+                    <span class="text-sm text-green-600">Redirecting to invoice...</span>
+                </div>
+                <script>
+                    setTimeout(function() {{
+                        window.location.href = '{pos_url}';
+                    }}, 1000);
+                </script>
+                """,
+                headers={"HX-Redirect": pos_url},
+            )
+
         # Return a response that will trigger a page redirect after a short delay
         return HTMLResponse(
             content=f"""
@@ -305,6 +326,7 @@ async def add_diagnosis_htmx(
     diagnosis_notes: str = Form(...),
     labor_cost: str = Form(...),
     parts_cost: str = Form("0"),
+    estimated_cost: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
@@ -312,7 +334,7 @@ async def add_diagnosis_htmx(
     try:
         # Log received values
         logger.info(
-            f"Received form params - diagnosis_notes: {diagnosis_notes}, labor_cost: {labor_cost}, parts_cost: {parts_cost}"
+            f"Received form params - diagnosis_notes: {diagnosis_notes}, labor_cost: {labor_cost}, parts_cost: {parts_cost}, estimated_cost: {estimated_cost}"
         )
 
         # Convert string inputs to Decimal
@@ -324,12 +346,24 @@ async def add_diagnosis_htmx(
             f"Received diagnosis data - labor_cost: {labor_cost} -> {labor_cost_decimal}, parts_cost: {parts_cost} -> {parts_cost_decimal}"
         )
 
-        estimated_cost = labor_cost_decimal + parts_cost_decimal
-        logger.info(f"Calculated estimated_cost: {estimated_cost}")
+        # Use the provided estimated_cost if available, otherwise calculate it
+        if estimated_cost:
+            estimated_cost_decimal = Decimal(estimated_cost)
+            # Verify it matches the sum (with a small tolerance for rounding)
+            calculated_total = labor_cost_decimal + parts_cost_decimal
+            if abs(estimated_cost_decimal - calculated_total) > Decimal("0.01"):
+                logger.warning(
+                    f"Estimated cost mismatch: provided {estimated_cost_decimal}, calculated {calculated_total}"
+                )
+                estimated_cost_decimal = calculated_total
+        else:
+            estimated_cost_decimal = labor_cost_decimal + parts_cost_decimal
+
+        logger.info(f"Final estimated_cost: {estimated_cost_decimal}")
 
         diagnosis = RepairDiagnosis(
             diagnosis_notes=diagnosis_notes,
-            estimated_cost=estimated_cost,
+            estimated_cost=estimated_cost_decimal,
             labor_cost=labor_cost_decimal,
             parts_cost=parts_cost_decimal,
         )

@@ -389,6 +389,7 @@ class RepairService:
             "assigned_technician": repair.assigned_technician,
             "received_by": repair.received_by,
             "delivered_by": repair.delivered_by,
+            "sale_id": repair.sale_id,
             "is_express": repair.is_express,
             "customer_approved": repair.customer_approved,
             "approval_date": repair.approval_date,

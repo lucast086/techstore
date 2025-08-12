@@ -41,7 +41,7 @@
                            min="0"
                            required
                            value="{{ repair.labor_cost or '0.00' }}"
-                           oninput="updateTotalCost()"
+                           oninput="updateRepairTotalCost()"
                            class="pl-7 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
@@ -60,7 +60,7 @@
                            step="0.01"
                            min="0"
                            value="{{ repair.parts_cost or '0.00' }}"
-                           oninput="updateTotalCost()"
+                           oninput="updateRepairTotalCost()"
                            class="pl-7 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
@@ -70,8 +70,9 @@
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex justify-between items-center">
                 <span class="text-sm font-medium text-gray-700">Estimated Total Cost:</span>
-                <span id="total-cost" class="text-lg font-bold text-gray-900">$0.00</span>
+                <span id="total-cost-display" class="text-lg font-bold text-gray-900">$0.00</span>
             </div>
+            <input type="hidden" name="estimated_cost" id="estimated_cost" value="0.00">
         </div>
 
         <!-- Form Actions -->
@@ -90,14 +91,60 @@
 </div>
 
 <script>
-function updateTotalCost() {
-    const laborCost = parseFloat(document.getElementById('labor_cost').value) || 0;
-    const partsCost = parseFloat(document.getElementById('parts_cost').value) || 0;
+function updateRepairTotalCost() {
+    // Get input values, handling empty or invalid inputs
+    const laborInput = document.getElementById('labor_cost');
+    const partsInput = document.getElementById('parts_cost');
+
+    const laborCost = parseFloat(laborInput.value) || 0;
+    const partsCost = parseFloat(partsInput.value) || 0;
     const totalCost = laborCost + partsCost;
 
-    document.getElementById('total-cost').textContent = `$${totalCost.toFixed(2)}`;
+    // Update display
+    const displayElement = document.getElementById('total-cost-display');
+    if (displayElement) {
+        displayElement.textContent = `$${totalCost.toFixed(2)}`;
+    }
+
+    // Update hidden input for form submission
+    const hiddenInput = document.getElementById('estimated_cost');
+    if (hiddenInput) {
+        hiddenInput.value = totalCost.toFixed(2);
+    }
+
+    // Add visual feedback
+    if (displayElement) {
+        displayElement.classList.add('text-primary-600');
+        setTimeout(() => {
+            displayElement.classList.remove('text-primary-600');
+        }, 300);
+    }
 }
 
-// Initialize total on load
-updateTotalCost();
+// Format input values on blur
+function formatRepairCostInput(input) {
+    const value = parseFloat(input.value) || 0;
+    input.value = value.toFixed(2);
+    updateRepairTotalCost();
+}
+
+// Initialize repair diagnosis form
+function initializeRepairDiagnosisForm() {
+    // Update total cost initially
+    updateRepairTotalCost();
+
+    // Add blur event listeners for formatting
+    const laborInput = document.getElementById('labor_cost');
+    const partsInput = document.getElementById('parts_cost');
+
+    if (laborInput) {
+        laborInput.addEventListener('blur', function() { formatRepairCostInput(this); });
+    }
+    if (partsInput) {
+        partsInput.addEventListener('blur', function() { formatRepairCostInput(this); });
+    }
+}
+
+// Call initialization immediately
+initializeRepairDiagnosisForm();
 </script>

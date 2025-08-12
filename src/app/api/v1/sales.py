@@ -34,7 +34,7 @@ async def create_sale(
 
     - **items**: List of products with quantities and prices
     - **customer_id**: Optional customer ID (null for walk-in)
-    - **payment_method**: cash, credit, transfer, or mixed
+    - **payment_method**: cash, transfer, card, or mixed
     - **discount_amount**: Optional discount on total
     """
     try:
@@ -63,9 +63,19 @@ async def create_sale(
             amount_due=sale.amount_due,
         )
 
+        # Check if debt was generated and create notification message
+        message = "Sale created successfully"
+        if sale.customer_id and sale.amount_due > 0:
+            from app.services.debt_service import debt_service
+
+            debt_message = debt_service.get_debt_notification_message(
+                db, sale.customer_id, sale.amount_due
+            )
+            message = f"Sale created successfully. {debt_message}"
+
         return ResponseSchema(
             success=True,
-            message="Sale created successfully",
+            message=message,
             data=sale_response.model_dump(),
         )
     except ValueError as e:
@@ -88,9 +98,7 @@ async def list_sales(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     payment_status: Optional[str] = Query(None, pattern="^(pending|partial|paid)$"),
-    payment_method: Optional[str] = Query(
-        None, pattern="^(cash|credit|transfer|mixed)$"
-    ),
+    payment_method: Optional[str] = Query(None, pattern="^(cash|transfer|card|mixed)$"),
     is_voided: Optional[bool] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

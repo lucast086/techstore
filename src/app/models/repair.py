@@ -222,6 +222,14 @@ class Repair(BaseModel):
         comment="User who delivered the device",
     )
 
+    # Sale reference (for invoicing)
+    sale_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("sales.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="Reference to sale when repair is invoiced",
+    )
+
     # Flags
     is_express: Mapped[bool] = mapped_column(
         Boolean,

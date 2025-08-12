@@ -302,3 +302,244 @@ class TestSalesAPI:
         assert data["data"]["total_count"] >= 2
         assert float(data["data"]["cash_sales"]) > 0
         assert float(data["data"]["credit_sales"]) > 0
+
+    def test_create_partial_payment_cash(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+        test_customer: Customer,
+    ):
+        """Test creating a sale with partial cash payment."""
+        sale_data = {
+            "customer_id": test_customer.id,
+            "payment_method": "cash",
+            "amount_paid": 50.00,  # Partial payment
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["data"]["payment_status"] == "partial"
+        assert data["data"]["payment_method"] == "cash"
+        assert float(data["data"]["amount_paid"]) == 50.00
+        assert float(data["data"]["amount_due"]) == 50.00
+        assert "Debt of $50.00 generated" in data["message"]
+
+    def test_create_partial_payment_credit(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+        test_customer: Customer,
+    ):
+        """Test creating a sale with partial credit payment."""
+        sale_data = {
+            "customer_id": test_customer.id,
+            "payment_method": "credit",
+            "amount_paid": 25.00,  # Partial payment
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["data"]["payment_status"] == "partial"
+        assert data["data"]["payment_method"] == "credit"
+        assert float(data["data"]["amount_paid"]) == 25.00
+        assert float(data["data"]["amount_due"]) == 75.00
+        assert "Debt of $75.00 generated" in data["message"]
+
+    def test_create_partial_payment_transfer(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+        test_customer: Customer,
+    ):
+        """Test creating a sale with partial transfer payment."""
+        sale_data = {
+            "customer_id": test_customer.id,
+            "payment_method": "transfer",
+            "amount_paid": 75.00,  # Partial payment
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["data"]["payment_status"] == "partial"
+        assert data["data"]["payment_method"] == "transfer"
+        assert float(data["data"]["amount_paid"]) == 75.00
+        assert float(data["data"]["amount_due"]) == 25.00
+        assert "Debt of $25.00 generated" in data["message"]
+
+    def test_create_partial_payment_mixed(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+        test_customer: Customer,
+    ):
+        """Test creating a sale with partial mixed payment."""
+        sale_data = {
+            "customer_id": test_customer.id,
+            "payment_method": "mixed",
+            "amount_paid": 30.00,  # Partial payment
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["data"]["payment_status"] == "partial"
+        assert data["data"]["payment_method"] == "mixed"
+        assert float(data["data"]["amount_paid"]) == 30.00
+        assert float(data["data"]["amount_due"]) == 70.00
+        assert "Debt of $70.00 generated" in data["message"]
+
+    def test_create_zero_payment(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+        test_customer: Customer,
+    ):
+        """Test creating a sale with zero payment (full debt)."""
+        sale_data = {
+            "customer_id": test_customer.id,
+            "payment_method": "cash",
+            "amount_paid": 0.00,  # No payment
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["data"]["payment_status"] == "pending"
+        assert data["data"]["payment_method"] == "cash"
+        assert float(data["data"]["amount_paid"]) == 0.00
+        assert float(data["data"]["amount_due"]) == 100.00
+        assert "Debt of $100.00 generated" in data["message"]
+
+    def test_partial_payment_validation_negative(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+        test_customer: Customer,
+    ):
+        """Test validation of negative amount paid."""
+        sale_data = {
+            "customer_id": test_customer.id,
+            "payment_method": "cash",
+            "amount_paid": -10.00,  # Invalid negative amount
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 422  # Validation error
+
+    def test_partial_payment_walk_in_customer(
+        self,
+        client: TestClient,
+        auth_headers: dict,
+        test_products: list[Product],
+    ):
+        """Test partial payment for walk-in customer (should not generate debt)."""
+        sale_data = {
+            "payment_method": "cash",
+            "amount_paid": 50.00,  # Partial payment
+            "items": [
+                {
+                    "product_id": test_products[0].id,
+                    "quantity": 1,
+                    "unit_price": 100.00,
+                },
+            ],
+        }
+
+        response = client.post(
+            "/api/v1/sales/",
+            json=sale_data,
+            headers=auth_headers,
+        )
+
+        # This should work, but no debt notification since no customer
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["data"]["payment_status"] == "partial"
+        assert "Sale created successfully" == data["message"]  # No debt message

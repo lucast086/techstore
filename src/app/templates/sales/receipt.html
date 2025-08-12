@@ -300,10 +300,12 @@
                 </div>
                 {% endif %}
 
+                {% if sale.tax_amount > 0 %}
                 <div class="total-row">
-                    <span>Tax (16%):</span>
+                    <span>Tax:</span>
                     <span>${{ "{:,.2f}".format(sale.tax_amount) }}</span>
                 </div>
+                {% endif %}
 
                 <div class="total-row grand-total">
                     <span>TOTAL:</span>

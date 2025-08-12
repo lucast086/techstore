@@ -373,6 +373,17 @@ function showDiagnosisForm() {
             document.getElementById('diagnosis-form-container').innerHTML = html;
             // Process HTMX on the new content
             htmx.process(document.getElementById('diagnosis-form-container'));
+
+            // Execute any script tags in the loaded content
+            const scripts = document.getElementById('diagnosis-form-container').getElementsByTagName('script');
+            for (let script of scripts) {
+                eval(script.innerHTML);
+            }
+
+            // Initialize the form if the function exists
+            if (typeof initializeRepairDiagnosisForm === 'function') {
+                initializeRepairDiagnosisForm();
+            }
         });
 }
 

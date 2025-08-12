@@ -193,6 +193,7 @@ class RepairInDB(RepairBase, TimestampSchema):
     warranty_expires: Optional[date] = None
     received_by: Optional[int] = None
     delivered_by: Optional[int] = None
+    sale_id: Optional[int] = None
     customer_approved: bool
     approval_date: Optional[datetime] = None
 

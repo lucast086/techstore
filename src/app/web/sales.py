@@ -27,6 +27,7 @@ templates = Jinja2Templates(directory="src/app/templates")
 @router.get("/pos", response_class=HTMLResponse)
 async def pos_interface(
     request: Request,
+    repair_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
@@ -42,10 +43,34 @@ async def pos_interface(
             url="/cash-closings?message=open_required", status_code=302
         )
 
+    # Check if a repair_id was provided
+    repair_data = None
+    if repair_id:
+        from app.models.repair import Repair
+
+        repair = db.query(Repair).filter(Repair.id == repair_id).first()
+        if repair:
+            # Check if repair hasn't been invoiced yet
+            if not repair.sale_id:
+                repair_data = {
+                    "id": repair.id,
+                    "repair_number": repair.repair_number,
+                    "description": f"Reparación #{repair.repair_number} - {repair.device_brand} {repair.device_model or repair.device_type}",
+                    "price": float(repair.final_cost or repair.estimated_cost or 0),
+                    "customer_id": repair.customer_id,
+                    "customer_name": repair.customer.name if repair.customer else None,
+                }
+            else:
+                # Repair already invoiced, show warning
+                logger.warning(
+                    f"Repair {repair_id} already invoiced with sale_id {repair.sale_id}"
+                )
+
     context = {
         "request": request,
         "current_user": current_user,
         "page_title": "Point of Sale",
+        "repair_data": repair_data,
     }
 
     return templates.TemplateResponse("sales/pos.html", context)
@@ -188,6 +213,7 @@ async def process_checkout(
     # Extract cart items
     items = []
     item_count = 0
+    repair_id_to_invoice = None
 
     # Count how many items we have
     for key in form_data.keys():
@@ -201,13 +227,45 @@ async def process_checkout(
         unit_price = form_data.get(f"unit_price_{i}")
 
         if product_id and quantity and unit_price:
-            items.append(
-                SaleItemCreate(
-                    product_id=int(product_id),
-                    quantity=int(quantity),
-                    unit_price=Decimal(unit_price),
+            # Check if this is a repair item
+            if str(product_id).startswith("repair_"):
+                # Extract repair ID
+                repair_id_to_invoice = int(str(product_id).replace("repair_", ""))
+
+                # Create a special product entry for the repair
+                # We'll handle this specially in the sale creation
+                from app.models.product import Product
+
+                # Find a service product or create a temporary one
+                service_product = (
+                    db.query(Product)
+                    .filter(
+                        Product.name.ilike("%servicio%")
+                        | Product.name.ilike("%reparaci%")
+                    )
+                    .first()
                 )
-            )
+
+                if service_product:
+                    items.append(
+                        SaleItemCreate(
+                            product_id=service_product.id,
+                            quantity=int(quantity),
+                            unit_price=Decimal(unit_price),
+                        )
+                    )
+                else:
+                    # If no service product exists, we'll need to handle this differently
+                    logger.warning("No service product found for repair invoicing")
+                    # For now, skip adding to items but continue with the repair_id_to_invoice
+            else:
+                items.append(
+                    SaleItemCreate(
+                        product_id=int(product_id),
+                        quantity=int(quantity),
+                        unit_price=Decimal(unit_price),
+                    )
+                )
 
     if not items:
         return HTMLResponse(
@@ -221,18 +279,53 @@ async def process_checkout(
     # Add payment details to notes if applicable
     notes = form_data.get("notes", "")
 
+    # Track actual amount paid (for partial payments)
+    amount_paid = None  # Will default to full amount if not specified
+
     if payment_method == "cash":
         amount_received = form_data.get("amount_received")
         if amount_received:
+            # Use amount_received as the actual amount paid
+            amount_paid = Decimal(amount_received)
             notes = f"Amount received: ${amount_received}\n{notes}".strip()
     elif payment_method == "transfer":
         reference_number = form_data.get("reference_number")
         if reference_number:
             notes = f"Reference: {reference_number}\n{notes}".strip()
+        # For transfer, check for the transfer amount paid field
+        transfer_amount_paid = form_data.get("transfer_amount_paid")
+        if transfer_amount_paid:
+            amount_paid = Decimal(transfer_amount_paid)
+        else:
+            # Fallback to transfer_amount if exists (for mixed payments)
+            transfer_amount = form_data.get("transfer_amount")
+            if transfer_amount:
+                amount_paid = Decimal(transfer_amount)
+    elif payment_method == "card":
+        card_operation_number = form_data.get("card_operation_number")
+        if card_operation_number:
+            notes = f"Card operation: {card_operation_number}\n{notes}".strip()
+        # For card, check for the card amount paid field
+        card_amount_paid = form_data.get("card_amount_paid")
+        if card_amount_paid:
+            amount_paid = Decimal(card_amount_paid)
+        else:
+            # Fallback to card_amount if exists (for mixed payments)
+            card_amount = form_data.get("card_amount")
+            if card_amount:
+                amount_paid = Decimal(card_amount)
     elif payment_method == "mixed":
         cash_amount = form_data.get("cash_amount", "0")
         transfer_amount = form_data.get("transfer_amount", "0")
         card_amount = form_data.get("card_amount", "0")
+
+        # Calculate total amount paid in mixed payment
+        total_paid = (
+            Decimal(cash_amount) + Decimal(transfer_amount) + Decimal(card_amount)
+        )
+        if total_paid > 0:
+            amount_paid = total_paid
+
         payment_details = []
         if float(cash_amount) > 0:
             payment_details.append(f"Cash: ${cash_amount}")
@@ -252,6 +345,7 @@ async def process_checkout(
         discount_amount=Decimal(form_data.get("discount_amount", "0")),
         notes=notes,
         items=items,
+        amount_paid=amount_paid,  # Include the actual amount paid
     )
 
     try:
@@ -287,6 +381,19 @@ async def process_checkout(
         # Create sale
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
 
+        # If this sale was for a repair, update the repair with the sale_id
+        if repair_id_to_invoice:
+            from app.models.repair import Repair
+
+            repair = db.query(Repair).filter(Repair.id == repair_id_to_invoice).first()
+            if repair and not repair.sale_id:
+                repair.sale_id = sale.id
+                db.add(repair)
+                db.commit()
+                logger.info(
+                    f"Updated repair {repair_id_to_invoice} with sale_id {sale.id}"
+                )
+
         # Redirect to receipt
         return HTMLResponse(
             f'<script>window.location.href="/sales/{sale.id}/receipt";</script>',
@@ -295,8 +402,47 @@ async def process_checkout(
 
     except ValueError as e:
         logger.error(f"Error creating sale: {e}")
+        error_message = str(e)
+
+        # Create a more user-friendly error message for walk-in customer payment issues
+        if "Walk-in customers must pay in full" in error_message:
+            return HTMLResponse(
+                f"""<div class="mt-4 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-semibold text-red-800">Pago Incompleto</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p>Los clientes de mostrador deben pagar el total completo.</p>
+                                <p class="mt-1">{error_message}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>""",
+                status_code=400,
+            )
+
+        # Generic error message for other validation errors
         return HTMLResponse(
-            f'<div class="alert alert-danger">{str(e)}</div>',
+            f"""<div class="mt-4 p-4 bg-red-50 border-2 border-red-400 rounded-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-semibold text-red-800">Error en la Venta</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p>{error_message}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>""",
             status_code=400,
         )
     except Exception as e:
