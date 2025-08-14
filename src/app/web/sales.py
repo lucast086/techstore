@@ -79,12 +79,16 @@ async def pos_interface(
 @router.get("/pos/products/search", response_class=HTMLResponse)
 async def search_products_htmx(
     request: Request,
-    q: str = Query(..., min_length=1),
+    q: str = Query(default=""),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Search products and return HTMX partial."""
-    products = sale_crud.search_products(db, query=q, limit=10)
+    # Only search if query has at least 1 character
+    if len(q.strip()) < 1:
+        products = []
+    else:
+        products = sale_crud.search_products(db, query=q.strip(), limit=10)
 
     context = {
         "request": request,
@@ -154,6 +158,39 @@ async def search_customers_htmx(
     return templates.TemplateResponse(
         "sales/partials/customer_search_results.html", context
     )
+
+
+@router.get("/pos/customers/{customer_id}/balance")
+async def get_customer_balance_json(
+    customer_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Get customer balance for POS (returns JSON)."""
+    from app.crud.customer import customer_crud
+    from app.services.balance_service import balance_service
+
+    # Check customer exists
+    customer = customer_crud.get(db, customer_id)
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+        )
+
+    # Get balance information
+    balance_info = balance_service.get_balance_summary(db, customer_id)
+
+    return {
+        "customer_id": customer_id,
+        "customer_name": customer.name,
+        "balance": float(
+            balance_info["current_balance"]
+        ),  # Convert to float for template
+        "has_debt": balance_info["has_debt"],
+        "has_credit": balance_info["has_credit"],
+        "formatted": balance_info["formatted"],
+        "status": balance_info["status"],
+    }
 
 
 @router.post("/pos/cart/add", response_class=HTMLResponse)
@@ -251,7 +288,9 @@ async def process_checkout(
                         SaleItemCreate(
                             product_id=service_product.id,
                             quantity=int(quantity),
-                            unit_price=Decimal(unit_price),
+                            unit_price=Decimal(unit_price)
+                            if unit_price and str(unit_price).strip()
+                            else Decimal("0"),
                         )
                     )
                 else:
@@ -263,7 +302,9 @@ async def process_checkout(
                     SaleItemCreate(
                         product_id=int(product_id),
                         quantity=int(quantity),
-                        unit_price=Decimal(unit_price),
+                        unit_price=Decimal(unit_price)
+                        if unit_price and str(unit_price).strip()
+                        else Decimal("0"),
                     )
                 )
 
@@ -284,7 +325,7 @@ async def process_checkout(
 
     if payment_method == "cash":
         amount_received = form_data.get("amount_received")
-        if amount_received:
+        if amount_received and amount_received.strip():
             # Use amount_received as the actual amount paid
             amount_paid = Decimal(amount_received)
             notes = f"Amount received: ${amount_received}\n{notes}".strip()
@@ -294,12 +335,12 @@ async def process_checkout(
             notes = f"Reference: {reference_number}\n{notes}".strip()
         # For transfer, check for the transfer amount paid field
         transfer_amount_paid = form_data.get("transfer_amount_paid")
-        if transfer_amount_paid:
+        if transfer_amount_paid and transfer_amount_paid.strip():
             amount_paid = Decimal(transfer_amount_paid)
         else:
             # Fallback to transfer_amount if exists (for mixed payments)
             transfer_amount = form_data.get("transfer_amount")
-            if transfer_amount:
+            if transfer_amount and transfer_amount.strip():
                 amount_paid = Decimal(transfer_amount)
     elif payment_method == "card":
         card_operation_number = form_data.get("card_operation_number")
@@ -307,32 +348,122 @@ async def process_checkout(
             notes = f"Card operation: {card_operation_number}\n{notes}".strip()
         # For card, check for the card amount paid field
         card_amount_paid = form_data.get("card_amount_paid")
-        if card_amount_paid:
+        if card_amount_paid and card_amount_paid.strip():
             amount_paid = Decimal(card_amount_paid)
         else:
             # Fallback to card_amount if exists (for mixed payments)
             card_amount = form_data.get("card_amount")
-            if card_amount:
+            if card_amount and card_amount.strip():
                 amount_paid = Decimal(card_amount)
+    elif payment_method == "account_credit":
+        # Credit payment handling
+        credit_amount = form_data.get("credit_amount", "0")
+        customer_id = form_data.get("customer_id")
+
+        if not customer_id:
+            return HTMLResponse(
+                '<div class="alert alert-danger">Customer required for credit payment</div>',
+                status_code=400,
+            )
+
+        # Import balance service to validate credit
+        from app.services.balance_service import balance_service
+
+        # Check customer credit balance
+        balance_info = balance_service.get_balance_summary(db, int(customer_id))
+        available_credit = (
+            Decimal(str(balance_info["current_balance"]))
+            if balance_info["has_credit"]
+            else Decimal("0")
+        )
+
+        credit_to_use = (
+            Decimal(credit_amount)
+            if credit_amount and credit_amount.strip()
+            else Decimal("0")
+        )
+        if credit_to_use > available_credit:
+            return HTMLResponse(
+                f'<div class="alert alert-danger">Insufficient credit. Available: ${available_credit:.2f}</div>',
+                status_code=400,
+            )
+
+        amount_paid = credit_to_use
+        notes = f"Paid with account credit: ${credit_to_use:.2f}\n{notes}".strip()
+
     elif payment_method == "mixed":
         cash_amount = form_data.get("cash_amount", "0")
         transfer_amount = form_data.get("transfer_amount", "0")
         card_amount = form_data.get("card_amount", "0")
+        mixed_credit_amount = form_data.get("mixed_credit_amount", "0")
+
+        # Validate credit if used in mixed payment
+        customer_id = form_data.get("customer_id")
+        if Decimal(mixed_credit_amount or "0") > 0:
+            if not customer_id:
+                return HTMLResponse(
+                    '<div class="alert alert-danger">Customer required for credit payment</div>',
+                    status_code=400,
+                )
+
+            # Import balance service to validate credit
+            from app.services.balance_service import balance_service
+
+            # Check customer credit balance
+            balance_info = balance_service.get_balance_summary(db, int(customer_id))
+            available_credit = (
+                Decimal(str(balance_info["current_balance"]))
+                if balance_info["has_credit"]
+                else Decimal("0")
+            )
+
+            credit_to_use = (
+                Decimal(mixed_credit_amount)
+                if mixed_credit_amount and mixed_credit_amount.strip()
+                else Decimal("0")
+            )
+            if credit_to_use > available_credit:
+                return HTMLResponse(
+                    f'<div class="alert alert-danger">Insufficient credit. Available: ${available_credit:.2f}</div>',
+                    status_code=400,
+                )
 
         # Calculate total amount paid in mixed payment
-        total_paid = (
-            Decimal(cash_amount) + Decimal(transfer_amount) + Decimal(card_amount)
+        # Handle empty values by defaulting to 0
+        safe_cash = (
+            Decimal(cash_amount)
+            if cash_amount and cash_amount.strip()
+            else Decimal("0")
         )
+        safe_transfer = (
+            Decimal(transfer_amount)
+            if transfer_amount and transfer_amount.strip()
+            else Decimal("0")
+        )
+        safe_card = (
+            Decimal(card_amount)
+            if card_amount and card_amount.strip()
+            else Decimal("0")
+        )
+        safe_credit = (
+            Decimal(mixed_credit_amount)
+            if mixed_credit_amount and mixed_credit_amount.strip()
+            else Decimal("0")
+        )
+
+        total_paid = safe_cash + safe_transfer + safe_card + safe_credit
         if total_paid > 0:
             amount_paid = total_paid
 
         payment_details = []
-        if float(cash_amount) > 0:
-            payment_details.append(f"Cash: ${cash_amount}")
-        if float(transfer_amount) > 0:
-            payment_details.append(f"Transfer: ${transfer_amount}")
-        if float(card_amount) > 0:
-            payment_details.append(f"Card: ${card_amount}")
+        if safe_cash > 0:
+            payment_details.append(f"Cash: ${safe_cash}")
+        if safe_transfer > 0:
+            payment_details.append(f"Transfer: ${safe_transfer}")
+        if safe_card > 0:
+            payment_details.append(f"Card: ${safe_card}")
+        if safe_credit > 0:
+            payment_details.append(f"Credit: ${safe_credit}")
         if payment_details:
             notes = f"Payment breakdown: {', '.join(payment_details)}\n{notes}".strip()
 
@@ -380,6 +511,73 @@ async def process_checkout(
 
         # Create sale
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
+
+        # Process credit usage if account_credit was used as payment
+        if payment_method == "account_credit" and amount_paid and sale.customer_id:
+            credit_used = amount_paid
+            logger.info(
+                f"Processing credit usage: ${credit_used} for customer {sale.customer_id}"
+            )
+
+            # Apply customer credit using the payment service
+            from app.services.payment_service import PaymentService
+
+            payment_service = PaymentService()
+
+            try:
+                payment_service.apply_customer_credit(
+                    db=db,
+                    customer_id=sale.customer_id,
+                    credit_amount=credit_used,
+                    sale_id=sale.id,
+                    user_id=current_user.id,
+                    notes=f"Credit applied to sale {sale.invoice_number}",
+                )
+                logger.info(f"Credit usage processed successfully for sale {sale.id}")
+            except Exception as e:
+                logger.error(f"Failed to process credit usage: {e}")
+                db.rollback()
+                return HTMLResponse(
+                    f'<div class="alert alert-danger">Error processing credit payment: {str(e)}</div>',
+                    status_code=500,
+                )
+
+        # Handle mixed payment with credit
+        elif (
+            payment_method == "mixed"
+            and mixed_credit_amount
+            and mixed_credit_amount.strip()
+            and sale.customer_id
+        ):
+            credit_used = Decimal(mixed_credit_amount)
+            logger.info(
+                f"Processing mixed payment credit usage: ${credit_used} for customer {sale.customer_id}"
+            )
+
+            # Apply customer credit using the payment service
+            from app.services.payment_service import PaymentService
+
+            payment_service = PaymentService()
+
+            try:
+                payment_service.apply_customer_credit(
+                    db=db,
+                    customer_id=sale.customer_id,
+                    credit_amount=credit_used,
+                    sale_id=sale.id,
+                    user_id=current_user.id,
+                    notes=f"Credit portion applied to mixed payment for sale {sale.invoice_number}",
+                )
+                logger.info(
+                    f"Mixed payment credit usage processed successfully for sale {sale.id}"
+                )
+            except Exception as e:
+                logger.error(f"Failed to process mixed payment credit usage: {e}")
+                db.rollback()
+                return HTMLResponse(
+                    f'<div class="alert alert-danger">Error processing credit payment: {str(e)}</div>',
+                    status_code=500,
+                )
 
         # If this sale was for a repair, update the repair with the sale_id
         if repair_id_to_invoice:

@@ -6,10 +6,24 @@
     <div class="bg-white rounded-lg shadow-md p-6">
       <!-- Header -->
       <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Record Payment</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+          {% if not balance_info.has_debt %}
+            Record Advance Payment
+          {% else %}
+            Record Payment
+          {% endif %}
+        </h1>
         <p class="text-gray-600">
           Customer: <span class="font-medium">{{ customer.name }}</span>
         </p>
+        {% if not balance_info.has_debt %}
+        <p class="text-sm text-blue-600 mt-2">
+          <svg class="inline-block w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+          </svg>
+          This payment will create a credit balance for future purchases or services
+        </p>
+        {% endif %}
       </div>
 
       <!-- Current Balance -->
@@ -35,6 +49,14 @@
           (Due: ${{ "{:,.2f}".format(sale.amount_due) }})
         </div>
         {% endif %}
+
+        <!-- Show resulting balance after payment -->
+        <div id="resulting-balance" class="mt-3 pt-3 border-t border-gray-200" style="display: none;">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-600 text-sm">Balance after payment:</span>
+            <span id="resulting-balance-amount" class="text-lg font-semibold"></span>
+          </div>
+        </div>
       </div>
 
       {% if error %}
@@ -232,14 +254,27 @@
         <!-- Notes -->
         <div>
           <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
-            Notes (Optional)
+            Notes
+            {% if not balance_info.has_debt %}
+              <span class="text-red-500">*</span>
+              <span class="text-xs text-gray-500">(Required for advance payments)</span>
+            {% else %}
+              <span class="text-xs text-gray-500">(Optional)</span>
+            {% endif %}
           </label>
           <textarea id="notes" name="notes" rows="3"
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ form_data.notes if form_data else '' }}</textarea>
+                    placeholder="{% if not balance_info.has_debt %}Please specify the purpose of this advance payment{% else %}Add any additional notes{% endif %}"
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    {% if not balance_info.has_debt %}required{% endif %}>{{ form_data.notes if form_data else '' }}</textarea>
+          {% if not balance_info.has_debt %}
+          <p class="mt-1 text-sm text-gray-500">
+            Example: "Advance payment for upcoming repair" or "Credit for future purchases"
+          </p>
+          {% endif %}
         </div>
 
-        <!-- Authorization for Overpayment -->
-        {% if current_user.is_admin %}
+        <!-- Authorization for Overpayment - Only show when customer has debt -->
+        {% if current_user.is_admin and balance_info.has_debt %}
         <div>
           <label class="flex items-center">
             <input type="checkbox" name="allow_overpayment" class="mr-2">
@@ -265,6 +300,9 @@
 </div>
 
 <script>
+  // Current balance (negative means debt)
+  const currentBalance = {{ balance_info.current_balance }};
+
   function togglePaymentType() {
     const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
     const singlePayment = document.getElementById('single_payment');
@@ -342,10 +380,45 @@
     }
   }
 
+  function calculateResultingBalance() {
+    const amountInput = document.getElementById('amount');
+    const amount = parseFloat(amountInput.value) || 0;
+
+    if (amount > 0) {
+      // Payment increases balance (reduces debt or increases credit)
+      const resultingBalance = currentBalance + amount;
+      const resultingDiv = document.getElementById('resulting-balance');
+      const resultingAmount = document.getElementById('resulting-balance-amount');
+
+      resultingDiv.style.display = 'block';
+
+      if (resultingBalance < 0) {
+        // Still has debt
+        resultingAmount.textContent = `Owes $${Math.abs(resultingBalance).toFixed(2)}`;
+        resultingAmount.className = 'text-lg font-semibold text-red-600';
+      } else if (resultingBalance > 0) {
+        // Will have credit
+        resultingAmount.textContent = `Credit $${resultingBalance.toFixed(2)}`;
+        resultingAmount.className = 'text-lg font-semibold text-green-600';
+      } else {
+        // Exactly zero
+        resultingAmount.textContent = '$0.00';
+        resultingAmount.className = 'text-lg font-semibold text-gray-900';
+      }
+    } else {
+      document.getElementById('resulting-balance').style.display = 'none';
+    }
+  }
+
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     togglePaymentType();
     toggleReferenceField();
+
+    // Add event listener for amount input
+    const amountInput = document.getElementById('amount');
+    amountInput.addEventListener('input', calculateResultingBalance);
+    amountInput.addEventListener('change', calculateResultingBalance);
   });
 </script>
 {% endblock %}

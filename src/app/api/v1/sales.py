@@ -98,7 +98,9 @@ async def list_sales(
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     payment_status: Optional[str] = Query(None, pattern="^(pending|partial|paid)$"),
-    payment_method: Optional[str] = Query(None, pattern="^(cash|transfer|card|mixed)$"),
+    payment_method: Optional[str] = Query(
+        None, pattern="^(cash|transfer|card|mixed|account_credit)$"
+    ),
     is_voided: Optional[bool] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

@@ -94,6 +94,45 @@ async def check_phone_availability(
     )
 
 
+@router.get("/{customer_id}/balance")
+async def get_customer_balance(
+    customer_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    """Get customer balance information.
+
+    Args:
+        customer_id: Customer ID.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        Balance information including amount and status.
+    """
+    from app.services.balance_service import balance_service
+
+    # Check customer exists
+    customer = customer_service.get_customer(db, customer_id)
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
+        )
+
+    # Get balance information
+    balance_info = balance_service.get_balance_summary(db, customer_id)
+
+    return {
+        "customer_id": customer_id,
+        "customer_name": customer.name,
+        "balance": float(balance_info["current_balance"]),  # Convert to float for JSON
+        "has_debt": balance_info["has_debt"],
+        "has_credit": balance_info["has_credit"],
+        "formatted": balance_info["formatted"],
+        "status": balance_info["status"],
+    }
+
+
 @router.get("/search")
 async def search_customers(
     q: Annotated[str, Query(min_length=1)],

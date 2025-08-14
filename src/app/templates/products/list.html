@@ -40,37 +40,25 @@ block content %}
     <div class="px-4 py-5 sm:p-6">
       <form method="GET" action="/products" id="filter-form" class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Search with Modal -->
+          <!-- Search Input -->
           <div class="sm:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700">
-              Buscar
+              Buscar Productos
             </label>
             <div class="mt-1 relative">
-              <div
-                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-              >
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clip-rule="evenodd"
-                  />
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
                 </svg>
               </div>
               <input
                 type="text"
-                id="search-display"
-                readonly
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-pointer"
-                placeholder="Haz clic para buscar productos..."
-                onclick="openProductSearch()"
-              />
-              <input type="hidden" name="search" id="search" value="{{ search or '' }}">
+                id="search"
+                name="search"
+                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Buscar por nombre, SKU o código de barras..."
+                value="{{ search or '' }}"
+                onkeyup="if(event.key === 'Enter') document.getElementById('filter-form').submit()">
             </div>
           </div>
 
@@ -587,140 +575,6 @@ block content %}
   </div>
 </div>
 
-<!-- Product Search Modal -->
-<div id="productSearchModal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeProductSearch()"></div>
 
-    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-    <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-      <div>
-        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-          Buscar Productos
-        </h3>
-        <div class="mt-2">
-          <input
-            type="text"
-            id="productSearchInput"
-            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            placeholder="Buscar por nombre, SKU, o código de barras..."
-            onkeyup="searchProducts(this.value)"
-            autofocus
-          >
-        </div>
-
-        <div id="productSearchResults" class="mt-4 max-h-96 overflow-y-auto">
-          <!-- Results will be populated here -->
-        </div>
-      </div>
-
-      <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-        <button
-          type="button"
-          class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-1 sm:text-sm"
-          onclick="closeProductSearch()"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-          onclick="applyProductSearch()"
-        >
-          Aplicar Búsqueda
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-let searchTimeout;
-let selectedSearchTerm = '';
-
-function openProductSearch() {
-  document.getElementById('productSearchModal').classList.remove('hidden');
-  document.getElementById('productSearchInput').focus();
-  // Clear input and results
-  document.getElementById('productSearchInput').value = '';
-  document.getElementById('productSearchResults').innerHTML = `
-    <div class="text-center py-8 text-gray-500">
-      <p>Comienza a escribir para buscar productos...</p>
-    </div>
-  `;
-}
-
-function closeProductSearch() {
-  document.getElementById('productSearchModal').classList.add('hidden');
-}
-
-function searchProducts(query) {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    if (query.length > 0) {
-      fetch(`/products/search?q=${encodeURIComponent(query)}`)
-        .then(response => response.text())
-        .then(html => {
-          document.getElementById('productSearchResults').innerHTML = html;
-        })
-        .catch(error => {
-          document.getElementById('productSearchResults').innerHTML = `
-            <div class="text-center py-8 text-red-500">
-              <p>Error cargando resultados. Por favor inténtalo de nuevo.</p>
-            </div>
-          `;
-        });
-    } else {
-      document.getElementById('productSearchResults').innerHTML = `
-        <div class="text-center py-8 text-gray-500">
-          <p>Comienza a escribir para buscar productos...</p>
-        </div>
-      `;
-    }
-  }, 300);
-}
-
-function selectProduct(productName, productSku) {
-  // Set the search term to the selected product
-  const searchTerm = productName;
-  document.getElementById('productSearchInput').value = searchTerm;
-  selectedSearchTerm = searchTerm;
-}
-
-function applyProductSearch() {
-  const searchInput = document.getElementById('productSearchInput');
-  const searchValue = searchInput.value;
-
-  // Update hidden search field
-  document.getElementById('search').value = searchValue;
-  document.getElementById('search-display').value = searchValue || 'Haz clic para buscar productos...';
-
-  // Submit the form
-  document.getElementById('filter-form').submit();
-
-  closeProductSearch();
-}
-
-// Handle Enter key in search input
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize search display
-  const searchValue = document.getElementById('search').value;
-  if (searchValue) {
-    document.getElementById('search-display').value = searchValue;
-  }
-
-  // Add enter key handler for search input
-  const searchInput = document.getElementById('productSearchInput');
-  if (searchInput) {
-    searchInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        applyProductSearch();
-      }
-    });
-  }
-});
-</script>
 
 {% endblock %}

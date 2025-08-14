@@ -343,6 +343,40 @@ async def view_cash_closing(
         raise HTTPException(status_code=500, detail="Failed to load closing")
 
 
+@router.get("/{closing_id}/print", response_class=HTMLResponse)
+async def print_cash_closing(
+    request: Request,
+    closing_id: int,
+    print_mode: bool = Query(False),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin_or_manager),
+):
+    """Print view for cash closing."""
+    try:
+        # Get closing by ID
+        closing = cash_closing.get(db, id=closing_id)
+
+        if not closing:
+            raise HTTPException(
+                status_code=404, detail=f"No closing found with ID {closing_id}"
+            )
+
+        return templates.TemplateResponse(
+            "cash_closings/receipt.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "closing": closing,
+                "print_mode": print_mode,
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error loading print view: {e}")
+        raise HTTPException(status_code=500, detail="Failed to load print view")
+
+
 @router.post("/{closing_id}/finalize", response_class=HTMLResponse)
 async def finalize_cash_closing(
     request: Request,

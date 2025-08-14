@@ -188,11 +188,14 @@ class SaleCRUD:
             # Handle payment creation and debt generation
             if sale_in.customer_id and amount_paid > Decimal("0"):
                 # Create payment record for any amount paid
+                from app.models.payment import PaymentType
+
                 payment = Payment(
                     customer_id=sale_in.customer_id,
                     sale_id=sale.id,
                     amount=amount_paid,
                     payment_method=sale_in.payment_method or "cash",
+                    payment_type=PaymentType.payment.value,  # Explicitly use .value
                     receipt_number=f"REC-{invoice_number}",
                     received_by_id=user_id,
                     notes=f"Payment for sale {invoice_number}"

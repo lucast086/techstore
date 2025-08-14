@@ -201,15 +201,7 @@ async def record_payment(
         if not customer:
             raise HTTPException(404, "Customer not found")
 
-        # Check amount doesn't exceed debt (MVP: skip this check for now since we don't have sales)
-        # current_balance = balance_service.calculate_balance(db, customer_id)
-        # if current_balance >= 0:
-        #     raise ValueError("Customer has no outstanding debt")
-        #
-        # if amount > abs(current_balance):
-        #     raise ValueError(f"Payment amount exceeds debt of ${abs(current_balance):.2f}")
-
-        # Create payment
+        # Process payment using payment service for proper validation
         payment_data = PaymentCreate(
             amount=amount,
             payment_method=payment_method,
@@ -217,11 +209,13 @@ async def record_payment(
             notes=notes,
         )
 
-        payment = payment_crud.create(
+        payment = payment_service.process_payment(
             db=db,
             customer_id=customer_id,
-            payment=payment_data,
-            received_by_id=current_user.id,
+            sale_id=None,
+            payment_data=payment_data,
+            user_id=current_user.id,
+            allow_overpayment=False,
         )
 
         logger.info(f"Payment recorded: {payment.receipt_number}")

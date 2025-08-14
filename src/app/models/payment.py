@@ -22,9 +22,10 @@ from app.models.base import BaseModel
 class PaymentType(enum.Enum):
     """Payment type enumeration."""
 
-    PAYMENT = "payment"  # Regular payment for debt
-    ADVANCE_PAYMENT = "advance_payment"  # Advance payment (credit)
-    REFUND = "refund"  # Refund to customer
+    payment = "payment"  # Regular payment for debt
+    advance_payment = "advance_payment"  # Advance payment (credit)
+    credit_application = "credit_application"  # Application of existing credit to sale
+    refund = "refund"  # Refund to customer
 
 
 class Payment(BaseModel):
@@ -57,7 +58,7 @@ class Payment(BaseModel):
     amount = Column(Numeric(10, 2), nullable=False)
     payment_method = Column(String(50), nullable=False)  # cash, transfer, card
     payment_type = Column(
-        Enum(PaymentType), nullable=False, default=PaymentType.PAYMENT
+        Enum(PaymentType), nullable=False, default=PaymentType.payment
     )  # payment, advance_payment, refund
     reference_number = Column(String(100), nullable=True)
     notes = Column(Text, nullable=True)

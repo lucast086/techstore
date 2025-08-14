@@ -1,6 +1,6 @@
 # STORY-073: Enable Advance Payments (Customer Credit)
 
-**Status:** Draft
+**Status:** Ready for Review
 **Priority:** P1 (High)
 **Type:** New Feature
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
@@ -15,13 +15,13 @@ As a cashier, I need to record advance payments from customers even when they do
 - Builds customer trust with transparent credit tracking
 
 ## Acceptance Criteria
-- [ ] Payment form allows entry without existing debt
-- [ ] When balance >= 0, payment creates positive balance
-- [ ] UI clearly shows "Saldo a favor: $XXX" in green
-- [ ] Transaction type shows as "ADVANCE_PAYMENT"
-- [ ] Notes field is required to specify purpose
-- [ ] Credit appears in customer statement
-- [ ] Credit balance is immediately available for use
+- [x] Payment form allows entry without existing debt
+- [x] When balance >= 0, payment creates positive balance
+- [x] UI clearly shows "Saldo a favor: $XXX" in green
+- [x] Transaction type shows as "ADVANCE_PAYMENT"
+- [x] Notes field is required to specify purpose
+- [x] Credit appears in customer statement
+- [x] Credit balance is immediately available for use
 
 ## Technical Implementation
 
@@ -33,14 +33,14 @@ As a cashier, I need to record advance payments from customers even when they do
 - `/src/app/templates/customers/detail.html` - Show credit clearly
 
 ### Tasks
-- [ ] Remove validation that blocks payment without debt
-- [ ] Add payment type: ADVANCE_PAYMENT
-- [ ] Update UI to show "Registro de Adelanto" when no debt
-- [ ] Make notes field required for advances
-- [ ] Update balance calculation for positive amounts
-- [ ] Style positive balance differently (green)
-- [ ] Add validation tests
-- [ ] Update customer statement view
+- [x] Remove validation that blocks payment without debt
+- [x] Add payment type: ADVANCE_PAYMENT
+- [x] Update UI to show "Registro de Adelanto" when no debt
+- [x] Make notes field required for advances
+- [x] Update balance calculation for positive amounts
+- [x] Style positive balance differently (green)
+- [x] Add validation tests
+- [x] Update customer statement view
 
 ### Implementation Details
 ```python

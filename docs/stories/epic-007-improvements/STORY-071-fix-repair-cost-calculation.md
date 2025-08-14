@@ -1,6 +1,6 @@
 # STORY-071: Fix Repair Cost Calculation in Diagnosis Modal
 
-**Status:** Done
+**Status:** Ready for Review
 **Priority:** P0 (Critical)
 **Type:** Bug Fix
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
@@ -21,12 +21,12 @@ As a technician, when I enter labor cost and parts cost in the repair diagnosis 
 - Values save correctly to database
 
 ## Acceptance Criteria
-- [ ] Total updates in real-time when labor cost changes
-- [ ] Total updates in real-time when parts cost changes
-- [ ] Calculation formula: total = labor_cost + parts_cost
-- [ ] Currency format displays correctly ($X.XX)
-- [ ] Values persist correctly in database
-- [ ] Modal shows visual feedback during calculation
+- [x] Total updates in real-time when labor cost changes
+- [x] Total updates in real-time when parts cost changes
+- [x] Calculation formula: total = labor_cost + parts_cost
+- [x] Currency format displays correctly ($X.XX)
+- [x] Values persist correctly in database
+- [x] Modal shows visual feedback during calculation
 
 ## Technical Implementation
 
@@ -37,13 +37,13 @@ As a technician, when I enter labor cost and parts cost in the repair diagnosis 
 - `/src/app/api/v1/repairs.py` - Backend validation
 
 ### Tasks
-- [ ] Inspect current modal implementation
-- [ ] Identify JavaScript calculation error
-- [ ] Fix real-time calculation logic
-- [ ] Add input validation for numeric values
-- [ ] Ensure proper number formatting
-- [ ] Test backend data persistence
-- [ ] Add error handling for invalid inputs
+- [x] Inspect current modal implementation
+- [x] Identify JavaScript calculation error
+- [x] Fix real-time calculation logic
+- [x] Add input validation for numeric values
+- [x] Ensure proper number formatting
+- [x] Test backend data persistence
+- [x] Add error handling for invalid inputs
 
 ### JavaScript Fix Example
 ```javascript

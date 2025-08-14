@@ -1,6 +1,6 @@
 # STORY-070: Fix POS Customer Debt Generation
 
-**Status:** Done
+**Status:** Ready for Review
 **Priority:** P0 (Critical)
 **Type:** Bug Fix
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
@@ -19,12 +19,12 @@ As a cashier, when a customer pays less than the total sale amount (regardless o
 - Transaction should record both paid amount and pending amount
 
 ## Acceptance Criteria
-- [ ] Debt generation works with all payment methods (cash, credit, transfer, mixed)
-- [ ] Debt amount = sale total - amount paid
-- [ ] Customer balance is updated immediately after transaction
-- [ ] System shows notification: "Debt of $X generated for customer"
-- [ ] Transaction history shows partial payment status
-- [ ] Debt appears in customer's account statement
+- [x] Debt generation works with all payment methods (cash, credit, transfer, mixed)
+- [x] Debt amount = sale total - amount paid
+- [x] Customer balance is updated immediately after transaction
+- [x] System shows notification: "Debt of $X generated for customer"
+- [x] Transaction history shows partial payment status
+- [x] Debt appears in customer's account statement
 
 ## Technical Implementation
 
@@ -35,14 +35,14 @@ As a cashier, when a customer pays less than the total sale amount (regardless o
 - `/src/app/models/venta.py` - Add payment_status field if missing
 
 ### Tasks
-- [ ] Analyze current payment processing flow in POS
-- [ ] Identify where debt generation is bypassed
-- [ ] Implement debt generation for all payment methods
-- [ ] Add validation for partial payments
-- [ ] Update customer balance calculation
-- [ ] Add notification system for debt generation
-- [ ] Create unit tests for partial payment scenarios
-- [ ] Test with all payment methods
+- [x] Analyze current payment processing flow in POS
+- [x] Identify where debt generation is bypassed
+- [x] Implement debt generation for all payment methods
+- [x] Add validation for partial payments
+- [x] Update customer balance calculation
+- [x] Add notification system for debt generation
+- [x] Create unit tests for partial payment scenarios
+- [x] Test with all payment methods
 
 ## Testing Requirements
 - Test partial payment with cash

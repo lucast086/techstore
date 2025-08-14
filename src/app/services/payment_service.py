@@ -52,7 +52,7 @@ class PaymentService:
         )
 
         # If it's an advance payment, require notes
-        if payment_type == PaymentType.ADVANCE_PAYMENT and not payment_data.notes:
+        if payment_type == PaymentType.advance_payment and not payment_data.notes:
             raise ValueError(
                 "Notes are required for advance payments. Please specify the purpose of this advance payment."
             )
@@ -172,7 +172,7 @@ class PaymentService:
         # Determine payment type based on balance
         if current_balance >= 0:
             # Customer has no debt or has credit - this is an advance payment
-            return PaymentType.ADVANCE_PAYMENT
+            return PaymentType.advance_payment
         else:
             # Customer has debt
             debt_amount = abs(current_balance)
@@ -180,7 +180,7 @@ class PaymentService:
                 raise ValueError(
                     f"Payment amount (${payment_amount}) exceeds outstanding balance (${debt_amount})"
                 )
-            return PaymentType.PAYMENT
+            return PaymentType.payment
 
     def update_sale_payment_status(self, db: Session, sale: Sale) -> None:
         """Update sale payment status based on payments received.
@@ -205,6 +205,81 @@ class PaymentService:
         logger.info(
             f"Updated sale {sale.invoice_number} payment status to {sale.payment_status}"
         )
+
+    def apply_customer_credit(
+        self,
+        db: Session,
+        customer_id: int,
+        credit_amount: Decimal,
+        sale_id: int,
+        user_id: int,
+        notes: str = None,
+    ) -> Payment:
+        """Apply customer credit to a sale by creating a negative payment.
+
+        Args:
+            db: Database session.
+            customer_id: ID of the customer.
+            credit_amount: Amount of credit to apply (positive value).
+            sale_id: ID of the sale.
+            user_id: ID of user applying credit.
+            notes: Optional notes for the payment.
+
+        Returns:
+            Created payment object.
+
+        Raises:
+            ValueError: If insufficient credit available.
+        """
+        # Check available credit
+        balance_info = balance_service.get_balance_summary(db, customer_id)
+        available_credit = (
+            Decimal(str(balance_info["current_balance"]))
+            if balance_info["has_credit"]
+            else Decimal("0")
+        )
+
+        if credit_amount > available_credit:
+            raise ValueError(
+                f"Insufficient credit. Available: ${available_credit:.2f}, Requested: ${credit_amount:.2f}"
+            )
+
+        # Create credit application record
+        from app.models.payment import Payment, PaymentType
+        from app.models.sale import Sale
+
+        sale = db.query(Sale).filter(Sale.id == sale_id).first()
+
+        # Create credit application record (positive amount)
+        payment_data = {
+            "customer_id": customer_id,
+            "sale_id": sale_id,
+            "amount": credit_amount,  # Positive amount for credit application
+            "payment_method": "account_credit",
+            "reference_number": f"CREDIT-{sale.invoice_number}"
+            if sale
+            else f"CREDIT-{sale_id}",
+            "payment_type": PaymentType.credit_application.value,  # New type for credit usage
+            "notes": notes
+            or f"Customer credit applied to sale {sale.invoice_number if sale else sale_id}",
+            "received_by_id": user_id,
+            "receipt_number": f"CREDIT-{sale.invoice_number}"
+            if sale
+            else f"CREDIT-{sale_id}",
+        }
+
+        # Create payment record
+        payment = Payment(**payment_data)
+        db.add(payment)
+        db.commit()
+        # Note: Skip refresh to avoid SQLAlchemy enum caching issues
+
+        logger.info(
+            f"Applied ${credit_amount} customer credit for customer {customer_id}, "
+            f"new balance calculation will be triggered by payment creation"
+        )
+
+        return payment
 
     def generate_receipt_number(self, db: Session) -> str:
         """Generate unique payment receipt number.

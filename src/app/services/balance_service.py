@@ -38,7 +38,7 @@ class BalanceService:
         balance = self.calculate_balance(db, customer_id)
 
         return {
-            "current_balance": float(balance),
+            "current_balance": balance,  # Keep as Decimal for precision
             "has_debt": balance < 0,
             "has_credit": balance > 0,
             "status": "debt" if balance < 0 else "credit" if balance > 0 else "clear",
@@ -71,12 +71,26 @@ class BalanceService:
             if payment_date.tzinfo is None:
                 payment_date = payment_date.replace(tzinfo=UTC)
 
+            # Determine transaction type and amount impact
+            from app.models.payment import PaymentType
+
+            if payment.payment_type == PaymentType.credit_application.value:
+                # Credit application reduces balance
+                trans_type = "credit_usage"
+                description = f"Credit Used - {payment.receipt_number}"
+                amount = -float(payment.amount)  # Negative impact on balance
+            else:
+                # Regular payment or advance increases balance
+                trans_type = "payment"
+                description = f"Payment - {payment.receipt_number}"
+                amount = float(payment.amount)  # Positive impact on balance
+
             transactions.append(
                 {
                     "date": payment_date,
-                    "type": "payment",
-                    "description": f"Payment - {payment.receipt_number}",
-                    "amount": float(payment.amount),  # Positive for credit
+                    "type": trans_type,
+                    "description": description,
+                    "amount": amount,
                     "reference": f"payment_{payment.id}",
                     "payment_method": payment.payment_method,
                     "reference_number": payment.reference_number,

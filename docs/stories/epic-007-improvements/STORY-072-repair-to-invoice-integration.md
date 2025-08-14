@@ -1,6 +1,6 @@
 # STORY-072: Repair to Invoice Integration
 
-**Status:** Draft
+**Status:** Ready for Review
 **Priority:** P1 (High)
 **Type:** New Feature
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
@@ -15,13 +15,13 @@ As a cashier, when I mark a repair as "delivered", I need the system to automati
 - Improves cashier efficiency
 
 ## Acceptance Criteria
-- [ ] Marking repair as "delivered" triggers redirect to `/sales/pos`
-- [ ] Repair appears as line item with description "Reparación #[ID] - [device]"
-- [ ] Price is set to repair's final_cost
-- [ ] Customer is pre-selected if repair has customer_id
-- [ ] Other products can still be added to the sale
-- [ ] After sale completion, repair is marked as paid
-- [ ] System prevents duplicate invoicing of same repair
+- [x] Marking repair as "delivered" triggers redirect to `/sales/pos`
+- [x] Repair appears as line item with description "Reparación #[ID] - [device]"
+- [x] Price is set to repair's final_cost
+- [x] Customer is pre-selected if repair has customer_id
+- [x] Other products can still be added to the sale
+- [x] After sale completion, repair is marked as paid
+- [x] System prevents duplicate invoicing of same repair
 
 ## Technical Implementation
 
@@ -33,14 +33,14 @@ As a cashier, when I mark a repair as "delivered", I need the system to automati
 - `/src/app/services/repair_service.py` - Add invoicing logic
 
 ### Tasks
-- [ ] Add sale_id field to repair model (nullable)
-- [ ] Modify delivered status endpoint to return redirect
-- [ ] Update POS route to accept repair_id parameter
-- [ ] Implement repair-to-cart conversion logic
-- [ ] Add validation to prevent re-invoicing
-- [ ] Update repair with sale_id after invoicing
-- [ ] Add UI feedback for repair invoicing
-- [ ] Create integration tests
+- [x] Add sale_id field to repair model (nullable)
+- [x] Modify delivered status endpoint to return redirect
+- [x] Update POS route to accept repair_id parameter
+- [x] Implement repair-to-cart conversion logic
+- [x] Add validation to prevent re-invoicing
+- [x] Update repair with sale_id after invoicing
+- [x] Add UI feedback for repair invoicing
+- [x] Create integration tests
 
 ### Implementation Flow
 ```python

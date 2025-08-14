@@ -87,16 +87,36 @@ class PaymentCRUD:
     def get_customer_payment_total(
         self, db: Session, customer_id: int, include_voided: bool = False
     ) -> float:
-        """Get total payment amount for a customer."""
-        query = db.query(func.sum(Payment.amount)).filter(
-            Payment.customer_id == customer_id
+        """Get total payment amount for a customer.
+
+        Calculates: (PAYMENT + ADVANCE_PAYMENT) - CREDIT_APPLICATION
+        This gives the net credit/debt position.
+        """
+        from app.models.payment import PaymentType
+
+        # Get payments that add to balance (money IN)
+        payments_in_query = db.query(func.sum(Payment.amount)).filter(
+            Payment.customer_id == customer_id,
+            Payment.payment_type.in_(
+                [PaymentType.payment.value, PaymentType.advance_payment.value]
+            ),
+        )
+
+        # Get credit applications (credit OUT)
+        credit_out_query = db.query(func.sum(Payment.amount)).filter(
+            Payment.customer_id == customer_id,
+            Payment.payment_type == PaymentType.credit_application.value,
         )
 
         if not include_voided:
-            query = query.filter(Payment.voided.is_(False))
+            payments_in_query = payments_in_query.filter(Payment.voided.is_(False))
+            credit_out_query = credit_out_query.filter(Payment.voided.is_(False))
 
-        result = query.scalar()
-        return float(result) if result else 0.0
+        payments_in = payments_in_query.scalar() or 0.0
+        credit_out = credit_out_query.scalar() or 0.0
+
+        # Net = Money IN - Credit OUT
+        return float(payments_in) - float(credit_out)
 
     def get_recent_payments(
         self, db: Session, skip: int = 0, limit: int = 50

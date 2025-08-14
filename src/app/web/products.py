@@ -484,24 +484,3 @@ async def update_product(
             },
             status_code=500,
         )
-
-
-@router.get("/search", response_class=HTMLResponse)
-async def search_products(
-    request: Request,
-    q: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user_from_cookie),
-):
-    """Search products and return HTML partial."""
-    service = ProductService(db)
-
-    products = await service.get_products(limit=10, search=q, is_active=True)
-
-    return templates.TemplateResponse(
-        "products/partials/search_results.html",
-        {
-            "request": request,
-            "products": products,
-        },
-    )

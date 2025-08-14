@@ -10,16 +10,19 @@ from pydantic import BaseModel, Field, field_validator
 class PaymentType(str, Enum):
     """Payment type enumeration."""
 
-    PAYMENT = "payment"
-    ADVANCE_PAYMENT = "advance_payment"
-    REFUND = "refund"
+    payment = "payment"
+    advance_payment = "advance_payment"
+    credit_application = "credit_application"
+    refund = "refund"
 
 
 class PaymentMethodDetail(BaseModel):
     """Schema for individual payment method in mixed payments."""
 
     payment_method: str = Field(
-        ..., pattern="^(cash|transfer|card)$", description="Payment method"
+        ...,
+        pattern="^(cash|transfer|card|account_credit)$",
+        description="Payment method",
     )
     amount: Decimal = Field(
         ..., gt=0, decimal_places=2, description="Amount for this method"
@@ -43,7 +46,9 @@ class PaymentCreate(BaseModel):
 
     amount: Decimal = Field(..., gt=0, decimal_places=2, description="Payment amount")
     payment_method: str = Field(
-        ..., pattern="^(cash|transfer|card|mixed)$", description="Payment method"
+        ...,
+        pattern="^(cash|transfer|card|account_credit|mixed)$",
+        description="Payment method",
     )
     payment_type: PaymentType | None = Field(
         None, description="Type of payment (auto-determined if not provided)"

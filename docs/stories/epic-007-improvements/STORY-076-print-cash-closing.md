@@ -1,6 +1,6 @@
 # STORY-076: Direct Print Cash Closing
 
-**Status:** Draft
+**Status:** Ready for Review
 **Priority:** P2 (Medium)
 **Type:** UX Improvement
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
@@ -20,13 +20,13 @@ As a cashier, I want to print the cash closing report directly from the browser 
 - Print directly without intermediate steps
 
 ## Acceptance Criteria
-- [ ] Add "Imprimir" button next to "Descargar PDF"
-- [ ] Button triggers browser print dialog directly
-- [ ] Print view is properly formatted for paper
-- [ ] Navigation and buttons hidden in print view
-- [ ] Page breaks are logical (no cut tables)
-- [ ] Header/footer appropriate for printing
-- [ ] Original PDF download still works
+- [x] Add "Imprimir" button next to "Descargar PDF"
+- [x] Button triggers browser print dialog directly
+- [x] Print view is properly formatted for paper
+- [x] Navigation and buttons hidden in print view
+- [x] Page breaks are logical (no cut tables)
+- [x] Header/footer appropriate for printing
+- [x] Original PDF download still works
 
 ## Technical Implementation
 
@@ -130,18 +130,31 @@ function printCashClosing() {
 ## Dev Agent Record
 
 ### Task Progress
-- [ ] Add print button
-- [ ] Create print stylesheet
-- [ ] Hide non-printable elements
-- [ ] Format for paper
-- [ ] Test across browsers
+- [x] Add print button
+- [x] Create print stylesheet
+- [x] Hide non-printable elements
+- [x] Format for paper
+- [x] Test across browsers
 
 ### Debug Log
 
 ### Completion Notes
+- Created dedicated receipt template for cash closings following payment receipt pattern
+- Added /cash-closings/{id}/print route for clean print view
+- Optimized print layout for A5 size (half A4 page) with ultra-compact typography
+- Print template opens in new tab with automatic print dialog
+- All navigation and UI elements hidden in print mode
+- Maintains all essential cash closing information in compact format
 
 ### File List
+- `/src/app/templates/cash_closings/receipt.html` - New print-optimized template
+- `/src/app/templates/cash_closings/detail.html` - Updated print button
+- `/src/app/web/cash_closings.py` - Added print route
 
 ### Change Log
+- 2025-08-13: Created dedicated cash closing receipt template
+- 2025-08-13: Added print route and updated detail template
+- 2025-08-13: Optimized print layout for A5 size with compact formatting
 
 ### Agent Model Used
+claude-sonnet-4-20250514

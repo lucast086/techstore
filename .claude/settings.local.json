@@ -51,7 +51,8 @@
       "Bash(ss:*)",
       "Bash(pkill:*)",
       "Bash(chmod:*)",
-      "Bash(poetry show:*)"
+      "Bash(poetry show:*)",
+      "Bash(psql:*)"
     ],
     "deny": []
   },

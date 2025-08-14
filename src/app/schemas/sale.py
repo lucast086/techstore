@@ -46,7 +46,9 @@ class SaleBase(BaseModel):
     """Base schema for sales."""
 
     customer_id: Optional[int] = None
-    payment_method: Optional[str] = Field(None, pattern="^(cash|transfer|card|mixed)$")
+    payment_method: Optional[str] = Field(
+        None, pattern="^(cash|transfer|card|mixed|account_credit)$"
+    )
     notes: Optional[str] = None
 
 

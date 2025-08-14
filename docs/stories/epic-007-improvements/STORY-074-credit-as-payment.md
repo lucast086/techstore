@@ -1,6 +1,6 @@
 # STORY-074: Use Customer Credit as Payment Method
 
-**Status:** Draft
+**Status:** In Progress
 **Priority:** P1 (High)
 **Type:** New Feature
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
@@ -34,13 +34,15 @@ As a cashier, when a customer has a positive balance (credit), I need to use tha
 - `/src/app/static/js/pos.js` - Client-side credit handling
 
 ### Tasks
-- [ ] Add CUSTOMER_CREDIT to payment methods enum
+- [x] Add CUSTOMER_CREDIT to payment methods enum
+- [x] Fix validation schema to include 'account_credit' payment method
+- [x] Implement credit deduction logic in payment processing
+- [x] Add apply_customer_credit method to PaymentService
+- [x] Handle account_credit payment method in sales checkout
+- [x] Handle mixed payment with credit portion
 - [ ] Fetch customer credit balance in POS
 - [ ] Show/hide credit option based on balance
 - [ ] Implement credit amount input with validation
-- [ ] Update payment processing for credit
-- [ ] Deduct credit from customer balance
-- [ ] Handle mixed payment (credit + other)
 - [ ] Update receipt template
 - [ ] Add transaction logging
 
@@ -122,11 +124,26 @@ def process_payment(sale_id: int, payment_data: PaymentData):
 - [ ] Test all scenarios
 
 ### Debug Log
+- **2025-08-13**: Fixed validation error - payment_method 'account_credit' not allowed in SaleCreate schema
+- **Error**: `String should match pattern '^(cash|transfer|card|mixed)'` - missing 'account_credit'
+- **Solution**: Updated payment_method pattern in both `/src/app/schemas/sale.py` and `/src/app/api/v1/sales.py`
+- **2025-08-13**: Fixed credit deduction issue - credit wasn't being deducted from customer balance
+- **Problem**: Sale processed but customer credit remained unchanged
+- **Solution**: Added `apply_customer_credit()` method to PaymentService to create negative payment records
 
 ### Completion Notes
 
 ### File List
+- `/src/app/schemas/sale.py` - Updated payment_method pattern validation
+- `/src/app/api/v1/sales.py` - Updated Query pattern validation
+- `/src/app/services/payment_service.py` - Added apply_customer_credit method
+- `/src/app/web/sales.py` - Added credit deduction logic in checkout process
 
 ### Change Log
+- 2025-08-13: Fixed Pydantic validation error for 'account_credit' payment method
+- 2025-08-13: Updated schemas to accept new payment type
+- 2025-08-13: Implemented credit deduction logic for account_credit and mixed payments
+- 2025-08-13: Added PaymentService.apply_customer_credit method for proper balance management
 
 ### Agent Model Used
+claude-sonnet-4-20250514
