@@ -9,6 +9,7 @@ from .product import Category, Product, ProductImage, ProductSupplier
 from .repair import Repair, RepairPart, RepairPhoto, RepairStatusHistory
 from .sale import Sale, SaleItem
 from .supplier import Supplier
+from .system_config import SystemConfig
 from .user import User
 from .warranty import Warranty, WarrantyClaim
 
@@ -35,4 +36,5 @@ __all__ = [
     "CashClosing",
     "Expense",
     "ExpenseCategory",
+    "SystemConfig",
 ]

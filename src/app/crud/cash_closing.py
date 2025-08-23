@@ -172,6 +172,19 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         closing = self.get_by_date(db, closing_date=target_date)
         return closing is not None and closing.is_finalized
 
+    def get_unfinalized_register(self, db: Session) -> Optional[CashClosing]:
+        """Get any unfinalized cash register from any date.
+
+        Returns:
+            The first unfinalized cash register found, or None if all are closed.
+        """
+        return (
+            db.query(CashClosing)
+            .filter(CashClosing.is_finalized.is_(False))
+            .order_by(CashClosing.closing_date.desc())
+            .first()
+        )
+
     def open_cash_register(
         self,
         db: Session,
@@ -181,7 +194,15 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         opened_by: int,
     ) -> CashClosing:
         """Open cash register for the day."""
-        # Check if already exists for this date
+        # FIRST: Check if there's any unfinalized register from any date
+        unfinalized = self.get_unfinalized_register(db)
+        if unfinalized:
+            raise ValueError(
+                f"Cannot open new cash register. "
+                f"Please close the cash register from {unfinalized.closing_date.strftime('%Y-%m-%d')} first."
+            )
+
+        # THEN: Check if already exists for this specific date
         existing = self.get_by_date(db, closing_date=target_date)
         if existing:
             # If it's finalized, we cannot open again

@@ -51,12 +51,18 @@ async def cash_closing_list(
         # Get current status for today
         today_status = cash_closing_service.get_current_closing_status(db=db)
 
+        # Check for pending cash register from previous days
+        pending_register = cash_closing_service.get_pending_cash_register(db=db)
+
         # Prepare alert message if needed
         alert_message = None
         alert_type = None
         if message == "open_required":
             alert_message = "You must open the cash register before processing sales."
             alert_type = "warning"
+        elif pending_register:
+            alert_message = f"ATTENTION: You have an open cash register from {pending_register.closing_date.strftime('%Y-%m-%d')}. Please close it before opening a new one."
+            alert_type = "danger"
 
         return templates.TemplateResponse(
             "cash_closings/list.html",
@@ -65,6 +71,7 @@ async def cash_closing_list(
                 "current_user": current_user,
                 "closings": closings,
                 "today_status": today_status,
+                "pending_register": pending_register,
                 "alert_message": alert_message,
                 "alert_type": alert_type,
                 "page_title": "Cash Closings",
@@ -83,15 +90,25 @@ async def cash_opening_form(
 ):
     """Render cash opening form."""
     try:
+        # Check for pending cash register from any date
+        pending_register = cash_closing_service.get_pending_cash_register(db=db)
+        if pending_register:
+            # Redirect to closing form for the pending register
+            return RedirectResponse(
+                url=f"/cash-closings/form?closing_date={pending_register.closing_date}",
+                status_code=303,
+            )
+
         # Check if already open for today
         today = date.today()
         if cash_closing.is_cash_register_open(db, target_date=today):
             # Redirect to list if already open
             return RedirectResponse(url="/cash-closings", status_code=302)
 
-        # Get last closing for opening balance
-        last_closing = cash_closing.get_last_closing(db)
-        suggested_balance = last_closing.cash_count if last_closing else Decimal("0.00")
+        # Get default opening balance from configuration
+        from app.services.config_service import config_service
+
+        suggested_balance = config_service.get_default_opening_balance(db)
 
         return templates.TemplateResponse(
             "cash_closings/open.html",
@@ -426,9 +443,10 @@ async def get_daily_summary_htmx(
             db=db, target_date=parsed_date
         )
 
-        # Get opening balance
-        last_closing = cash_closing.get_last_closing(db)
-        opening_balance = last_closing.cash_count if last_closing else Decimal("0.00")
+        # Get opening balance from configuration
+        from app.services.config_service import config_service
+
+        opening_balance = config_service.get_default_opening_balance(db)
 
         return templates.TemplateResponse(
             "cash_closings/_daily_summary.html",

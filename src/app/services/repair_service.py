@@ -174,8 +174,22 @@ class RepairService:
             Updated repair or None if not found.
 
         Raises:
-            ValueError: If status transition is invalid.
+            ValueError: If status transition is invalid or cash register is not open.
         """
+        # Validate cash register is open when marking as delivered
+        if status_update.status == "delivered":
+            from datetime import date
+
+            from app.crud.cash_closing import cash_closing
+
+            if not cash_closing.is_cash_register_open(db, target_date=date.today()):
+                logger.error(
+                    f"Cannot deliver repair {repair_id}: Cash register is not open"
+                )
+                raise ValueError(
+                    "Cash register must be open to deliver repairs. Please open the cash register first."
+                )
+
         try:
             repair = repair_crud.update_status(
                 db=db, repair_id=repair_id, status_update=status_update, user_id=user_id
@@ -244,8 +258,21 @@ class RepairService:
             Updated repair or None if not found.
 
         Raises:
-            ValueError: If repair is not ready for delivery.
+            ValueError: If repair is not ready for delivery or cash register is not open.
         """
+        # Validate cash register is open before delivering
+        from datetime import date
+
+        from app.crud.cash_closing import cash_closing
+
+        if not cash_closing.is_cash_register_open(db, target_date=date.today()):
+            logger.error(
+                f"Cannot deliver repair {repair_id}: Cash register is not open"
+            )
+            raise ValueError(
+                "Cash register must be open to deliver repairs. Please open the cash register first."
+            )
+
         try:
             repair = repair_crud.deliver_repair(
                 db=db, repair_id=repair_id, delivery=delivery

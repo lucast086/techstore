@@ -95,6 +95,21 @@ class CashClosingService:
         logger.warning(f"Cash difference validation failed: {warning}")
         return False, warning
 
+    def get_pending_cash_register(self, db: Session) -> Optional[CashClosingResponse]:
+        """Get any pending (unfinalized) cash register.
+
+        Args:
+            db: Database session.
+
+        Returns:
+            Pending cash register details if exists, None otherwise.
+        """
+        pending = cash_closing.get_unfinalized_register(db)
+        if pending:
+            logger.info(f"Found pending cash register from {pending.closing_date}")
+            return CashClosingResponse.model_validate(pending)
+        return None
+
     def open_cash_register(
         self, db: Session, opening_date: date, opening_balance: Decimal, user_id: int
     ) -> CashClosingResponse:

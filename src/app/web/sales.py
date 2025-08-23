@@ -324,11 +324,13 @@ async def process_checkout(
     amount_paid = None  # Will default to full amount if not specified
 
     if payment_method == "cash":
-        amount_received = form_data.get("amount_received")
+        amount_received = form_data.get("amount_received", "0")
+        # Handle empty or whitespace-only values
         if amount_received and amount_received.strip():
-            # Use amount_received as the actual amount paid
             amount_paid = Decimal(amount_received)
-            notes = f"Amount received: ${amount_received}\n{notes}".strip()
+        else:
+            amount_paid = Decimal("0")
+        notes = f"Amount received: ${amount_paid}\n{notes}".strip()
     elif payment_method == "transfer":
         reference_number = form_data.get("reference_number")
         if reference_number:

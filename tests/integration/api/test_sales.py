@@ -302,3 +302,118 @@ class TestSaleCRUD:
         assert summary["cash_sales"] == expected_per_sale * 2
         assert summary["credit_sales"] == expected_per_sale
         assert summary["average_sale"] == expected_per_sale
+
+    def test_cash_sale_with_zero_amount_received(
+        self,
+        db_session: Session,
+        test_user: User,
+        test_customer: Customer,
+        test_products: list[Product],
+    ):
+        """Test cash sale with amount_received = 0 creates partial payment."""
+        # Open cash register for today
+        from datetime import date
+
+        from app.models.cash_closing import CashClosing
+        from sqlalchemy import func
+
+        cash_opening = CashClosing(
+            closing_date=date.today(),
+            opening_balance=Decimal("100.00"),
+            sales_total=Decimal("0.00"),
+            expenses_total=Decimal("0.00"),
+            cash_count=Decimal("100.00"),
+            expected_cash=Decimal("100.00"),
+            cash_difference=Decimal("0.00"),
+            opened_at=func.now(),
+            opened_by=test_user.id,
+            closed_by=test_user.id,
+            is_finalized=False,
+        )
+        db_session.add(cash_opening)
+        db_session.commit()
+
+        sale_data = SaleCreate(
+            customer_id=test_customer.id,
+            payment_method="cash",
+            amount_paid=Decimal("0"),  # Explicitly set to 0
+            items=[
+                SaleItemCreate(
+                    product_id=test_products[0].id,
+                    quantity=1,
+                    unit_price=Decimal("100.00"),
+                ),
+            ],
+        )
+
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Verify sale was created with pending payment status (0 paid)
+        assert sale.amount_paid == Decimal("0")
+        assert (
+            sale.payment_status == "pending"
+        )  # When amount_paid is 0, status is pending
+        # Tax rate is now 0% by default, not 16%
+        expected_total = Decimal("100.00")  # No tax
+        assert sale.total_amount == expected_total
+        assert sale.amount_due == expected_total
+
+    def test_cash_sale_default_amount_not_full_payment(
+        self,
+        db_session: Session,
+        test_user: User,
+        test_customer: Customer,
+        test_products: list[Product],
+    ):
+        """Test that default amount_paid doesn't assume full payment."""
+        # Open cash register for today
+        from datetime import date
+
+        from app.models.cash_closing import CashClosing
+        from sqlalchemy import func
+
+        cash_opening = CashClosing(
+            closing_date=date.today(),
+            opening_balance=Decimal("100.00"),
+            sales_total=Decimal("0.00"),
+            expenses_total=Decimal("0.00"),
+            cash_count=Decimal("100.00"),
+            expected_cash=Decimal("100.00"),
+            cash_difference=Decimal("0.00"),
+            opened_at=func.now(),
+            opened_by=test_user.id,
+            closed_by=test_user.id,
+            is_finalized=False,
+        )
+        db_session.add(cash_opening)
+        db_session.commit()
+
+        sale_data = SaleCreate(
+            customer_id=test_customer.id,
+            payment_method="cash",
+            # Not specifying amount_paid, should default to 0 or None
+            items=[
+                SaleItemCreate(
+                    product_id=test_products[0].id,
+                    quantity=2,
+                    unit_price=Decimal("50.00"),
+                ),
+            ],
+        )
+
+        # When amount_paid is not specified, it should not default to full amount
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Tax rate is now 0% by default, not 16%
+        expected_total = Decimal("100.00")  # No tax (2 items * 50 each)
+
+        # The sale should have amount_paid = 0 by default (our fix)
+        assert sale.amount_paid == Decimal("0")
+        assert (
+            sale.payment_status == "pending"
+        )  # Status is pending when nothing is paid
+        assert sale.amount_due == expected_total

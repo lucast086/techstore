@@ -54,7 +54,8 @@
       "Bash(poetry show:*)",
       "Bash(psql:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": ["Ref", "semgrep"]
