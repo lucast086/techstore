@@ -215,10 +215,14 @@
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Acciones</h2>
 
+                <!-- Error message area -->
+                <div id="status-error-message"></div>
+
                 <!-- Actualizar Estado -->
                 {% if repair.status not in ['delivered', 'cancelled'] %}
                 <form hx-post="/repairs/{{ repair.id }}/status"
                       hx-target="#status-badge"
+                      hx-target-error="#status-error-message"
                       hx-swap="outerHTML"
                       class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Actualizar Estado</label>
@@ -395,6 +399,32 @@ function closeDiagnosisModal() {
 document.getElementById('diagnosis-modal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeDiagnosisModal();
+    }
+});
+
+// Handle HTMX errors for status updates
+document.body.addEventListener('htmx:responseError', function(evt) {
+    // Check if this is from the status update form
+    if (evt.detail.xhr.status === 400 && evt.detail.target && evt.detail.target.id === 'status-badge') {
+        // Display the error message in the error area
+        const errorContainer = document.getElementById('status-error-message');
+        if (errorContainer) {
+            errorContainer.innerHTML = evt.detail.xhr.responseText;
+            // Auto-hide the error message after 10 seconds
+            setTimeout(() => {
+                errorContainer.innerHTML = '';
+            }, 10000);
+        }
+    }
+});
+
+// Clear error messages on successful requests
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.successful) {
+        const errorContainer = document.getElementById('status-error-message');
+        if (errorContainer) {
+            errorContainer.innerHTML = '';
+        }
     }
 });
 </script>
