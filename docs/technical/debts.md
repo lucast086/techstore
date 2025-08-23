@@ -4,7 +4,7 @@
 * new lateral bar
 
 ### Products
-  * improve product search
+
 
 ### Reports
 Payment report when pay is made. maybe size a5
