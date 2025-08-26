@@ -11,6 +11,7 @@
 Payment report when pay is made. maybe size a5
 
 ### Repairs
+ *
  * add auto whatsapp when status change
  * ambiguos estimated cost is showed in diagnosis and cost breakdown
 
@@ -20,6 +21,7 @@ Payment report when pay is made. maybe size a5
   permite cargar un producto nuevo si no existe. El valor total se plasma como gasto compras a proveedores. y se agregan los stocks a los productos.
 
 ### Analytics
+* story 77
 * ademas una seccion de estadisticas de ventas, reparaciones, y otras estadisticas que saco del coso de instagram. todas en admin panel.
 STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 
