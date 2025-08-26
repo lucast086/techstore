@@ -95,7 +95,7 @@ async def cash_opening_form(
         if pending_register:
             # Redirect to closing form for the pending register
             return RedirectResponse(
-                url=f"/cash-closings/form?closing_date={pending_register.closing_date}",
+                url=f"/cash-closings/new?closing_date={pending_register.closing_date}",
                 status_code=303,
             )
 
