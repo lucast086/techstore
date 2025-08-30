@@ -50,7 +50,7 @@ def create_warranty(
         return ResponseSchema(
             success=True,
             data=warranty,
-            message="Warranty created successfully",
+            message="Garantía creada exitosamente",
         )
     except ValueError as e:
         logger.error(f"Error creating warranty: {e}")
@@ -62,7 +62,7 @@ def create_warranty(
         logger.error(f"Unexpected error creating warranty: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create warranty",
+            detail="Error al crear la garantía",
         ) from e
 
 
@@ -82,7 +82,7 @@ def check_warranty(
     if not any([warranty_number, repair_number, customer_phone]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="At least one search parameter is required",
+            detail="Al menos un parámetro de búsqueda es requerido",
         )
 
     try:
@@ -103,7 +103,7 @@ def check_warranty(
         logger.error(f"Error checking warranty: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to check warranty",
+            detail="Error al verificar la garantía",
         ) from e
 
 
@@ -123,7 +123,7 @@ def search_warranties(
         return ResponseSchema(
             success=True,
             data=warranties,
-            message=f"Found {total} warranties",
+            message=f"Se han encontrado {total} garantías",
             meta={
                 "total": total,
                 "page": params.page,
@@ -134,7 +134,7 @@ def search_warranties(
         logger.error(f"Error searching warranties: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to search warranties",
+            detail="Error al buscar las garantías",
         ) from e
 
 
@@ -153,13 +153,13 @@ def get_warranty_statistics(
         return ResponseSchema(
             success=True,
             data=stats,
-            message="Warranty statistics retrieved",
+            message="Estadísticas de garantías recuperadas exitosamente",
         )
     except Exception as e:
         logger.error(f"Error getting warranty statistics: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get warranty statistics",
+            detail="Error al obtener las estadísticas de garantías",
         ) from e
 
 
@@ -179,7 +179,7 @@ def get_warranty(
         return ResponseSchema(
             success=True,
             data=warranty,
-            message="Warranty details retrieved",
+            message="Detalles de garantía recuperados exitosamente",
         )
     except ValueError as e:
         logger.error(f"Warranty not found: {e}")
@@ -191,7 +191,7 @@ def get_warranty(
         logger.error(f"Error getting warranty: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get warranty",
+            detail="Error al obtener la garantía",
         ) from e
 
 
@@ -219,7 +219,7 @@ def void_warranty(
         return ResponseSchema(
             success=True,
             data=warranty,
-            message="Warranty voided successfully",
+            message="Garantía anulada exitosamente",
         )
     except ValueError as e:
         logger.error(f"Error voiding warranty: {e}")
@@ -231,7 +231,7 @@ def void_warranty(
         logger.error(f"Unexpected error voiding warranty: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to void warranty",
+            detail="Error al anular la garantía",
         ) from e
 
 

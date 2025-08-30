@@ -37,7 +37,9 @@ class PaymentMethodDetail(BaseModel):
         """Validate reference number is required for non-cash payments."""
         method = info.data.get("payment_method")
         if method in ["transfer", "card"] and not v:
-            raise ValueError("Reference number required for transfer/card payments")
+            raise ValueError(
+                "Número de referencia requerido para pagos con transferencia/tarjeta"
+            )
         return v
 
 
@@ -67,7 +69,9 @@ class PaymentCreate(BaseModel):
         """Validate reference number is required for non-cash payments."""
         method = info.data.get("payment_method")
         if method in ["transfer", "card"] and not v:
-            raise ValueError("Reference number required for transfer/card payments")
+            raise ValueError(
+                "Número de referencia requerido para pagos con transferencia/tarjeta"
+            )
         return v
 
     @field_validator("payment_methods")
@@ -81,7 +85,7 @@ class PaymentCreate(BaseModel):
 
         if method == "mixed":
             if not v or len(v) < 2:
-                raise ValueError("Mixed payment requires at least 2 payment methods")
+                raise ValueError("Pago mixto requiere al menos 2 métodos de pago")
 
             total = sum(pm.amount for pm in v)
             if total != amount:

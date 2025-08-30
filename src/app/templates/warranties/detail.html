@@ -8,59 +8,59 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-semibold text-gray-800">
-                    Warranty Details
+                    Detalles de Garantía
                 </h2>
                 <a href="/warranties" class="text-blue-600 hover:text-blue-800">
-                    ← Back to List
+                    ← Volver a Lista
                 </a>
             </div>
         </div>
 
         <div class="px-6 py-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Warranty Information -->
+                <!-- Información de Garantía -->
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Warranty Information</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Información de Garantía</h3>
                     <dl class="space-y-2">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Warranty Number</dt>
+                            <dt class="text-sm font-medium text-gray-500">Número de Garantía</dt>
                             <dd class="text-sm text-gray-900">{{ warranty.warranty_number }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Status</dt>
+                            <dt class="text-sm font-medium text-gray-500">Estado</dt>
                             <dd id="warranty-status">
                                 {% include "warranties/partials/warranty_status.html" %}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Coverage Type</dt>
+                            <dt class="text-sm font-medium text-gray-500">Tipo de Cobertura</dt>
                             <dd class="text-sm text-gray-900">{{ warranty.coverage_type }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Start Date</dt>
+                            <dt class="text-sm font-medium text-gray-500">Fecha de Inicio</dt>
                             <dd class="text-sm text-gray-900">{{ warranty.start_date }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Parts Warranty</dt>
+                            <dt class="text-sm font-medium text-gray-500">Garantía de Partes</dt>
                             <dd class="text-sm text-gray-900">
-                                {{ warranty.parts_warranty_days }} days
-                                (expires {{ warranty.parts_expiry_date }})
+                                {{ warranty.parts_warranty_days }} días
+                                (vence {{ warranty.parts_expiry_date }})
                                 {% if warranty.is_parts_valid %}
-                                <span class="text-green-600">✓ Valid</span>
+                                <span class="text-green-600">✓ Válida</span>
                                 {% else %}
-                                <span class="text-red-600">✗ Expired</span>
+                                <span class="text-red-600">✗ Expirada</span>
                                 {% endif %}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Labor Warranty</dt>
+                            <dt class="text-sm font-medium text-gray-500">Garantía de Labor</dt>
                             <dd class="text-sm text-gray-900">
-                                {{ warranty.labor_warranty_days }} days
-                                (expires {{ warranty.labor_expiry_date }})
+                                {{ warranty.labor_warranty_days }} días
+                                (vence {{ warranty.labor_expiry_date }})
                                 {% if warranty.is_labor_valid %}
-                                <span class="text-green-600">✓ Valid</span>
+                                <span class="text-green-600">✓ Válida</span>
                                 {% else %}
-                                <span class="text-red-600">✗ Expired</span>
+                                <span class="text-red-600">✗ Expirada</span>
                                 {% endif %}
                             </dd>
                         </div>
@@ -69,10 +69,10 @@
 
                 <!-- Repair Information -->
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Repair Information</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Información de Reparación</h3>
                     <dl class="space-y-2">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Repair Number</dt>
+                            <dt class="text-sm font-medium text-gray-500">Número de Reparación</dt>
                             <dd class="text-sm text-gray-900">
                                 <a href="/repairs/{{ warranty.repair_id }}" class="text-blue-600 hover:text-blue-800">
                                     {{ warranty.repair_number }}
@@ -80,11 +80,11 @@
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Customer</dt>
+                            <dt class="text-sm font-medium text-gray-500">Cliente</dt>
                             <dd class="text-sm text-gray-900">{{ warranty.customer_name }}</dd>
                         </div>
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Device</dt>
+                            <dt class="text-sm font-medium text-gray-500">Dispositivo</dt>
                             <dd class="text-sm text-gray-900">
                                 {{ warranty.device_brand }} {{ warranty.device_type }}
                                 {% if warranty.device_model %}
@@ -99,16 +99,16 @@
             <!-- Void Information (if voided) -->
             {% if warranty.status == "voided" %}
             <div class="mt-6 bg-red-50 p-4 rounded-md">
-                <h3 class="text-lg font-medium text-red-900 mb-2">Warranty Voided</h3>
+                <h3 class="text-lg font-medium text-red-900 mb-2">Garantía Anulada</h3>
                 <dl class="space-y-2">
                     <div>
-                        <dt class="text-sm font-medium text-red-700">Void Reason</dt>
+                        <dt class="text-sm font-medium text-red-700">Motivo de Anulación</dt>
                         <dd class="text-sm text-red-900">{{ warranty.void_reason }}</dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-red-700">Voided By</dt>
+                        <dt class="text-sm font-medium text-red-700">Anulado Por</dt>
                         <dd class="text-sm text-red-900">
-                            {{ warranty.voided_by_name }} on {{ warranty.voided_at }}
+                            {{ warranty.voided_by_name }} el {{ warranty.voided_at }}
                         </dd>
                     </div>
                 </dl>
@@ -120,14 +120,14 @@
             <div class="mt-6">
                 {% if warranty.terms %}
                 <div class="mb-4">
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Terms</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Términos</h3>
                     <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ warranty.terms }}</p>
                 </div>
                 {% endif %}
 
                 {% if warranty.exclusions %}
                 <div>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Exclusions</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Exclusiones</h3>
                     <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ warranty.exclusions }}</p>
                 </div>
                 {% endif %}
@@ -141,20 +141,20 @@
                         hx-target="#modal-container"
                         hx-swap="innerHTML"
                         class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                    Create Claim
+                    Crear Reclamo
                 </button>
                 <button hx-get="/warranties/{{ warranty.id }}/void-form"
                         hx-target="#modal-container"
                         hx-swap="innerHTML"
                         class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
-                    Void Warranty
+                    Anular Garantía
                 </button>
                 {% endif %}
 
                 <a href="/warranties/{{ warranty.id }}/print"
                    target="_blank"
                    class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
-                    Print Warranty
+                    Imprimir Garantía
                 </a>
             </div>
         </div>

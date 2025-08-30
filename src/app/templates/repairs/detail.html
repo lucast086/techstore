@@ -45,19 +45,19 @@
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Información del Dispositivo</h2>
                 <dl class="grid grid-cols-2 gap-4">
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Type</dt>
+                        <dt class="text-sm font-medium text-gray-500">Tipo</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ repair.device_type.title() }}</dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Brand</dt>
+                        <dt class="text-sm font-medium text-gray-500">Marca</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ repair.device_brand }}</dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Model</dt>
+                        <dt class="text-sm font-medium text-gray-500">Modelo</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ repair.device_model or '-' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Serial Number</dt>
+                        <dt class="text-sm font-medium text-gray-500">Número de Serie</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ repair.serial_number or '-' }}</dd>
                     </div>
                 </dl>
@@ -65,19 +65,19 @@
 
             <!-- Problem Description -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4">Problem Description</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Descripción del Problema</h2>
                 <p class="text-gray-700 whitespace-pre-wrap">{{ repair.problem_description }}</p>
 
                 {% if repair.device_condition %}
                 <div class="mt-4">
-                    <h3 class="text-sm font-medium text-gray-500">Physical Condition</h3>
+                    <h3 class="text-sm font-medium text-gray-500">Condición Física</h3>
                     <p class="mt-1 text-sm text-gray-700">{{ repair.device_condition }}</p>
                 </div>
                 {% endif %}
 
                 {% if repair.accessories_received %}
                 <div class="mt-4">
-                    <h3 class="text-sm font-medium text-gray-500">Accessories Received</h3>
+                    <h3 class="text-sm font-medium text-gray-500">Accesorios Recibidos</h3>
                     <p class="mt-1 text-sm text-gray-700">{{ repair.accessories_received }}</p>
                 </div>
                 {% endif %}
@@ -176,7 +176,7 @@
             </div>
             {% endif %}
 
-            <!-- Status History -->
+            <!-- Estado History -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Historial de Estado</h2>
                 <div class="space-y-3">
@@ -310,23 +310,23 @@
             <!-- Cost Summary -->
             {% if repair.estimated_cost or repair.final_cost %}
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Cost Summary</h2>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Resumen de Costos</h2>
                 <dl class="space-y-3">
                     {% if repair.estimated_cost %}
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Estimated Cost</dt>
+                        <dt class="text-sm font-medium text-gray-500">Costo Estimado</dt>
                         <dd class="mt-1 text-lg font-medium text-gray-900">${{ repair.estimated_cost }}</dd>
                     </div>
                     {% endif %}
                     {% if repair.final_cost %}
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Final Cost</dt>
+                        <dt class="text-sm font-medium text-gray-500">Costo Final</dt>
                         <dd class="mt-1 text-lg font-medium text-green-600">${{ repair.final_cost }}</dd>
                     </div>
                     {% endif %}
                     {% if repair.amount_due %}
                     <div class="pt-3 border-t">
-                        <dt class="text-sm font-medium text-gray-500">Amount Due</dt>
+                        <dt class="text-sm font-medium text-gray-500">Cantidad Adeudada</dt>
                         <dd class="mt-1 text-lg font-bold text-red-600">${{ repair.amount_due }}</dd>
                     </div>
                     {% endif %}
@@ -336,19 +336,19 @@
 
             <!-- Personnel -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Personnel</h2>
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Personal</h2>
                 <dl class="space-y-3">
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Received By</dt>
+                        <dt class="text-sm font-medium text-gray-500">Recibido Por</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ repair.receiver_name or '-' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Technician</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ repair.technician_name or 'Not assigned' }}</dd>
+                        <dt class="text-sm font-medium text-gray-500">Técnico</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.technician_name or 'No asignado' }}</dd>
                     </div>
                     {% if repair.delivered_by %}
                     <div>
-                        <dt class="text-sm font-medium text-gray-500">Delivered By</dt>
+                        <dt class="text-sm font-medium text-gray-500">Entregado Por</dt>
                         <dd class="mt-1 text-sm text-gray-900">{{ repair.deliverer_name }}</dd>
                     </div>
                     {% endif %}
@@ -368,7 +368,7 @@
 <script>
 function showDiagnosisForm() {
     // Load diagnosis form via HTMX
-    document.getElementById('diagnosis-form-container').innerHTML = 'Loading...';
+    document.getElementById('diagnosis-form-container').innerHTML = 'Cargando...';
     document.getElementById('diagnosis-modal').classList.remove('hidden');
 
     fetch('/repairs/{{ repair.id }}/diagnosis')
@@ -395,7 +395,7 @@ function closeDiagnosisModal() {
     document.getElementById('diagnosis-modal').classList.add('hidden');
 }
 
-// Close modal on outside click
+// Cerrar modal on outside click
 document.getElementById('diagnosis-modal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeDiagnosisModal();

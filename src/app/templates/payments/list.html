@@ -1,10 +1,10 @@
-{% extends "base.html" %} {% block title %}Payment History - TechStore{%
+{% extends "base.html" %} {% block title %}Historial de Pagos - TechStore{%
 endblock %} {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="md:flex md:items-center md:justify-between mb-6">
     <div class="flex-1 min-w-0">
-      <h1 class="text-2xl font-bold text-gray-900">Payment History</h1>
-      <p class="mt-1 text-sm text-gray-600">View all recorded payments</p>
+      <h1 class="text-2xl font-bold text-gray-900">Historial de Pagos</h1>
+      <p class="mt-1 text-sm text-gray-600">Ver todos los pagos registrados</p>
     </div>
     <div class="mt-4 flex md:mt-0 md:ml-4">
       <a
@@ -23,7 +23,7 @@ endblock %} {% block content %}
             clip-rule="evenodd"
           />
         </svg>
-        New Payment
+        Nuevo Pago
       </a>
     </div>
   </div>
@@ -35,30 +35,30 @@ endblock %} {% block content %}
           <th
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
           >
-            Receipt #
+            Recibo #
           </th>
           <th
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
           >
-            Customer
+            Cliente:
           </th>
           <th
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
           >
-            Amount
+            Monto
           </th>
           <th
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
           >
-            Payment Method
+            Método de Pago
           </th>
           <th
             class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
           >
-            Date
+            Fecha
           </th>
           <th class="relative px-6 py-3">
-            <span class="sr-only">Actions</span>
+            <span class="sr-only">Acciones</span>
           </th>
         </tr>
       </thead>
@@ -98,7 +98,7 @@ endblock %} {% block content %}
               href="/payments/{{ payment.id }}/receipt"
               class="text-indigo-600 hover:text-indigo-900 mr-3"
             >
-              Receipt
+              Recibo
             </a>
             {% if payment.customer.whatsapp %}
             <a
@@ -113,7 +113,7 @@ endblock %} {% block content %}
         {% else %}
         <tr>
           <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-            No payments recorded yet
+            No hay pagos registrados todavía
           </td>
         </tr>
         {% endfor %}

@@ -114,7 +114,7 @@ class WarrantyService:
             return WarrantyCheckResponse(
                 found=False,
                 warranties=[],
-                message="No warranty found with the provided information",
+                message="No se encontró garantía con la información proporcionada",
             )
 
         warranty_responses = [self._build_warranty_response(w) for w in warranties]
@@ -122,7 +122,7 @@ class WarrantyService:
         return WarrantyCheckResponse(
             found=True,
             warranties=warranty_responses,
-            message=f"Found {len(warranties)} warranty(ies)",
+            message=f"Se encontraron {len(warranties)} garantía(s)",
         )
 
     def search_warranties(

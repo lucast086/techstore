@@ -22,7 +22,7 @@ class CustomerBase(BaseModel):
     def name_must_not_be_empty(cls, v: str) -> str:
         """Ensure name is not empty after stripping whitespace."""
         if not v.strip():
-            raise ValueError("Name cannot be empty")
+            raise ValueError("El nombre no puede estar vacío")
         return v.strip()
 
     @field_validator("phone", "phone_secondary")
@@ -33,7 +33,7 @@ class CustomerBase(BaseModel):
             # Remove common formatting characters
             cleaned = "".join(filter(lambda x: x.isdigit() or x == "+", v))
             if len(cleaned) < 7:  # Minimum reasonable phone length
-                raise ValueError("Phone number too short")
+                raise ValueError("El número de teléfono es muy corto")
             return v.strip()
         return v
 

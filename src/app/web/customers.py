@@ -77,7 +77,7 @@ async def customer_list(
     # Decode success message if present
     success_message = None
     if success == "registered":
-        success_message = "Customer registered successfully!"
+        success_message = "Cliente registrado exitosamente!"
 
     return templates.TemplateResponse(
         "customers/list.html",
@@ -278,20 +278,20 @@ async def send_balance_reminder(
     """
     customer = customer_crud.get(db, customer_id)
     if not customer:
-        return {"error": "Customer not found"}
+        return {"error": "Cliente no encontrado"}
 
     balance_info = balance_service.get_balance_summary(db, customer_id)
 
     if not balance_info["has_debt"]:
-        return {"error": "Customer has no outstanding debt"}
+        return {"error": "El cliente no tiene deuda pendiente"}
 
     # Generate WhatsApp message
     message = (
-        f"Hello {customer.name},\n\n"
-        f"This is a friendly reminder about your account balance.\n"
-        f"Current balance: ${abs(balance_info['current_balance']):,.2f}\n\n"
-        f"Please contact us to arrange payment.\n"
-        f"Thank you!"
+        f"Hola {customer.name},\n\n"
+        f"Esta es una recordatorio sobre tu saldo de cuenta.\n"
+        f"Saldo actual: ${abs(balance_info['current_balance']):,.2f}\n\n"
+        f"Por favor, contáctenos para programar el pago.\n"
+        f"Gracias!"
     )
 
     whatsapp_url = f"https://wa.me/{customer.phone}?text={quote(message)}"
@@ -324,7 +324,7 @@ async def customer_detail(
     if not customer:
         return templates.TemplateResponse(
             "404.html",
-            {"request": request, "message": "Customer not found"},
+            {"request": request, "message": "Cliente no encontrado"},
             status_code=404,
         )
 

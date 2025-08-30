@@ -1,6 +1,6 @@
 <div class="bg-white shadow sm:rounded-lg p-6">
     <h3 class="text-lg font-medium text-gray-900 mb-4">
-        {% if mode == "create" %}Add New Category{% else %}Edit Category{% endif %}
+        {% if mode == "create" %}Agregar Nueva Categoría{% else %}Editar Categoría{% endif %}
     </h3>
 
     <form {% if mode == "create" %}
@@ -16,7 +16,7 @@
 
         <div>
             <label for="name" class="block text-sm font-medium text-gray-700">
-                Category Name
+                Nombre de Categoría
             </label>
             <input type="text"
                    name="name"
@@ -29,7 +29,7 @@
 
         <div>
             <label for="description" class="block text-sm font-medium text-gray-700">
-                Description
+                Descripción
             </label>
             <textarea name="description"
                       id="description"
@@ -46,7 +46,7 @@
                    {% if category.is_active %}checked{% endif %}
                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
             <label for="is_active" class="ml-2 block text-sm text-gray-900">
-                Active
+                Activa
             </label>
         </div>
         {% endif %}
@@ -55,11 +55,11 @@
             <button type="button"
                     onclick="document.getElementById('category-form-container').innerHTML = ''"
                     class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Cancel
+                Cancelar
             </button>
             <button type="submit"
                     class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                {% if mode == "create" %}Create{% else %}Update{% endif %}
+                {% if mode == "create" %}Crear{% else %}Actualizar{% endif %}
             </button>
         </div>
     </form>

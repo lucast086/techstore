@@ -58,10 +58,10 @@ async def cash_closing_list(
         alert_message = None
         alert_type = None
         if message == "open_required":
-            alert_message = "You must open the cash register before processing sales."
+            alert_message = "ATENCION: Debes abrir la caja antes de procesar ventas."
             alert_type = "warning"
         elif pending_register:
-            alert_message = f"ATTENTION: You have an open cash register from {pending_register.closing_date.strftime('%Y-%m-%d')}. Please close it before opening a new one."
+            alert_message = f"ATENCION: Tienes una caja abierta desde {pending_register.closing_date.strftime('%Y-%m-%d')}. Por favor cierra antes de abrir una nueva."
             alert_type = "danger"
 
         return templates.TemplateResponse(
@@ -74,7 +74,7 @@ async def cash_closing_list(
                 "pending_register": pending_register,
                 "alert_message": alert_message,
                 "alert_type": alert_type,
-                "page_title": "Cash Closings",
+                "page_title": "Cierre de Caja",
             },
         )
     except Exception as e:
@@ -117,7 +117,7 @@ async def cash_opening_form(
                 "current_user": current_user,
                 "opening_date": today,
                 "suggested_balance": suggested_balance,
-                "page_title": "Open Cash Register",
+                "page_title": "Abrir Caja",
             },
         )
     except Exception as e:
@@ -226,7 +226,7 @@ async def cash_closing_form(
                 "current_user": current_user,
                 "status_info": status_info,
                 "closing_date": target_date,
-                "page_title": f"Cash Closing - {target_date}",
+                "page_title": f"Cierre de Caja - {target_date}",
             },
         )
     except ValueError as e:
@@ -348,7 +348,7 @@ async def view_cash_closing(
                 "request": request,
                 "current_user": current_user,
                 "closing": closing,
-                "page_title": f"Cash Closing - {target_date}",
+                "page_title": f"Cierre de Caja - {target_date}",
             },
         )
     except ValueError:

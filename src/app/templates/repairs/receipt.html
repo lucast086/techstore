@@ -175,16 +175,16 @@
         <!-- Print Button -->
         <div class="no-print" style="margin-bottom: 1rem; text-align: right;">
             <a href="/repairs/{{ repair.id }}" style="display: inline-block; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; color: #374151; text-decoration: none; margin-right: 0.5rem;">
-                ← Back to Repair
+                ← Volver a Reparaciones
             </a>
             <button onclick="window.print()" style="padding: 0.5rem 1rem; background: #2563eb; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
-                Print Receipt
+                Imprimir Recibo
             </button>
         </div>
 
         <!-- Receipt Container -->
         <div class="receipt-container">
-            {% for copy_type in ['TECHNICAL COPY', 'CUSTOMER COPY'] %}
+            {% for copy_type in ['COPY SERV. TÉCNICO', 'COPY DEL CLIENTE'] %}
             <!-- {{ copy_type }} -->
             <div class="receipt-copy">
                 <span class="copy-label">{{ copy_type }}</span>
@@ -193,41 +193,41 @@
                     <!-- Header -->
                     <div class="text-center mb-2">
                         <h1 class="font-bold">{{ company.name or "TechStore" }}</h1>
-                        <p class="text-xs text-gray-600">{{ company.address or "123 Main St, City, State 12345" }}</p>
-                        <p class="text-xs text-gray-600">Phone: {{ company.phone or "(555) 123-4567" }} | Email: {{ company.email or "info@techstore.com" }}</p>
+                        <p class="text-xs text-gray-600">{{ company.address or "Saavedra 83 - San Basilio" }}</p>
+                        <p class="text-xs text-gray-600">Phone: {{ company.phone or "(3585) 4242835" }} | Email: {{ company.email or "info@techstore.com" }}</p>
                     </div>
 
                     <!-- Title -->
                     <div class="text-center mb-2">
-                        <h2 class="font-bold">REPAIR RECEIPT</h2>
+                        <h2 class="font-bold">RECIBO DE REPARACIÓN</h2>
                         <p class="font-semibold">{{ repair.repair_number }}</p>
                     </div>
 
                     <!-- Customer Info -->
                     <div class="grid grid-cols-2 gap-2 mb-2 text-sm border-t border-gray-300 pt-2">
                         <div>
-                            <span class="text-gray-600">Customer:</span> <span class="font-semibold">{{ repair.customer_name }}</span><br>
-                            <span class="text-gray-600">Phone:</span> {{ repair.customer_phone }}
+                            <span class="text-gray-600">Cliente:</span> <span class="font-semibold">{{ repair.customer_name }}</span><br>
+                            <span class="text-gray-600">Teléfono:</span> {{ repair.customer_phone }}
                         </div>
                         <div class="text-right">
-                            <span class="text-gray-600">Date:</span> <span class="font-semibold">{{ repair.received_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                            <span class="text-gray-600">Fecha:</span> <span class="font-semibold">{{ repair.received_date.strftime('%Y-%m-%d %H:%M') }}</span>
                         </div>
                     </div>
 
                     <!-- Device Information -->
                     <div class="border-t border-gray-300 pt-2 mb-2">
-                        <h3 class="font-semibold text-sm mb-1">DEVICE INFORMATION</h3>
+                        <h3 class="font-semibold text-sm mb-1">INFORMACIÓN DEL DISPOSITIVO</h3>
                         <div class="grid grid-cols-2 gap-1 text-xs">
-                            <div><span class="text-gray-600">Type:</span> {{ repair.device_type }}</div>
-                            <div><span class="text-gray-600">Brand:</span> {{ repair.device_brand }}</div>
-                            <div><span class="text-gray-600">Model:</span> {{ repair.device_model or 'N/A' }}</div>
-                            <div><span class="text-gray-600">Serial:</span> {{ repair.serial_number or 'N/A' }}</div>
+                            <div><span class="text-gray-600">Tipo:</span> {{ repair.device_type }}</div>
+                            <div><span class="text-gray-600">Marca:</span> {{ repair.device_brand }}</div>
+                            <div><span class="text-gray-600">Modelo:</span> {{ repair.device_model or 'N/A' }}</div>
+                            <div><span class="text-gray-600">Número de Serie:</span> {{ repair.serial_number or 'N/A' }}</div>
                         </div>
                     </div>
 
                     <!-- Problem Description -->
                     <div class="border-t border-gray-300 pt-2 mb-2">
-                        <h3 class="font-semibold text-sm mb-1">PROBLEM DESCRIPTION</h3>
+                        <h3 class="font-semibold text-sm mb-1">DESCRIPCIÓN DEL PROBLEMA</h3>
                         <p class="text-xs">{{ repair.problem_description }}</p>
                     </div>
 
@@ -236,38 +236,38 @@
                     <div class="border-t border-gray-300 pt-2 mb-2">
                         <div class="text-xs">
                             <div class="flex justify-between">
-                                <span>Labor Cost:</span>
+                                <span>Costo de Mano de Obra:</span>
                                 <span>${{ "%.2f"|format(repair.labor_cost or 0) }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span>Parts Cost:</span>
+                                <span>Costo de Repuestos:</span>
                                 <span>${{ "%.2f"|format(repair.parts_cost or 0) }}</span>
                             </div>
                             <div class="flex justify-between font-bold text-sm border-t pt-1 mt-1">
-                                <span>Total:</span>
+                                <span>Total Estimado:</span>
                                 <span>${{ "%.2f"|format(repair.estimated_cost) }}</span>
                             </div>
-                            <p class="text-xs text-gray-600 italic">* Estimate only</p>
+                            <p class="text-xs text-gray-600 italic">* Solo estimado</p>
                         </div>
                     </div>
                     {% endif %}
 
-                    <!-- Status -->
+                    <!-- Estado -->
                     <div class="mb-2">
                         <p class="text-xs">
-                            <span class="text-gray-600">Status:</span>
+                            <span class="text-gray-600">Estado:</span>
                             <span class="font-semibold">{{ repair.status.replace('_', ' ').title() }}</span>
                         </p>
                     </div>
 
                     <!-- Terms and Conditions -->
                     <div class="border-t border-gray-300 pt-2 text-xs text-gray-600">
-                        <p class="font-semibold">Terms:</p>
+                        <p class="font-semibold">Términos:</p>
                         <ul class="text-xs space-y-0">
-                            <li>• Receipt required for pickup</li>
-                            <li>• {{ repair.warranty_days }}-day warranty</li>
-                            <li>• 30-day storage limit</li>
-                            <li>• No data loss liability</li>
+                            <li>• Recibo requerido para retiro</li>
+                            <li>• {{ repair.warranty_days }}-días de garantía</li>
+                            <li>• 30-días de almacenamiento</li>
+                            <li>• No se asume responsabilidad por pérdida de datos</li>
                         </ul>
                     </div>
 
@@ -276,12 +276,12 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <div class="border-t border-gray-400 pt-1">
-                                    <p class="text-xs text-gray-600">Customer Signature</p>
+                                    <p class="text-xs text-gray-600">Firma del Cliente</p>
                                 </div>
                             </div>
                             <div>
                                 <div class="border-t border-gray-400 pt-1">
-                                    <p class="text-xs text-gray-600">Received By: {{ current_user.full_name }}</p>
+                                    <p class="text-xs text-gray-600">Recibido Por: {{ current_user.full_name }}</p>
                                 </div>
                             </div>
                         </div>

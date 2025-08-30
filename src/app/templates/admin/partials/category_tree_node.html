@@ -28,12 +28,12 @@
       <span class="font-medium">{{ node.name }}</span>
 
       <span class="ml-4 text-sm text-gray-500">
-        ({{ node.product_count }} products)
+        ({{ node.product_count }} productos)
       </span>
 
       {% if not node.is_active %}
       <span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded"
-        >Inactive</span
+        >Inactiva</span
       >
       {% endif %}
     </div>
@@ -46,17 +46,17 @@
         hx-target="#categories-container"
         hx-push-url="true"
       >
-        Edit
+        Editar
       </a>
       {% if node.product_count == 0 %}
       <button
         onclick="deleteCategory({{ node.id }})"
         class="text-red-600 hover:text-red-900 text-sm"
         hx-post="/admin/categories/{{ node.id }}/delete"
-        hx-confirm="Are you sure you want to delete this category?"
+        hx-confirm="¿Estás seguro de que deseas eliminar esta categoría?"
         hx-target="#categories-container"
       >
-        Delete
+        Eliminar
       </button>
       {% endif %}
     </div>

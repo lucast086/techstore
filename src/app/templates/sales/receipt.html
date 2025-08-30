@@ -206,10 +206,10 @@
         <!-- Print Button -->
         <div class="no-print" style="margin-bottom: 1rem; text-align: right;">
             <a href="/sales/{{ sale.id }}" style="display: inline-block; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; color: #374151; text-decoration: none; margin-right: 0.5rem;">
-                ← Back to Sale
+                ← Volver a Venta
             </a>
             <button onclick="window.print()" style="padding: 0.5rem 1rem; background: #2563eb; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
-                Print Receipt
+                Imprimir Recibo
             </button>
         </div>
 
@@ -218,23 +218,23 @@
 
             <div class="receipt-header">
                 <div class="company-name">{{ company.name or "TechStore" }}</div>
-                <div style="font-size: 12px;">{{ company.address or "123 Main Street, City, State 12345" }}</div>
-                <div style="font-size: 12px;">Phone: {{ company.phone or "(555) 123-4567" }}</div>
+                <div style="font-size: 12px;">{{ company.address or "Saavedra 83 - San Basilio" }}</div>
+                <div style="font-size: 12px;">Teléfono: {{ company.phone or "(358) 4242835" }}</div>
                 {% if company.tax_id %}
-                <div style="font-size: 12px;">Tax ID: {{ company.tax_id }}</div>
+                <div style="font-size: 12px;">ID de Impuesto: {{ company.tax_id }}</div>
                 {% endif %}
-                <div class="receipt-title">SALES INVOICE</div>
+                <div class="receipt-title">NOTA DE VENTA</div>
             </div>
 
             <div class="info-section">
                 <div class="info-left">
-                    <div class="info-label">Invoice Number</div>
+                    <div class="info-label">Número de Nota</div>
                     <div class="info-value">{{ sale.invoice_number }}</div>
 
-                    <div class="info-label">Date</div>
+                    <div class="info-label">Fecha</div>
                     <div class="info-value">{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</div>
 
-                    <div class="info-label">Cashier</div>
+                    <div class="info-label">Cajero</div>
                     <div class="info-value">{{ sale.user.full_name }}</div>
                 </div>
 
@@ -244,7 +244,7 @@
                     <div class="info-value">{{ sale.customer.name }}</div>
 
                     {% if sale.customer.phone %}
-                    <div class="info-label">Phone</div>
+                    <div class="info-label">Teléfono</div>
                     <div class="info-value">{{ sale.customer.phone }}</div>
                     {% endif %}
                     {% else %}
@@ -259,8 +259,8 @@
                 <thead>
                     <tr>
                         <th style="width: 50%;">Item</th>
-                        <th style="text-align: center; width: 15%;">Qty</th>
-                        <th style="text-align: right; width: 15%;">Price</th>
+                        <th style="text-align: center; width: 15%;">Cant</th>
+                        <th style="text-align: right; width: 15%;">Precio</th>
                         <th style="text-align: right; width: 20%;">Total</th>
                     </tr>
                 </thead>
@@ -295,14 +295,14 @@
 
                 {% if sale.discount_amount > 0 %}
                 <div class="total-row" style="color: #dc3545;">
-                    <span>Discount:</span>
+                    <span>Descuento:</span>
                     <span>-${{ "{:,.2f}".format(sale.discount_amount) }}</span>
                 </div>
                 {% endif %}
 
                 {% if sale.tax_amount > 0 %}
                 <div class="total-row">
-                    <span>Tax:</span>
+                    <span>Impuesto:</span>
                     <span>${{ "{:,.2f}".format(sale.tax_amount) }}</span>
                 </div>
                 {% endif %}
@@ -321,14 +321,14 @@
                         <span style="font-size: 14px; font-weight: 600;">{{ sale.payment_method|capitalize }}</span>
                     </div>
                     <div>
-                        <span style="font-size: 12px; color: #666;">Status:</span>
+                        <span style="font-size: 12px; color: #666;">Estado:</span>
                         <span style="font-size: 14px; font-weight: 600;">
                             {% if sale.payment_status == 'paid' %}
-                                <span style="color: #28a745;">PAID</span>
+                                <span style="color: #28a745;">PAGADO</span>
                             {% elif sale.payment_status == 'partial' %}
-                                <span style="color: #ffc107;">PARTIAL</span>
+                                <span style="color: #ffc107;">PARCIAL</span>
                             {% elif sale.payment_status == 'pending' %}
-                                <span style="color: #dc3545;">PENDING</span>
+                                <span style="color: #dc3545;">PENDIENTE</span>
                             {% else %}
                                 {{ sale.payment_status|upper }}
                             {% endif %}
@@ -343,12 +343,12 @@
                         {% set change = (amount_received|float - sale.total_amount|float) %}
                         <div style="border-top: 1px solid #dee2e6; padding-top: 8px; margin-top: 8px;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span style="font-size: 13px;">Amount Received:</span>
+                                <span style="font-size: 13px;">Monto Recibido:</span>
                                 <span style="font-size: 13px; font-weight: 600;">${{ amount_received }}</span>
                             </div>
                             {% if change > 0 %}
                             <div style="display: flex; justify-content: space-between;">
-                                <span style="font-size: 13px;">Change:</span>
+                                <span style="font-size: 13px;">Cambio:</span>
                                 <span style="font-size: 13px; font-weight: 600; color: #28a745;">${{ "%.2f"|format(change) }}</span>
                             </div>
                             {% endif %}
@@ -369,15 +369,15 @@
 
             {% if sale.payment_status != 'paid' %}
             <div class="amount-due">
-                Amount Due: ${{ "{:,.2f}".format(sale.amount_due) }}
+                Monto Pendiente: ${{ "{:,.2f}".format(sale.amount_due) }}
             </div>
             {% endif %}
 
             {% if sale.is_voided %}
             <div class="void-badge">
-                VOID - This sale has been cancelled
+                ANULADO - Esta venta ha sido cancelada
                 <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">
-                    Reason: {{ sale.void_reason }}
+                    Razón: {{ sale.void_reason }}
                 </div>
             </div>
             {% endif %}
@@ -399,8 +399,8 @@
                     {% endif %}
                 {% endif %}
 
-                <p style="font-size: 10px;">This is a computer-generated receipt</p>
-                <p style="font-size: 10px;">For questions: {{ company.phone or "(555) 123-4567" }}</p>
+                <p style="font-size: 10px;">Este es un recibo generado por computadora</p>
+                <p style="font-size: 10px;">Preguntas: {{ company.phone or "(3585) 4242835" }}</p>
             </div>
 
         </div> <!-- End receipt-container -->

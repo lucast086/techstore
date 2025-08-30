@@ -1,17 +1,17 @@
-{% extends "base.html" %} {% block title %}Account Statement - {{ customer.name
+{% extends "base.html" %} {% block title %}Estado de Cuenta - {{ customer.name
 }}{% endblock %} {% block content %}
 <div class="container mx-auto px-4 py-8">
   <div class="bg-white rounded-lg shadow-md p-6">
     <!-- Header -->
     <div class="flex justify-between items-start mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Account Statement</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Estado de Cuenta</h1>
         <div class="flex space-x-4">
           <a href="/customers" class="text-blue-600 hover:text-blue-800">
-            ← Back to Customers
+            ← Volver to Clientes
           </a>
           <a href="?format=pdf" class="text-green-600 hover:text-green-800">
-            📄 Download PDF
+            📄 Descargar PDF
           </a>
         </div>
       </div>
@@ -21,21 +21,21 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div>
         <h2 class="text-lg font-semibold text-gray-900 mb-3">
-          Customer Information
+          Informacion del Cliente
         </h2>
         <div class="space-y-2">
-          <p><span class="font-medium">Name:</span> {{ customer.name }}</p>
-          <p><span class="font-medium">Phone:</span> {{ customer.phone }}</p>
+          <p><span class="font-medium">Nombre:</span> {{ customer.name }}</p>
+          <p><span class="font-medium">Telefono:</span> {{ customer.phone }}</p>
           {% if customer.phone_secondary %}
           <p>
-            <span class="font-medium">Alt Phone:</span> {{
+            <span class="font-medium">Telefono Sec:</span> {{
             customer.phone_secondary }}
           </p>
           {% endif %} {% if customer.email %}
           <p><span class="font-medium">Email:</span> {{ customer.email }}</p>
           {% endif %} {% if customer.address %}
           <p>
-            <span class="font-medium">Address:</span> {{ customer.address }}
+            <span class="font-medium">Direccion:</span> {{ customer.address }}
           </p>
           {% endif %}
         </div>
@@ -43,15 +43,15 @@
 
       <div>
         <h2 class="text-lg font-semibold text-gray-900 mb-3">
-          Statement Details
+          Detalles del Estado de Cuenta
         </h2>
         <div class="space-y-2">
           <p>
-            <span class="font-medium">Statement Date:</span> {{
+            <span class="font-medium">Fecha del Estado de Cuenta:</span> {{
             generated_at.strftime('%B %d, %Y') }}
           </p>
           <p>
-            <span class="font-medium">Customer Since:</span> {{
+            <span class="font-medium">Cliente desde:</span> {{
             customer.created_at.strftime('%B %d, %Y') }}
           </p>
         </div>
@@ -60,25 +60,25 @@
 
     <!-- Balance Summary -->
     <div class="bg-gray-50 rounded-lg p-6 mb-8">
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">Current Balance</h2>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">Balance Actual</h2>
       <div class="text-center">
         {% if balance_info.has_debt %}
         <div>
-          <p class="text-sm text-gray-600 mb-1">Amount Due</p>
+          <p class="text-sm text-gray-600 mb-1">Monto Vencido</p>
           <p class="text-3xl font-bold text-red-600">
             ${{ "{:,.2f}".format(-balance_info.current_balance) }}
           </p>
         </div>
         {% elif balance_info.has_credit %}
         <div>
-          <p class="text-sm text-gray-600 mb-1">Credit Balance</p>
+          <p class="text-sm text-gray-600 mb-1">Balance de Credito</p>
           <p class="text-3xl font-bold text-green-600">
             ${{ "{:,.2f}".format(balance_info.current_balance) }}
           </p>
         </div>
         {% else %}
         <div>
-          <p class="text-sm text-gray-600 mb-1">Balance</p>
+          <p class="text-sm text-gray-600 mb-1">Balance Actual</p>
           <p class="text-3xl font-bold text-gray-900">$0.00</p>
         </div>
         {% endif %}
@@ -90,7 +90,7 @@
           onclick="sendBalanceReminder({{ customer.id }})"
           class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md"
         >
-          📱 Send WhatsApp Reminder
+          📱 Enviar Recordatorio por WhatsApp
         </button>
       </div>
       {% endif %}
@@ -99,7 +99,7 @@
     <!-- Transaction History -->
     <div>
       <h2 class="text-xl font-semibold text-gray-900 mb-4">
-        Transaction History
+        Historial de Transacciones
       </h2>
       {% if transactions %}
       <div class="overflow-x-auto">
@@ -109,27 +109,27 @@
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Date
+                Fecha
               </th>
               <th
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Description
+                Descripcion
               </th>
               <th
                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Debit
+                Debito
               </th>
               <th
                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Credit
+                Credito
               </th>
               <th
                 class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Balance
+                Balance Actual
               </th>
             </tr>
           </thead>
@@ -177,7 +177,7 @@
                 colspan="4"
                 class="px-6 py-3 text-right font-medium text-gray-900"
               >
-                Current Balance
+                Balance Actual
               </td>
               <td class="px-6 py-3 text-right font-bold text-gray-900">
                 {% if balance_info.current_balance < 0 %}
@@ -192,7 +192,7 @@
       </div>
       {% else %}
       <div class="text-center py-8 text-gray-500">
-        <p>No transactions recorded yet.</p>
+        <p>No hay transacciones registradas todavia.</p>
       </div>
       {% endif %}
     </div>
@@ -202,10 +202,10 @@
       class="mt-8 pt-6 border-t border-gray-200 text-center text-sm text-gray-500"
     >
       <p>
-        This statement is generated automatically and reflects all transactions
-        up to the statement date.
+        Este estado de cuenta se genera automaticamente y refleja todas las transacciones
+        hasta la fecha del estado de cuenta.
       </p>
-      <p>For questions about your account, please contact us.</p>
+      <p>Para preguntas sobre su cuenta, por favor contáctenos.</p>
     </div>
   </div>
 </div>
@@ -228,7 +228,7 @@
       })
       .catch((error) => {
         console.error("Error:", error);
-        alert("Failed to generate WhatsApp link");
+        alert("Error al generar el link de WhatsApp");
       });
   }
 </script>

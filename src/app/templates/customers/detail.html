@@ -95,16 +95,16 @@ Profile{% endblock %} {% block content %}
       <div class="bg-white overflow-hidden shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Customer Information
+            Informacion del Cliente
           </h3>
           <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
             <div>
-              <dt class="text-sm font-medium text-gray-500">Primary Phone</dt>
+              <dt class="text-sm font-medium text-gray-500">Telefono Principal</dt>
               <dd class="mt-1 text-sm text-gray-900">{{ customer.phone }}</dd>
             </div>
             {% if customer.phone_secondary %}
             <div>
-              <dt class="text-sm font-medium text-gray-500">Secondary Phone</dt>
+              <dt class="text-sm font-medium text-gray-500">Telefono Secundario</dt>
               <dd class="mt-1 text-sm text-gray-900">
                 {{ customer.phone_secondary }}
               </dd>
@@ -116,7 +116,7 @@ Profile{% endblock %} {% block content %}
             </div>
             {% endif %} {% if customer.address %}
             <div class="sm:col-span-2">
-              <dt class="text-sm font-medium text-gray-500">Address</dt>
+              <dt class="text-sm font-medium text-gray-500">Direccion</dt>
               <dd class="mt-1 text-sm text-gray-900">{{ customer.address }}</dd>
             </div>
             {% endif %}
@@ -127,19 +127,19 @@ Profile{% endblock %} {% block content %}
               </dd>
             </div>
             <div>
-              <dt class="text-sm font-medium text-gray-500">Status</dt>
+              <dt class="text-sm font-medium text-gray-500">Estado</dt>
               <dd class="mt-1">
                 {% if customer.is_active %}
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
                 >
-                  Active
+                  Activo
                 </span>
                 {% else %}
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                 >
-                  Inactive
+                  Inactivo
                 </span>
                 {% endif %}
               </dd>
@@ -147,7 +147,7 @@ Profile{% endblock %} {% block content %}
           </dl>
           {% if customer.notes %}
           <div class="mt-6">
-            <dt class="text-sm font-medium text-gray-500">Notes</dt>
+            <dt class="text-sm font-medium text-gray-500">Notas</dt>
             <dd class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
               {{ customer.notes }}
             </dd>
@@ -164,7 +164,7 @@ Profile{% endblock %} {% block content %}
           </h3>
           <div class="text-center py-8">
             {% if balance_info.has_debt %}
-            <p class="text-sm text-gray-500 mb-2">Customer owes</p>
+            <p class="text-sm text-gray-500 mb-2">Cliente debe</p>
             <p class="text-4xl font-bold text-red-600">
               ${{ "{:,.2f}".format(-balance_info.current_balance) }}
             </p>
@@ -174,16 +174,16 @@ Profile{% endblock %} {% block content %}
                 onclick="sendBalanceReminder({{ customer.id }}); return false;"
                 class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
-                Send WhatsApp Reminder
+                Enviar Recordatorio por WhatsApp
               </a>
             </div>
             {% elif balance_info.has_credit %}
-            <p class="text-sm text-gray-500 mb-2">Customer has credit</p>
+            <p class="text-sm text-gray-500 mb-2">Cliente tiene credito</p>
             <p class="text-4xl font-bold text-green-600">
               ${{ "{:,.2f}".format(balance_info.current_balance) }}
             </p>
             {% else %}
-            <p class="text-sm text-gray-500 mb-2">Balance</p>
+            <p class="text-sm text-gray-500 mb-2">Balance Actual</p>
             <p class="text-4xl font-bold text-gray-900">$0.00</p>
             {% endif %}
           </div>
@@ -195,7 +195,7 @@ Profile{% endblock %} {% block content %}
     {% if recent_transactions %}
     <div class="mt-8">
       <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-        Recent Transactions
+        Transacciones Recientes
       </h3>
       <div class="bg-white shadow overflow-hidden sm:rounded-md">
         <ul class="divide-y divide-gray-200">
@@ -310,7 +310,7 @@ Profile{% endblock %} {% block content %}
       })
       .catch((error) => {
         console.error("Error:", error);
-        alert("Failed to generate WhatsApp link");
+        alert("Error al generar el link de WhatsApp");
       });
   }
 </script>

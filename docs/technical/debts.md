@@ -11,7 +11,6 @@
 Payment report when pay is made. maybe size a5
 
 ### Repairs
- *
  * add auto whatsapp when status change
  * ambiguos estimated cost is showed in diagnosis and cost breakdown
 
@@ -34,10 +33,9 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 
 ### Payments
  * Send Whatsapp when pay is made
- * Payments Pendientes (no accede)
+ * Payments Pendientes (no IMPLEMENTADO) QUE QUIERO LOGRAR CON ESTO? ELIMINAR OPTION?
 
 ### Sales
- * │   ├── STORY-041-quick-sale.md
  * Send periodic whatsapp remember account balance (only debt)
  * check filter behavior in sales history (customers, payment status, DATE)
  * when walk-in-customer payment method must be only cash
@@ -46,3 +44,9 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 
 ### dashboard
 * new lateral bar
+* estadisticas importantes (VALOR DOLAR - )
+
+
+### technical
+
+ * analyze coverage to get 80% test coverage?

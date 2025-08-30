@@ -67,7 +67,7 @@ class SaleCreate(SaleBase):
         """Ensure no duplicate products in sale."""
         product_ids = [item.product_id for item in items]
         if len(product_ids) != len(set(product_ids)):
-            raise ValueError("Duplicate products not allowed in same sale")
+            raise ValueError("No se permiten productos duplicados en la misma venta")
         return items
 
     @field_validator("amount_paid")
@@ -75,7 +75,7 @@ class SaleCreate(SaleBase):
     def validate_amount_paid(cls, amount_paid: Optional[Decimal]) -> Optional[Decimal]:
         """Validate amount paid."""
         if amount_paid is not None and amount_paid < Decimal("0"):
-            raise ValueError("Amount paid cannot be negative")
+            raise ValueError("El monto pagado no puede ser negativo")
         return amount_paid
 
 

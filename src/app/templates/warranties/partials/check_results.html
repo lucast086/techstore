@@ -30,9 +30,9 @@
                     </span>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-gray-500">Status:</span>
+                    <span class="text-sm font-medium text-gray-500">Estado:</span>
                     {% if warranty.status == "active" and warranty.is_valid %}
-                    <span class="text-sm text-green-600 font-medium">✓ Active</span>
+                    <span class="text-sm text-green-600 font-medium">✓ Activo</span>
                     {% elif warranty.status == "expired" %}
                     <span class="text-sm text-gray-600">Expired</span>
                     {% elif warranty.status == "claimed" %}
@@ -63,7 +63,7 @@
             <div>
                 <a href="/warranties/{{ warranty.id }}"
                    class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                    View Details
+                    Ver Details
                 </a>
             </div>
         </div>

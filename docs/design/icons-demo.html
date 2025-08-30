@@ -1,514 +1,846 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TechStore Icons Demo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        :root {
-            --primary-500: #2563EB;
-            --gray-50: #F9FAFB;
-            --gray-100: #F3F4F6;
-            --gray-300: #D1D5DB;
-            --gray-500: #6B7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            --success-500: #10B981;
-            --warning-500: #F59E0B;
-            --error-500: #EF4444;
-            --purple-500: #8B5CF6;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-900);
-            line-height: 1.5;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .section {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        h1 { font-size: 2.25rem; font-weight: 600; margin-bottom: 2rem; }
-        h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; }
-        h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-700); }
-        
-        .icon-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-        }
-        
-        .icon-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem;
-            border: 1px solid var(--gray-200);
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        
-        .icon-item:hover {
-            background: var(--gray-50);
-            border-color: var(--primary-500);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .icon-wrapper {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 0.5rem;
-        }
-        
-        .icon {
-            width: 24px;
-            height: 24px;
-            stroke: currentColor;
-            stroke-width: 2;
-            fill: none;
-        }
-        
-        .icon-label {
-            font-size: 0.75rem;
-            text-align: center;
-            color: var(--gray-600);
-        }
-        
-        /* Icon sizes demo */
-        .size-demo {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .size-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .icon-xs { width: 16px; height: 16px; }
-        .icon-sm { width: 20px; height: 20px; }
-        .icon-md { width: 24px; height: 24px; }
-        .icon-lg { width: 32px; height: 32px; }
-        .icon-xl { width: 48px; height: 48px; }
-        
-        /* Color variations */
-        .icon-primary { color: var(--primary-500); }
-        .icon-success { color: var(--success-500); }
-        .icon-warning { color: var(--warning-500); }
-        .icon-error { color: var(--error-500); }
-        .icon-purple { color: var(--purple-500); }
-        .icon-muted { color: var(--gray-400); }
-        
-        /* Button examples */
-        .button-examples {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.375rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .btn-primary {
-            background: var(--primary-500);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--primary-600);
-        }
-        
-        .btn-secondary {
-            background: white;
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-        }
-        
-        .btn-secondary:hover {
-            background: var(--gray-50);
-        }
-        
-        .btn-icon {
-            padding: 0.5rem;
-            background: white;
-            border: 1px solid var(--gray-300);
-            border-radius: 0.375rem;
-            transition: all 0.2s;
-        }
-        
-        .btn-icon:hover {
-            background: var(--gray-50);
-            border-color: var(--gray-400);
-        }
-        
-        /* Logo demo */
-        .logo-demo {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-        }
-        
-        .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: var(--primary-500);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.375rem;
-            font-size: 1.25rem;
-        }
-        
-        /* Loading animation */
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-        
-        /* Code block */
-        .code-block {
-            background: var(--gray-900);
-            color: var(--gray-100);
-            padding: 1rem;
-            border-radius: 0.375rem;
-            font-family: monospace;
-            font-size: 0.875rem;
-            overflow-x: auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>TechStore Icon System</h1>
-        
-        <!-- Icon Sizes -->
-        <div class="section">
-            <h2>Icon Sizes</h2>
-            <div class="size-demo">
-                <div class="size-item">
-                    <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="icon-label">XS (16px)</span>
-                </div>
-                <div class="size-item">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="icon-label">SM (20px)</span>
-                </div>
-                <div class="size-item">
-                    <svg class="icon icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="icon-label">MD (24px)</span>
-                </div>
-                <div class="size-item">
-                    <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="icon-label">LG (32px)</span>
-                </div>
-                <div class="size-item">
-                    <svg class="icon icon-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="icon-label">XL (48px)</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Navigation Icons -->
-        <div class="section">
-            <h2>Navigation Icons</h2>
-            <div class="icon-grid">
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Dashboard</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Customers</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Products</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Sales</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 3.096l-.102.104m-1.64-1.64l-3.878 3.878a1.5 1.5 0 01-2.282-1.924l.476-.597m5.684-5.281l-3.878 3.878a1.5 1.5 0 01-2.282-1.924l.476-.597m5.684-5.281a3.004 3.004 0 00-2.25-2.25" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Repairs</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Reports</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Icons -->
-        <div class="section">
-            <h2>Action Icons</h2>
-            <div class="icon-grid">
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Add</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Edit</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-error" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Delete</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">View</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Search</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Filter</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Status Icons -->
-        <div class="section">
-            <h2>Status Icons</h2>
-            <div class="icon-grid">
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-success" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Success</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-error" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Error</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Warning</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Info</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">Loading</span>
-                </div>
-                <div class="icon-item">
-                    <div class="icon-wrapper">
-                        <svg class="icon icon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                        </svg>
-                    </div>
-                    <span class="icon-label">AI/Smart</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Button Examples -->
-        <div class="section">
-            <h2>Button with Icons</h2>
-            <div class="button-examples">
-                <button class="btn btn-primary">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Add Product
-                </button>
-                <button class="btn btn-secondary">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
-                    </svg>
-                    Filter
-                </button>
-                <button class="btn btn-secondary">
-                    Download
-                    <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                </button>
-            </div>
-            <h3>Icon-only Buttons</h3>
-            <div class="button-examples">
-                <button class="btn-icon" aria-label="Edit">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                    </svg>
-                </button>
-                <button class="btn-icon" aria-label="View">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </button>
-                <button class="btn-icon" aria-label="Delete">
-                    <svg class="icon icon-sm icon-error" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Logo Examples -->
-        <div class="section">
-            <h2>Logo Variations</h2>
-            <div class="logo-demo">
-                <div class="logo">
-                    <div class="logo-icon">T</div>
-                    <span>TechStore</span>
-                </div>
-                <div class="logo" style="color: var(--primary-500);">
-                    <div class="logo-icon">T</div>
-                    <span>TechStore</span>
-                </div>
-                <div class="logo" style="background: var(--gray-900); padding: 1rem; border-radius: 0.5rem;">
-                    <div class="logo-icon" style="background: white; color: var(--primary-500);">T</div>
-                    <span style="color: white;">TechStore</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Usage Example -->
-        <div class="section">
-            <h2>Implementation Example</h2>
-            <div class="code-block">
-&lt;!-- Heroicon: Home --&gt;
-&lt;svg class="icon icon-md" fill="none" viewBox="0 0 24 24" stroke="currentColor"&gt;
-  &lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /&gt;
-&lt;/svg&gt;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-&lt;!-- With React/Heroicons --&gt;
-import { HomeIcon } from '@heroicons/react/24/outline';
-&lt;HomeIcon className="h-6 w-6 text-gray-500" /&gt;
-            </div>
+      :root {
+        --primary-500: #2563eb;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-300: #d1d5db;
+        --gray-500: #6b7280;
+        --gray-700: #374151;
+        --gray-900: #111827;
+        --success-500: #10b981;
+        --warning-500: #f59e0b;
+        --error-500: #ef4444;
+        --purple-500: #8b5cf6;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-900);
+        line-height: 1.5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .section {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 2.25rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+      }
+      h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--gray-700);
+      }
+
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+      }
+
+      .icon-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .icon-item:hover {
+        background: var(--gray-50);
+        border-color: var(--primary-500);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .icon-label {
+        font-size: 0.75rem;
+        text-align: center;
+        color: var(--gray-600);
+      }
+
+      /* Icon sizes demo */
+      .size-demo {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .size-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .icon-xs {
+        width: 16px;
+        height: 16px;
+      }
+      .icon-sm {
+        width: 20px;
+        height: 20px;
+      }
+      .icon-md {
+        width: 24px;
+        height: 24px;
+      }
+      .icon-lg {
+        width: 32px;
+        height: 32px;
+      }
+      .icon-xl {
+        width: 48px;
+        height: 48px;
+      }
+
+      /* Color variations */
+      .icon-primary {
+        color: var(--primary-500);
+      }
+      .icon-success {
+        color: var(--success-500);
+      }
+      .icon-warning {
+        color: var(--warning-500);
+      }
+      .icon-error {
+        color: var(--error-500);
+      }
+      .icon-purple {
+        color: var(--purple-500);
+      }
+      .icon-muted {
+        color: var(--gray-400);
+      }
+
+      /* Button examples */
+      .button-examples {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: var(--primary-500);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-600);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray-50);
+      }
+
+      .btn-icon {
+        padding: 0.5rem;
+        background: white;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+      }
+
+      .btn-icon:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+      }
+
+      /* Logo demo */
+      .logo-demo {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        background: var(--primary-500);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.375rem;
+        font-size: 1.25rem;
+      }
+
+      /* Loading animation */
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .animate-spin {
+        animation: spin 1s linear infinite;
+      }
+
+      /* Code block */
+      .code-block {
+        background: var(--gray-900);
+        color: var(--gray-100);
+        padding: 1rem;
+        border-radius: 0.375rem;
+        font-family: monospace;
+        font-size: 0.875rem;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>TechStore Icon System</h1>
+
+      <!-- Icon Sizes -->
+      <div class="section">
+        <h2>Icon Sizes</h2>
+        <div class="size-demo">
+          <div class="size-item">
+            <svg
+              class="icon icon-xs"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span class="icon-label">XS (16px)</span>
+          </div>
+          <div class="size-item">
+            <svg
+              class="icon icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span class="icon-label">SM (20px)</span>
+          </div>
+          <div class="size-item">
+            <svg
+              class="icon icon-md"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span class="icon-label">MD (24px)</span>
+          </div>
+          <div class="size-item">
+            <svg
+              class="icon icon-lg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span class="icon-label">LG (32px)</span>
+          </div>
+          <div class="size-item">
+            <svg
+              class="icon icon-xl"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            <span class="icon-label">XL (48px)</span>
+          </div>
         </div>
+      </div>
+
+      <!-- Navigation Icons -->
+      <div class="section">
+        <h2>Navigation Icons</h2>
+        <div class="icon-grid">
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Dashboard</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Customers</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Products</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Sales</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 3.096l-.102.104m-1.64-1.64l-3.878 3.878a1.5 1.5 0 01-2.282-1.924l.476-.597m5.684-5.281l-3.878 3.878a1.5 1.5 0 01-2.282-1.924l.476-.597m5.684-5.281a3.004 3.004 0 00-2.25-2.25"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Reparaciones</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Reportes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Icons -->
+      <div class="section">
+        <h2>Acciones Icons</h2>
+        <div class="icon-grid">
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-primary"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Añadir</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Editar</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-error"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Eliminar</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Ver</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Buscar</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Filtrar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Icons -->
+      <div class="section">
+        <h2>Status Icons</h2>
+        <div class="icon-grid">
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-success"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Exito</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-error"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Error</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-warning"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Advertencia</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-primary"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Info</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">Cargando</span>
+          </div>
+          <div class="icon-item">
+            <div class="icon-wrapper">
+              <svg
+                class="icon icon-purple"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
+                />
+              </svg>
+            </div>
+            <span class="icon-label">AI/Inteligente</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Button Examples -->
+      <div class="section">
+        <h2>Botones con Iconos</h2>
+        <div class="button-examples">
+          <button class="btn btn-primary">
+            <svg
+              class="icon icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+            Add Product
+          </button>
+          <button class="btn btn-secondary">
+            <svg
+              class="icon icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z"
+              />
+            </svg>
+            Filter
+          </button>
+          <button class="btn btn-secondary">
+            Download
+            <svg
+              class="icon icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+              />
+            </svg>
+          </button>
+        </div>
+        <h3>Icon-only Buttons</h3>
+        <div class="button-examples">
+          <button class="btn-icon" aria-label="Edit">
+            <svg
+              class="icon icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+              />
+            </svg>
+          </button>
+          <button class="btn-icon" aria-label="View">
+            <svg
+              class="icon icon-sm"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </button>
+          <button class="btn-icon" aria-label="Delete">
+            <svg
+              class="icon icon-sm icon-error"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Logo Examples -->
+      <div class="section">
+        <h2>Logo Variations</h2>
+        <div class="logo-demo">
+          <div class="logo">
+            <div class="logo-icon">T</div>
+            <span>TechStore</span>
+          </div>
+          <div class="logo" style="color: var(--primary-500)">
+            <div class="logo-icon">T</div>
+            <span>TechStore</span>
+          </div>
+          <div
+            class="logo"
+            style="
+              background: var(--gray-900);
+              padding: 1rem;
+              border-radius: 0.5rem;
+            "
+          >
+            <div
+              class="logo-icon"
+              style="background: white; color: var(--primary-500)"
+            >
+              T
+            </div>
+            <span style="color: white">TechStore</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage Example -->
+      <div class="section">
+        <h2>Implementation Example</h2>
+        <div class="code-block">
+          &lt;!-- Heroicon: Home --&gt; &lt;svg class="icon icon-md" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor"&gt; &lt;path
+          stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3
+          12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1
+          1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6
+          0h6" /&gt; &lt;/svg&gt; &lt;!-- With React/Heroicons --&gt; import {
+          HomeIcon } from '@heroicons/react/24/outline'; &lt;HomeIcon
+          className="h-6 w-6 text-gray-500" /&gt;
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

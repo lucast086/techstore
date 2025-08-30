@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Open Cash Register - TechStore SaaS{% endblock %}
+{% block title %}Abrir Cash Register - TechStore SaaS{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -13,7 +13,7 @@
         </svg>
       </a>
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Open Cash Register</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Abrir Cash Register</h1>
         <p class="text-gray-600">Start the day by opening the cash register</p>
       </div>
     </div>
@@ -49,10 +49,10 @@
       </div>
       {% endif %}
 
-      <!-- Opening Balance Input -->
+      <!-- Saldo de Apertura Input -->
       <div>
         <label for="opening_balance" class="block text-sm font-medium text-gray-700 mb-1">
-          Opening Balance <span class="text-red-500">*</span>
+          Saldo de Apertura <span class="text-red-500">*</span>
         </label>
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -72,7 +72,7 @@
       <!-- Notes -->
       <div>
         <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
-          Notes (Optional)
+          Notes (Opcional)
         </label>
         <textarea name="notes"
                   id="notes"
@@ -81,11 +81,11 @@
                   placeholder="Any observations about the opening balance...">{{ notes or '' }}</textarea>
       </div>
 
-      <!-- Submit Button -->
+      <!-- Enviar Button -->
       <div class="pt-4">
         <button type="submit"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-          Open Cash Register
+          Abrir Cash Register
         </button>
       </div>
     </form>

@@ -88,11 +88,11 @@ class CashClosingService:
             return True, ""
 
         if cash_difference > 0:
-            warning = f"Cash overage of ${abs_difference:.2f} exceeds threshold of ${threshold:.2f}"
+            warning = f"Sobregiro de efectivo de ${abs_difference:.2f} excede el umbral de ${threshold:.2f}"
         else:
-            warning = f"Cash shortage of ${abs_difference:.2f} exceeds threshold of ${threshold:.2f}"
+            warning = f"Déficit de efectivo de ${abs_difference:.2f} excede el umbral de ${threshold:.2f}"
 
-        logger.warning(f"Cash difference validation failed: {warning}")
+        logger.warning(f"Validación de diferencia de efectivo fallida: {warning}")
         return False, warning
 
     def get_pending_cash_register(self, db: Session) -> Optional[CashClosingResponse]:

@@ -9,7 +9,7 @@
             <div class="flex justify-between items-center">
                 <h2 class="text-2xl font-semibold text-gray-800">Warranty Statistics</h2>
                 <a href="/warranties" class="text-blue-600 hover:text-blue-800">
-                    ← Back to Warranties
+                    ← Volver to Warranties
                 </a>
             </div>
         </div>
@@ -28,7 +28,7 @@
 
                 <div class="bg-green-50 rounded-lg p-6">
                     <dt class="text-sm font-medium text-green-600 truncate">
-                        Active Warranties
+                        Activo Warranties
                     </dt>
                     <dd class="mt-1 text-3xl font-semibold text-green-900">
                         {{ stats.active_warranties }}
@@ -67,13 +67,13 @@
                 </div>
             </div>
 
-            <!-- Status Breakdown -->
+            <!-- Estado Breakdown -->
             <div class="bg-gray-50 rounded-lg p-6 mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Warranty Status Breakdown</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Warranty Estado Breakdown</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="text-center">
                         <div class="text-2xl font-semibold text-green-600">{{ stats.active_warranties }}</div>
-                        <div class="text-sm text-gray-600">Active</div>
+                        <div class="text-sm text-gray-600">Activo</div>
                     </div>
                     <div class="text-center">
                         <div class="text-2xl font-semibold text-gray-600">{{ stats.expired_warranties }}</div>
@@ -159,11 +159,11 @@
                 <h3 class="text-lg font-medium text-yellow-900 mb-4">Administrative Actions</h3>
                 <div class="flex space-x-4">
                     <form hx-post="/api/v1/warranties/update-expired"
-                          hx-confirm="Are you sure you want to update all expired warranties?"
+                          hx-confirm="¿Estás seguro you want to update all expired warranties?"
                           hx-target="#update-result">
                         <button type="submit"
                                 class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700">
-                            Update Expired Warranties
+                            Actualizar Expired Warranties
                         </button>
                     </form>
                     <div id="update-result"></div>

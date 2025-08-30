@@ -3,7 +3,7 @@
   <!-- Sales Summary -->
   <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
     <div>
-      <div class="text-sm text-gray-600">Total Sales</div>
+      <div class="text-sm text-gray-600">Total de Ventas</div>
       <div class="text-lg font-semibold text-green-700">
         ${{ "{:.2f}".format(daily_summary.total_sales) }}
       </div>
@@ -19,7 +19,7 @@
   <!-- Expenses Summary -->
   <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
     <div>
-      <div class="text-sm text-gray-600">Total Expenses</div>
+      <div class="text-sm text-gray-600">Total de Gastos</div>
       <div class="text-lg font-semibold text-red-700">
         ${{ "{:.2f}".format(daily_summary.total_expenses) }}
       </div>
@@ -32,10 +32,10 @@
     </div>
   </div>
 
-  <!-- Opening Balance -->
+  <!-- Saldo de Apertura -->
   <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
     <div>
-      <div class="text-sm text-gray-600">Opening Balance</div>
+      <div class="text-sm text-gray-600">Saldo de Apertura</div>
       <div class="text-lg font-semibold text-blue-700">
         ${{ "{:.2f}".format(opening_balance) }}
       </div>
@@ -45,10 +45,10 @@
     </div>
   </div>
 
-  <!-- Expected Cash -->
+  <!-- Efectivo Esperado -->
   <div class="pt-3 border-t border-gray-200">
     <div class="flex justify-between items-center">
-      <span class="text-sm font-medium text-gray-900">Expected Cash:</span>
+      <span class="text-sm font-medium text-gray-900">Efectivo Esperado:</span>
       <span class="text-lg font-bold text-gray-900" id="expected-cash">
         ${{ "{:.2f}".format(opening_balance + daily_summary.total_sales - daily_summary.total_expenses) }}
       </span>

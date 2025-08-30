@@ -55,7 +55,7 @@ async def start_daily_closing(
 
         return ResponseSchema(
             success=True,
-            message="Daily closing initialized successfully",
+            message="Cierre diario inicializado exitosamente",
             data={
                 "daily_summary": daily_summary,
                 "opening_balance": opening_balance,
@@ -97,7 +97,7 @@ async def get_current_closing_status(
 
         return ResponseSchema(
             success=True,
-            message="Closing status retrieved successfully",
+            message="Estado de cierre recuperado exitosamente",
             data=status_info,
         )
     except Exception as e:
@@ -133,7 +133,7 @@ async def create_closing(
 
         return ResponseSchema(
             success=True,
-            message="Cash closing created successfully"
+            message="Cierre de caja creado exitosamente"
             + (f" - Warning: {warning}" if warning else ""),
             data={
                 "closing": closing,
@@ -191,7 +191,7 @@ async def update_closing(
 
         return ResponseSchema(
             success=True,
-            message="Cash closing updated successfully",
+            message="Cierre de caja actualizado exitosamente",
             data={"closing": updated_closing},
         )
     except HTTPException:
@@ -223,7 +223,7 @@ async def finalize_closing(
 
         return ResponseSchema(
             success=True,
-            message="Cash closing finalized successfully",
+            message="Cierre de caja finalizado exitosamente",
             data={"closing": finalized_closing},
         )
     except ValueError as e:
@@ -263,7 +263,7 @@ async def get_closing_by_date(
 
         return ResponseSchema(
             success=True,
-            message="Closing retrieved successfully",
+            message="Cierre recuperado exitosamente",
             data={"closing": closing},
         )
     except HTTPException:
@@ -291,7 +291,7 @@ async def get_recent_closings(
 
         return ResponseSchema(
             success=True,
-            message=f"Retrieved {len(closings)} recent closings",
+            message=f"Se han recuperado {len(closings)} cierres recientes",
             data={"closings": closings, "total": len(closings)},
         )
     except Exception as e:
@@ -321,7 +321,7 @@ async def check_can_process_sale(
 
         return ResponseSchema(
             success=True,
-            message="Sale processing check completed",
+            message="Procesamiento de venta completado",
             data={
                 "can_process_sale": can_process,
                 "reason": reason if reason else "Sales can be processed for this date",
@@ -332,7 +332,7 @@ async def check_can_process_sale(
         logger.error(f"Error checking sale processing: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to check sale processing status",
+            detail="Error al verificar el estado de procesamiento de venta",
         )
 
 

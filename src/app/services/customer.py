@@ -173,7 +173,7 @@ class CustomerService:
         if existing and (not exclude_id or existing.id != exclude_id):
             return {
                 "available": False,
-                "message": f"Phone already registered to {existing.name}",
+                "message": f"Número de teléfono ya registrado a {existing.name}",
                 "customer": {"id": existing.id, "name": existing.name},
             }
 

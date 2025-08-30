@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block title %}Record Payment - {{ customer.name
+{% extends "base.html" %} {% block title %}Registrar Pago - {{ customer.name
 }}{% endblock %} {% block content %}
 <div class="container mx-auto px-4 py-8">
   <div class="max-w-2xl mx-auto">
@@ -7,13 +7,13 @@
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">
           {% if not balance_info.has_debt %}
-            Record Advance Payment
+            Registrar Pago Anticipado
           {% else %}
-            Record Payment
+            Registrar Pago
           {% endif %}
         </h1>
         <p class="text-gray-600">
-          Customer: <span class="font-medium">{{ customer.name }}</span>
+          Cliente: <span class="font-medium">{{ customer.name }}</span>
         </p>
         {% if not balance_info.has_debt %}
         <p class="text-sm text-blue-600 mt-2">
@@ -31,12 +31,12 @@
           <span class="text-gray-700">Current Balance:</span>
           {% if balance_info.has_debt %}
           <span class="text-xl font-bold text-red-600"
-            >Owes ${{ "{:,.2f}".format(-balance_info.current_balance)
+            >Debe ${{ "{:,.2f}".format(-balance_info.current_balance)
             }}</span
           >
           {% elif balance_info.has_credit %}
           <span class="text-xl font-bold text-green-600"
-            >Credit ${{ "{:,.2f}".format(balance_info.current_balance) }}</span
+            >Credito ${{ "{:,.2f}".format(balance_info.current_balance) }}</span
           >
           {% else %}
           <span class="text-xl font-bold text-gray-900">$0.00</span>
@@ -46,7 +46,7 @@
         <!-- Show resulting balance after payment -->
         <div id="resulting-balance" class="mt-3 pt-3 border-t border-gray-200" style="display: none;">
           <div class="flex justify-between items-center">
-            <span class="text-gray-600 text-sm">Balance after payment:</span>
+            <span class="text-gray-600 text-sm">Balance después del pago:</span>
             <span id="resulting-balance-amount" class="text-lg font-semibold"></span>
           </div>
         </div>
@@ -60,7 +60,7 @@
       </div>
       {% endif %}
 
-      <!-- Payment Form -->
+      <!-- Formulario de Pago -->
       <form
         method="POST"
         action="/payments/record/{{ customer.id }}"
@@ -72,7 +72,7 @@
             for="amount"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Payment Amount <span class="text-red-500">*</span>
+            Monto del Pago: <span class="text-red-500">*</span>
           </label>
           <div class="relative">
             <div
@@ -93,13 +93,13 @@
           </div>
         </div>
 
-        <!-- Payment Method -->
+        <!-- Método de Pago -->
         <div>
           <label
             for="payment_method"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Payment Method <span class="text-red-500">*</span>
+            Método de Pago: <span class="text-red-500">*</span>
           </label>
           <select
             id="payment_method"
@@ -108,7 +108,7 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           >
-            <option value="">Select method...</option>
+            <option value="">Seleccionar metodo:</option>
             <option
               value="cash"
               {% if form_data and form_data.payment_method == "cash" %}selected{% endif %}
@@ -136,7 +136,7 @@
             for="reference_number"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Reference Number
+            Número de Referencia
             <span
               id="reference_required"
               class="text-red-500"
@@ -152,7 +152,7 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           />
           <p class="mt-1 text-sm text-gray-500">
-            Required for bank transfers and card payments
+            Requerido para transferencias y pagos con tarjeta
           </p>
         </div>
 
@@ -162,19 +162,19 @@
             for="notes"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Notes
+            Notas
             {% if not balance_info.has_debt %}
               <span class="text-red-500">*</span>
               <span class="text-xs text-gray-500">(Required for advance payments)</span>
             {% else %}
-              <span class="text-xs text-gray-500">(Optional)</span>
+              <span class="text-xs text-gray-500">(Opcional)</span>
             {% endif %}
           </label>
           <textarea
             id="notes"
             name="notes"
             rows="3"
-            placeholder="{% if not balance_info.has_debt %}Please specify the purpose of this advance payment{% else %}Add any additional notes{% endif %}"
+            placeholder="{% if not balance_info.has_debt %}Por favor especifique el propósito de este pago anticipado{% else %}Agregar cualquier nota adicional{% endif %}"
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             {% if not balance_info.has_debt %}required{% endif %}
           >
@@ -182,7 +182,7 @@
           >
           {% if not balance_info.has_debt %}
           <p class="mt-1 text-sm text-gray-500">
-            Example: "Advance payment for upcoming repair" or "Credit for future purchases"
+            Ejemplo: "Pago anticipado para reparación futura" o "Crédito para compras futuras"
           </p>
           {% endif %}
         </div>
@@ -193,13 +193,13 @@
             href="/customers"
             class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md"
           >
-            Cancel
+            Cancelar
           </a>
           <button
             type="submit"
             class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md"
           >
-            Record Payment
+            Registrar Pago
           </button>
         </div>
       </form>
@@ -243,7 +243,7 @@
 
       if (resultingBalance < 0) {
         // Still has debt
-        resultingAmount.textContent = `Owes $${Math.abs(resultingBalance).toFixed(2)}`;
+        resultingAmount.textContent = `Debe $${Math.abs(resultingBalance).toFixed(2)}`;
         resultingAmount.className = "text-lg font-semibold text-red-600";
       } else if (resultingBalance > 0) {
         // Will have credit
@@ -263,7 +263,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     toggleReferenceField();
 
-    // Add event listener for amount input
+    // Agregar event listener for amount input
     const amountInput = document.getElementById("amount");
     amountInput.addEventListener("input", calculateResultingBalance);
     amountInput.addEventListener("change", calculateResultingBalance);
