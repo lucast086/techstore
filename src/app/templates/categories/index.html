@@ -49,7 +49,7 @@
             clip-rule="evenodd"
           />
         </svg>
-        Add Category
+        Agregar Categoría
       </a>
     </div>
   </div>
@@ -78,7 +78,7 @@
           <div class="ml-5 w-0 flex-1">
             <dl>
               <dt class="text-sm font-medium text-gray-500 truncate">
-                Total Categories
+                Total de Categorías
               </dt>
               <dd class="text-lg font-medium text-gray-900">
                 {{ stats.total_categories }}
@@ -111,7 +111,7 @@
           <div class="ml-5 w-0 flex-1">
             <dl>
               <dt class="text-sm font-medium text-gray-500 truncate">
-                Active Categories
+                Categorías Activas
               </dt>
               <dd class="text-lg font-medium text-gray-900">
                 {{ stats.active_categories }}
@@ -144,7 +144,7 @@
           <div class="ml-5 w-0 flex-1">
             <dl>
               <dt class="text-sm font-medium text-gray-500 truncate">
-                Total Products
+                Total de Productos
               </dt>
               <dd class="text-lg font-medium text-gray-900">
                 {{ stats.total_products }}
@@ -189,12 +189,12 @@
     </div>
   </div>
 
-  <!-- Search -->
+  <!-- Buscar -->
   <div class="bg-white shadow rounded-lg mb-6">
     <div class="px-4 py-5 sm:p-6">
       <form method="GET" action="/categories" class="sm:flex sm:items-center">
         <div class="w-full sm:max-w-xs">
-          <label for="search" class="sr-only">Search categories</label>
+          <label for="search" class="sr-only">Buscar categorías</label>
           <div class="relative">
             <div
               class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
@@ -217,7 +217,7 @@
               name="search"
               id="search"
               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Search categories..."
+              placeholder="Buscar categorías..."
             />
           </div>
         </div>
@@ -225,13 +225,13 @@
           type="submit"
           class="mt-3 w-full inline-flex items-center justify-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
         >
-          Search
+          Buscar
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Category Tree -->
+  <!-- Árbol de Categorías -->
   <div class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="px-4 py-5 sm:p-6">
       {% if category_tree %}
@@ -275,7 +275,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            Add Category
+            Agregar Categoría
           </a>
         </div>
       </div>

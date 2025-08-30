@@ -1,683 +1,856 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TechStore Component Examples</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        :root {
-            /* Colors */
-            --primary-50: #EFF6FF;
-            --primary-100: #DBEAFE;
-            --primary-500: #2563EB;
-            --primary-600: #1D4ED8;
-            --primary-700: #1E40AF;
-            
-            --gray-50: #F9FAFB;
-            --gray-100: #F3F4F6;
-            --gray-200: #E5E7EB;
-            --gray-300: #D1D5DB;
-            --gray-400: #9CA3AF;
-            --gray-500: #6B7280;
-            --gray-700: #374151;
-            --gray-900: #111827;
-            
-            --success-100: #D1FAE5;
-            --success-500: #10B981;
-            --success-600: #059669;
-            
-            --warning-100: #FEF3C7;
-            --warning-500: #F59E0B;
-            
-            --error-100: #FEE2E2;
-            --error-500: #EF4444;
-            --error-600: #DC2626;
-            
-            --purple-100: #EDE9FE;
-            --purple-500: #8B5CF6;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        /* Colors */
+        --primary-50: #eff6ff;
+        --primary-100: #dbeafe;
+        --primary-500: #2563eb;
+        --primary-600: #1d4ed8;
+        --primary-700: #1e40af;
+
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-700: #374151;
+        --gray-900: #111827;
+
+        --success-100: #d1fae5;
+        --success-500: #10b981;
+        --success-600: #059669;
+
+        --warning-100: #fef3c7;
+        --warning-500: #f59e0b;
+
+        --error-100: #fee2e2;
+        --error-500: #ef4444;
+        --error-600: #dc2626;
+
+        --purple-100: #ede9fe;
+        --purple-500: #8b5cf6;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-900);
+        line-height: 1.5;
+      }
+
+      /* Layout */
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .page-header {
+        background: white;
+        padding: 2rem;
+        border-bottom: 1px solid var(--gray-200);
+        margin: -2rem -2rem 2rem -2rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+      }
+
+      .page-subtitle {
+        font-size: 1rem;
+        color: var(--gray-500);
+      }
+
+      /* Cards */
+      .card {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .card-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+      }
+
+      .card-body {
+        padding: 1.5rem;
+      }
+
+      /* Table Styles */
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      tr:hover {
+        background: var(--gray-50);
+      }
+
+      /* Table specific styles */
+      .stock-low {
+        color: var(--error-500);
+      }
+      .stock-medium {
+        color: var(--warning-500);
+      }
+      .stock-high {
+        color: var(--success-500);
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+
+      .status-active {
+        background: var(--success-100);
+        color: var(--success-600);
+      }
+
+      .status-inactive {
+        background: var(--gray-100);
+        color: var(--gray-600);
+      }
+
+      .status-repair {
+        background: var(--warning-100);
+        color: var(--warning-600);
+      }
+
+      /* Form Styles */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      @media (min-width: 768px) {
+        .form-grid-2 {
+          grid-template-columns: repeat(2, 1fr);
         }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-900);
-            line-height: 1.5;
-        }
-        
-        /* Layout */
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .page-header {
-            background: white;
-            padding: 2rem;
-            border-bottom: 1px solid var(--gray-200);
-            margin: -2rem -2rem 2rem -2rem;
-        }
-        
-        .page-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 0.5rem;
-        }
-        
-        .page-subtitle {
-            font-size: 1rem;
-            color: var(--gray-500);
-        }
-        
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--gray-200);
-        }
-        
-        .card-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--gray-900);
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
-        /* Table Styles */
-        .table-container {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th {
-            text-align: left;
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--gray-700);
-            background: var(--gray-50);
-            border-bottom: 1px solid var(--gray-200);
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-        }
-        
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--gray-100);
-        }
-        
-        tr:hover {
-            background: var(--gray-50);
-        }
-        
-        /* Table specific styles */
-        .stock-low { color: var(--error-500); }
-        .stock-medium { color: var(--warning-500); }
-        .stock-high { color: var(--success-500); }
-        
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            border-radius: 9999px;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-        }
-        
-        .status-active {
-            background: var(--success-100);
-            color: var(--success-600);
-        }
-        
-        .status-inactive {
-            background: var(--gray-100);
-            color: var(--gray-600);
-        }
-        
-        .status-repair {
-            background: var(--warning-100);
-            color: var(--warning-600);
-        }
-        
-        /* Form Styles */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-        
-        @media (min-width: 768px) {
-            .form-grid-2 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group:last-child {
-            margin-bottom: 0;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--gray-700);
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-label-required::after {
-            content: " *";
-            color: var(--error-500);
-        }
-        
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            font-size: 1rem;
-            font-family: inherit;
-            border: 1px solid var(--gray-300);
-            border-radius: 0.375rem;
-            background: white;
-            transition: all 0.2s;
-        }
-        
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary-500);
-            box-shadow: 0 0 0 3px var(--primary-100);
-        }
-        
-        .form-input::placeholder {
-            color: var(--gray-400);
-        }
-        
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .form-help {
-            font-size: 0.875rem;
-            color: var(--gray-500);
-            margin-top: 0.25rem;
-        }
-        
-        .form-error {
-            font-size: 0.875rem;
-            color: var(--error-500);
-            margin-top: 0.25rem;
-        }
-        
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            font-weight: 500;
-            border: none;
-            border-radius: 0.375rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        
-        .btn-primary {
-            background: var(--primary-500);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: var(--primary-600);
-        }
-        
-        .btn-primary:active {
-            background: var(--primary-700);
-        }
-        
-        .btn-secondary {
-            background: white;
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-        }
-        
-        .btn-secondary:hover {
-            background: var(--gray-50);
-        }
-        
-        .btn-success {
-            background: var(--success-500);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: var(--success-600);
-        }
-        
-        /* Action buttons in table */
-        .btn-icon {
-            padding: 0.375rem;
-            font-size: 0.875rem;
-            border-radius: 0.25rem;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        /* Utility classes */
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .text-sm { font-size: 0.875rem; }
-        .text-muted { color: var(--gray-500); }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-4 { gap: 1rem; }
-        
-        /* Search bar */
-        .search-container {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .search-input {
-            flex: 1;
-            max-width: 24rem;
-        }
-        
-        /* Toolbar */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        
-        /* AI Badge */
-        .ai-badge {
-            background: var(--purple-100);
-            color: var(--purple-500);
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        /* Divider */
-        .divider {
-            border-bottom: 1px solid var(--gray-200);
-            margin: 2rem 0;
-        }
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+      }
+
+      .form-label-required::after {
+        content: " *";
+        color: var(--error-500);
+      }
+
+      .form-input,
+      .form-select,
+      .form-textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.375rem;
+        background: white;
+        transition: all 0.2s;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-100);
+      }
+
+      .form-input::placeholder {
+        color: var(--gray-400);
+      }
+
+      .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+
+      .form-help {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+      }
+
+      .form-error {
+        font-size: 0.875rem;
+        color: var(--error-500);
+        margin-top: 0.25rem;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+
+      .btn-primary {
+        background: var(--primary-500);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-600);
+      }
+
+      .btn-primary:active {
+        background: var(--primary-700);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray-50);
+      }
+
+      .btn-success {
+        background: var(--success-500);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: var(--success-600);
+      }
+
+      /* Action buttons in table */
+      .btn-icon {
+        padding: 0.375rem;
+        font-size: 0.875rem;
+        border-radius: 0.25rem;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* Utility classes */
+      .text-right {
+        text-align: right;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .font-mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+      .text-sm {
+        font-size: 0.875rem;
+      }
+      .text-muted {
+        color: var(--gray-500);
+      }
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
+      .mb-6 {
+        margin-bottom: 1.5rem;
+      }
+      .flex {
+        display: flex;
+      }
+      .items-center {
+        align-items: center;
+      }
+      .justify-between {
+        justify-content: space-between;
+      }
+      .gap-4 {
+        gap: 1rem;
+      }
+
+      /* Search bar */
+      .search-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .search-input {
+        flex: 1;
+        max-width: 24rem;
+      }
+
+      /* Toolbar */
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      /* AI Badge */
+      .ai-badge {
+        background: var(--purple-100);
+        color: var(--purple-500);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      /* Divider */
+      .divider {
+        border-bottom: 1px solid var(--gray-200);
+        margin: 2rem 0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">TechStore Component Examples</h1>
-            <p class="page-subtitle">Real-world UI components using our design system</p>
+      <div class="page-header">
+        <h1 class="page-title">TechStore Component Examples</h1>
+        <p class="page-subtitle">
+          Real-world UI components using our design system
+        </p>
+      </div>
+
+      <!-- Product Inventory Example -->
+      <div class="card">
+        <div class="card-header">
+          <div class="flex justify-between items-center">
+            <h2 class="card-title">Product Inventory</h2>
+            <div class="flex gap-4">
+              <span class="ai-badge">✨ AI Analytics</span>
+              <button class="btn btn-primary">
+                <span>+</span> Add Product
+              </button>
+            </div>
+          </div>
         </div>
-        
-        <!-- Product Inventory Example -->
-        <div class="card">
-            <div class="card-header">
-                <div class="flex justify-between items-center">
-                    <h2 class="card-title">Product Inventory</h2>
-                    <div class="flex gap-4">
-                        <span class="ai-badge">✨ AI Analytics</span>
-                        <button class="btn btn-primary">
-                            <span>+</span> Add Product
-                        </button>
-                    </div>
-                </div>
+        <div class="card-body">
+          <div class="toolbar">
+            <div class="search-container">
+              <input
+                type="text"
+                class="form-input search-input"
+                placeholder="Search products..."
+              />
+              <select class="form-select" style="width: auto">
+                <option>All Categories</option>
+                <option>Computers</option>
+                <option>Phones</option>
+                <option>Accessories</option>
+              </select>
             </div>
-            <div class="card-body">
-                <div class="toolbar">
-                    <div class="search-container">
-                        <input type="text" class="form-input search-input" placeholder="Search products...">
-                        <select class="form-select" style="width: auto;">
-                            <option>All Categories</option>
-                            <option>Computers</option>
-                            <option>Phones</option>
-                            <option>Accessories</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-4 text-sm">
-                        <span class="text-muted">Showing 10 of 156 products</span>
-                    </div>
-                </div>
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>SKU</th>
-                                <th>Category</th>
-                                <th class="text-center">Stock</th>
-                                <th class="text-right">Price</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div>
-                                        <div class="font-medium">MacBook Pro 14"</div>
-                                        <div class="text-sm text-muted">M3 Pro, 18GB RAM, 512GB SSD</div>
-                                    </div>
-                                </td>
-                                <td class="font-mono text-sm">MBP-14-M3P-512</td>
-                                <td>Computers</td>
-                                <td class="text-center">
-                                    <span class="font-mono stock-low">3</span>
-                                </td>
-                                <td class="text-right font-mono">$1,999.00</td>
-                                <td class="text-center">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td>
-                                    <div class="btn-group justify-center">
-                                        <button class="btn btn-secondary btn-icon" title="Edit">✏️</button>
-                                        <button class="btn btn-secondary btn-icon" title="View">👁</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div>
-                                        <div class="font-medium">iPhone 15 Pro Max</div>
-                                        <div class="text-sm text-muted">256GB, Natural Titanium</div>
-                                    </div>
-                                </td>
-                                <td class="font-mono text-sm">IPH-15PM-256-NT</td>
-                                <td>Phones</td>
-                                <td class="text-center">
-                                    <span class="font-mono stock-medium">12</span>
-                                </td>
-                                <td class="text-right font-mono">$1,199.00</td>
-                                <td class="text-center">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td>
-                                    <div class="btn-group justify-center">
-                                        <button class="btn btn-secondary btn-icon" title="Edit">✏️</button>
-                                        <button class="btn btn-secondary btn-icon" title="View">👁</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div>
-                                        <div class="font-medium">AirPods Pro (2nd Gen)</div>
-                                        <div class="text-sm text-muted">With MagSafe Charging Case</div>
-                                    </div>
-                                </td>
-                                <td class="font-mono text-sm">APP-2G-MAGSAFE</td>
-                                <td>Accessories</td>
-                                <td class="text-center">
-                                    <span class="font-mono stock-high">45</span>
-                                </td>
-                                <td class="text-right font-mono">$249.00</td>
-                                <td class="text-center">
-                                    <span class="status-badge status-active">Active</span>
-                                </td>
-                                <td>
-                                    <div class="btn-group justify-center">
-                                        <button class="btn btn-secondary btn-icon" title="Edit">✏️</button>
-                                        <button class="btn btn-secondary btn-icon" title="View">👁</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div>
-                                        <div class="font-medium">iPad Air (5th Gen)</div>
-                                        <div class="text-sm text-muted">64GB, Wi-Fi, Space Gray</div>
-                                    </div>
-                                </td>
-                                <td class="font-mono text-sm">IPA-5G-64-SG</td>
-                                <td>Tablets</td>
-                                <td class="text-center">
-                                    <span class="font-mono stock-low">0</span>
-                                </td>
-                                <td class="text-right font-mono">$599.00</td>
-                                <td class="text-center">
-                                    <span class="status-badge status-inactive">Out of Stock</span>
-                                </td>
-                                <td>
-                                    <div class="btn-group justify-center">
-                                        <button class="btn btn-secondary btn-icon" title="Edit">✏️</button>
-                                        <button class="btn btn-secondary btn-icon" title="View">👁</button>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div>
-                                        <div class="font-medium">Samsung Galaxy S24 Ultra</div>
-                                        <div class="text-sm text-muted">512GB, Titanium Gray</div>
-                                    </div>
-                                </td>
-                                <td class="font-mono text-sm">SGS-24U-512-TG</td>
-                                <td>Phones</td>
-                                <td class="text-center">
-                                    <span class="font-mono stock-medium">8</span>
-                                </td>
-                                <td class="text-right font-mono">$1,299.00</td>
-                                <td class="text-center">
-                                    <span class="status-badge status-repair">Repair Demo</span>
-                                </td>
-                                <td>
-                                    <div class="btn-group justify-center">
-                                        <button class="btn btn-secondary btn-icon" title="Edit">✏️</button>
-                                        <button class="btn btn-secondary btn-icon" title="View">👁</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="flex gap-4 text-sm">
+              <span class="text-muted">Showing 10 of 156 products</span>
             </div>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th class="text-center">Stock</th>
+                  <th class="text-right">Price</th>
+                  <th class="text-center">Status</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div>
+                      <div class="font-medium">MacBook Pro 14"</div>
+                      <div class="text-sm text-muted">
+                        M3 Pro, 18GB RAM, 512GB SSD
+                      </div>
+                    </div>
+                  </td>
+                  <td class="font-mono text-sm">MBP-14-M3P-512</td>
+                  <td>Computers</td>
+                  <td class="text-center">
+                    <span class="font-mono stock-low">3</span>
+                  </td>
+                  <td class="text-right font-mono">$1,999.00</td>
+                  <td class="text-center">
+                    <span class="status-badge status-active">Active</span>
+                  </td>
+                  <td>
+                    <div class="btn-group justify-center">
+                      <button class="btn btn-secondary btn-icon" title="Edit">
+                        ✏️
+                      </button>
+                      <button class="btn btn-secondary btn-icon" title="View">
+                        👁
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                      <div class="font-medium">iPhone 15 Pro Max</div>
+                      <div class="text-sm text-muted">
+                        256GB, Natural Titanium
+                      </div>
+                    </div>
+                  </td>
+                  <td class="font-mono text-sm">IPH-15PM-256-NT</td>
+                  <td>Phones</td>
+                  <td class="text-center">
+                    <span class="font-mono stock-medium">12</span>
+                  </td>
+                  <td class="text-right font-mono">$1,199.00</td>
+                  <td class="text-center">
+                    <span class="status-badge status-active">Active</span>
+                  </td>
+                  <td>
+                    <div class="btn-group justify-center">
+                      <button class="btn btn-secondary btn-icon" title="Edit">
+                        ✏️
+                      </button>
+                      <button class="btn btn-secondary btn-icon" title="View">
+                        👁
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                      <div class="font-medium">AirPods Pro (2nd Gen)</div>
+                      <div class="text-sm text-muted">
+                        With MagSafe Charging Case
+                      </div>
+                    </div>
+                  </td>
+                  <td class="font-mono text-sm">APP-2G-MAGSAFE</td>
+                  <td>Accessories</td>
+                  <td class="text-center">
+                    <span class="font-mono stock-high">45</span>
+                  </td>
+                  <td class="text-right font-mono">$249.00</td>
+                  <td class="text-center">
+                    <span class="status-badge status-active">Active</span>
+                  </td>
+                  <td>
+                    <div class="btn-group justify-center">
+                      <button class="btn btn-secondary btn-icon" title="Edit">
+                        ✏️
+                      </button>
+                      <button class="btn btn-secondary btn-icon" title="View">
+                        👁
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                      <div class="font-medium">iPad Air (5th Gen)</div>
+                      <div class="text-sm text-muted">
+                        64GB, Wi-Fi, Space Gray
+                      </div>
+                    </div>
+                  </td>
+                  <td class="font-mono text-sm">IPA-5G-64-SG</td>
+                  <td>Tablets</td>
+                  <td class="text-center">
+                    <span class="font-mono stock-low">0</span>
+                  </td>
+                  <td class="text-right font-mono">$599.00</td>
+                  <td class="text-center">
+                    <span class="status-badge status-inactive"
+                      >Out of Stock</span
+                    >
+                  </td>
+                  <td>
+                    <div class="btn-group justify-center">
+                      <button class="btn btn-secondary btn-icon" title="Edit">
+                        ✏️
+                      </button>
+                      <button class="btn btn-secondary btn-icon" title="View">
+                        👁
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div>
+                      <div class="font-medium">Samsung Galaxy S24 Ultra</div>
+                      <div class="text-sm text-muted">512GB, Titanium Gray</div>
+                    </div>
+                  </td>
+                  <td class="font-mono text-sm">SGS-24U-512-TG</td>
+                  <td>Phones</td>
+                  <td class="text-center">
+                    <span class="font-mono stock-medium">8</span>
+                  </td>
+                  <td class="text-right font-mono">$1,299.00</td>
+                  <td class="text-center">
+                    <span class="status-badge status-repair"
+                      >Reparación Demo</span
+                    >
+                  </td>
+                  <td>
+                    <div class="btn-group justify-center">
+                      <button class="btn btn-secondary btn-icon" title="Edit">
+                        ✏️
+                      </button>
+                      <button class="btn btn-secondary btn-icon" title="View">
+                        👁
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        
-        <!-- Client Creation Form -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Create New Client</h2>
-            </div>
-            <div class="card-body">
-                <form>
-                    <!-- Personal Information Section -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label form-label-required">First Name</label>
-                                <input type="text" class="form-input" placeholder="John" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label form-label-required">Last Name</label>
-                                <input type="text" class="form-input" placeholder="Doe" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label form-label-required">Email</label>
-                                <input type="email" class="form-input" placeholder="john.doe@example.com" required>
-                                <p class="form-help">We'll use this for order confirmations and receipts</p>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label form-label-required">Phone Number</label>
-                                <input type="tel" class="form-input" placeholder="+1 (555) 123-4567" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label form-label-required">Document Type</label>
-                                <select class="form-select" required>
-                                    <option value="">Select document type</option>
-                                    <option value="dni">DNI</option>
-                                    <option value="passport">Passport</option>
-                                    <option value="driver-license">Driver's License</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label form-label-required">Document Number</label>
-                                <input type="text" class="form-input" placeholder="12345678" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="divider"></div>
-                    
-                    <!-- Address Information Section -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Address Information</h3>
-                        <div class="form-group">
-                            <label class="form-label">Street Address</label>
-                            <input type="text" class="form-input" placeholder="123 Main Street">
-                        </div>
-                        
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label">City</label>
-                                <input type="text" class="form-input" placeholder="New York">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">State/Province</label>
-                                <input type="text" class="form-input" placeholder="NY">
-                            </div>
-                        </div>
-                        
-                        <div class="form-grid form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Postal Code</label>
-                                <input type="text" class="form-input" placeholder="10001">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Country</label>
-                                <select class="form-select">
-                                    <option>United States</option>
-                                    <option>Canada</option>
-                                    <option>Mexico</option>
-                                    <option>Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="divider"></div>
-                    
-                    <!-- Additional Information Section -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Additional Information</h3>
-                        <div class="form-group">
-                            <label class="form-label">Customer Type</label>
-                            <select class="form-select">
-                                <option>Regular Customer</option>
-                                <option>Business Customer</option>
-                                <option>VIP Customer</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Notes</label>
-                            <textarea class="form-textarea" placeholder="Any additional information about this customer..."></textarea>
-                            <p class="form-help">Internal notes visible only to staff members</p>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="flex items-center gap-2">
-                                <input type="checkbox" class="form-checkbox">
-                                <span class="text-sm">Send marketing communications</span>
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <!-- Form Actions -->
-                    <div class="flex justify-between items-center">
-                        <button type="button" class="btn btn-secondary">Cancel</button>
-                        <div class="flex gap-4">
-                            <button type="button" class="btn btn-secondary">Save as Draft</button>
-                            <button type="submit" class="btn btn-success">Create Client</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+      </div>
+
+      <!-- Client Creation Form -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Crear Nuevo Cliente</h2>
         </div>
-        
-        <!-- Quick Stats Example -->
-        <div class="card mb-6">
-            <div class="card-header">
-                <h2 class="card-title">Quick Actions & Stats</h2>
-            </div>
-            <div class="card-body">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div style="padding: 1rem; background: var(--primary-50); border-radius: 0.5rem; border: 1px solid var(--primary-100);">
-                        <div class="text-sm text-muted mb-2">Total Products</div>
-                        <div class="text-2xl font-semibold">156</div>
-                        <div class="text-sm text-success-500">↑ 12% from last month</div>
-                    </div>
-                    <div style="padding: 1rem; background: var(--success-100); border-radius: 0.5rem; border: 1px solid var(--success-100);">
-                        <div class="text-sm text-muted mb-2">In Stock</div>
-                        <div class="text-2xl font-semibold">142</div>
-                        <div class="text-sm text-muted">91% availability</div>
-                    </div>
-                    <div style="padding: 1rem; background: var(--warning-100); border-radius: 0.5rem; border: 1px solid var(--warning-100);">
-                        <div class="text-sm text-muted mb-2">Low Stock</div>
-                        <div class="text-2xl font-semibold">8</div>
-                        <div class="text-sm text-warning-500">Needs attention</div>
-                    </div>
-                    <div style="padding: 1rem; background: var(--purple-100); border-radius: 0.5rem; border: 1px solid var(--purple-100);">
-                        <div class="text-sm text-muted mb-2">AI Insights</div>
-                        <div class="text-lg font-semibold">3 Recommendations</div>
-                        <div class="text-sm text-purple-500">View insights →</div>
-                    </div>
+        <div class="card-body">
+          <form>
+            <!-- Personal Information Section -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-4">Información Personal</h3>
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label class="form-label form-label-required"
+                    >Primer Nombre</label
+                  >
+                  <input
+                    type="text"
+                    class="form-input"
+                    placeholder="Juan"
+                    required
+                  />
                 </div>
+                <div class="form-group">
+                  <label class="form-label form-label-required">Apellido</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    placeholder="Perez"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label class="form-label form-label-required">Email</label>
+                  <input
+                    type="email"
+                    class="form-input"
+                    placeholder="juan.perez@example.com"
+                    required
+                  />
+                  <p class="form-help">
+                    Utilizaremos este correo electrónico para confirmaciones de
+                    pedidos y recibos
+                  </p>
+                </div>
+                <div class="form-group">
+                  <label class="form-label form-label-required"
+                    >Número de Teléfono</label
+                  >
+                  <input
+                    type="tel"
+                    class="form-input"
+                    placeholder="+57 300 123 4567"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label class="form-label form-label-required"
+                    >Tipo de Documento</label
+                  >
+                  <select class="form-select" required>
+                    <option value="">Seleccionar tipo de documento</option>
+                    <option value="dni">DNI</option>
+                    <option value="passport">Pasaporte</option>
+                    <option value="driver-license">Licencia de Conducir</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label form-label-required"
+                    >Número de Documento</label
+                  >
+                  <input
+                    type="text"
+                    class="form-input"
+                    placeholder="12345678"
+                    required
+                  />
+                </div>
+              </div>
             </div>
+
+            <div class="divider"></div>
+
+            <!-- Address Information Section -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-4">
+                Información de Dirección
+              </h3>
+              <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  placeholder="123 Calle Principal, Bogotá, Colombia"
+                />
+              </div>
+
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Ciudad</label>
+                  <input type="text" class="form-input" placeholder="Bogotá" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Estado/Provincia</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    placeholder="Cundinamarca"
+                  />
+                </div>
+              </div>
+
+              <div class="form-grid form-grid-2">
+                <div class="form-group">
+                  <label class="form-label">Codigo Postal</label>
+                  <input type="text" class="form-input" placeholder="110011" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Pais</label>
+                  <select class="form-select">
+                    <option>Colombia</option>
+                    <option>Canada</option>
+                    <option>Perú</option>
+                    <option>Ecuador</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Additional Information Section -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-4">Información Adicional</h3>
+              <div class="form-group">
+                <label class="form-label">Tipo de Cliente</label>
+                <select class="form-select">
+                  <option>Cliente Regular</option>
+                  <option>Cliente de Negocio</option>
+                  <option>Cliente VIP</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Notas</label>
+                <textarea
+                  class="form-textarea"
+                  placeholder="Notas adicionales sobre este cliente..."
+                ></textarea>
+                <p class="form-help">
+                  Notas internas visibles solo para los miembros del equipo
+                </p>
+              </div>
+
+              <div class="form-group">
+                <label class="flex items-center gap-2">
+                  <input type="checkbox" class="form-checkbox" />
+                  <span class="text-sm">Enviar comunicaciones marketing</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center">
+              <button type="button" class="btn btn-secondary">Cancelar</button>
+              <div class="flex gap-4">
+                <button type="button" class="btn btn-secondary">
+                  Guardar como Borrador
+                </button>
+                <button type="submit" class="btn btn-success">
+                  Crear Cliente
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
+      </div>
+
+      <!-- Quick Stats Example -->
+      <div class="card mb-6">
+        <div class="card-header">
+          <h2 class="card-title">Acciones Rápidas & Estadísticas</h2>
+        </div>
+        <div class="card-body">
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 1rem;
+            "
+          >
+            <div
+              style="
+                padding: 1rem;
+                background: var(--primary-50);
+                border-radius: 0.5rem;
+                border: 1px solid var(--primary-100);
+              "
+            >
+              <div class="text-sm text-muted mb-2">Total de Productos</div>
+              <div class="text-2xl font-semibold">156</div>
+              <div class="text-sm text-success-500">
+                ↑ 12% desde el mes pasado
+              </div>
+            </div>
+            <div
+              style="
+                padding: 1rem;
+                background: var(--success-100);
+                border-radius: 0.5rem;
+                border: 1px solid var(--success-100);
+              "
+            >
+              <div class="text-sm text-muted mb-2">En Stock</div>
+              <div class="text-2xl font-semibold">142</div>
+              <div class="text-sm text-muted">91% disponibilidad</div>
+            </div>
+            <div
+              style="
+                padding: 1rem;
+                background: var(--warning-100);
+                border-radius: 0.5rem;
+                border: 1px solid var(--warning-100);
+              "
+            >
+              <div class="text-sm text-muted mb-2">Stock Bajo</div>
+              <div class="text-2xl font-semibold">8</div>
+              <div class="text-sm text-warning-500">Necesita atención</div>
+            </div>
+            <div
+              style="
+                padding: 1rem;
+                background: var(--purple-100);
+                border-radius: 0.5rem;
+                border: 1px solid var(--purple-100);
+              "
+            >
+              <div class="text-sm text-muted mb-2">Insights de IA</div>
+              <div class="text-lg font-semibold">3 Recomendaciones</div>
+              <div class="text-sm text-purple-500">Ver insights →</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</body>
+  </body>
 </html>

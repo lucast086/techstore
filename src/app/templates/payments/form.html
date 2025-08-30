@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Record Payment - {{ customer.name }}{% endblock %}
+{% block title %}Registrar Pago - {{ customer.name }}{% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-8">
   <div class="max-w-3xl mx-auto">
@@ -8,13 +8,13 @@
       <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">
           {% if not balance_info.has_debt %}
-            Record Advance Payment
+            Registrar Pago Anticipado
           {% else %}
-            Record Payment
+            Registrar Pago
           {% endif %}
         </h1>
         <p class="text-gray-600">
-          Customer: <span class="font-medium">{{ customer.name }}</span>
+          Cliente: <span class="font-medium">{{ customer.name }}</span>
         </p>
         {% if not balance_info.has_debt %}
         <p class="text-sm text-blue-600 mt-2">
@@ -29,14 +29,14 @@
       <!-- Current Balance -->
       <div class="bg-gray-50 rounded-lg p-4 mb-6">
         <div class="flex justify-between items-center">
-          <span class="text-gray-700">Current Balance:</span>
+          <span class="text-gray-700">Balance Actual:</span>
           {% if balance_info.has_debt %}
           <span class="text-xl font-bold text-red-600">
-            Owes ${{ "{:,.2f}".format(-balance_info.current_balance) }}
+            Debe ${{ "{:,.2f}".format(-balance_info.current_balance) }}
           </span>
           {% elif balance_info.has_credit %}
           <span class="text-xl font-bold text-green-600">
-            Credit ${{ "{:,.2f}".format(balance_info.current_balance) }}
+            Credito ${{ "{:,.2f}".format(balance_info.current_balance) }}
           </span>
           {% else %}
           <span class="text-xl font-bold text-gray-900">$0.00</span>
@@ -44,16 +44,16 @@
         </div>
         {% if sale %}
         <div class="mt-2 text-sm text-gray-600">
-          Related Sale: {{ sale.invoice_number }} -
+          Venta Relacionada: {{ sale.invoice_number }} -
           <span class="font-medium">${{ "{:,.2f}".format(sale.total_amount) }}</span>
-          (Due: ${{ "{:,.2f}".format(sale.amount_due) }})
+          (Vencido: ${{ "{:,.2f}".format(sale.amount_due) }})
         </div>
         {% endif %}
 
         <!-- Show resulting balance after payment -->
         <div id="resulting-balance" class="mt-3 pt-3 border-t border-gray-200" style="display: none;">
           <div class="flex justify-between items-center">
-            <span class="text-gray-600 text-sm">Balance after payment:</span>
+            <span class="text-gray-600 text-sm">Balance después del pago:</span>
             <span id="resulting-balance-amount" class="text-lg font-semibold"></span>
           </div>
         </div>
@@ -65,38 +65,38 @@
       </div>
       {% endif %}
 
-      <!-- Payment Form -->
+      <!-- Formulario de Pago -->
       <form method="POST" action="/payments/process" class="space-y-6">
         <input type="hidden" name="customer_id" value="{{ customer.id }}">
         {% if sale %}
         <input type="hidden" name="sale_id" value="{{ sale.id }}">
         {% endif %}
 
-        <!-- Payment Type Selection -->
+        <!-- Selección de Tipo de Pago -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            Payment Type <span class="text-red-500">*</span>
+            Tipo de Pago <span class="text-red-500">*</span>
           </label>
           <div class="space-y-2">
             <label class="flex items-center">
               <input type="radio" name="payment_type" value="single"
                      class="mr-2" checked onchange="togglePaymentType()">
-              <span>Single Payment Method</span>
+              <span>Método de Pago Único:</span>
             </label>
             <label class="flex items-center">
               <input type="radio" name="payment_type" value="mixed"
                      class="mr-2" onchange="togglePaymentType()">
-              <span>Mixed Payment Methods</span>
+              <span>Métodos de Pago Mixtos:</span>
             </label>
           </div>
         </div>
 
-        <!-- Single Payment Method -->
+        <!-- Método de Pago Único -->
         <div id="single_payment" class="space-y-4">
           <!-- Amount -->
           <div>
             <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">
-              Payment Amount <span class="text-red-500">*</span>
+              Monto del Pago: <span class="text-red-500">*</span>
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -109,16 +109,16 @@
             </div>
           </div>
 
-          <!-- Payment Method -->
+          <!-- Método de Pago -->
           <div>
             <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-1">
-              Payment Method <span class="text-red-500">*</span>
+              Método de Pago: <span class="text-red-500">*</span>
             </label>
             <select id="payment_method" name="payment_method"
                     onchange="toggleReferenceField()"
                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     required>
-              <option value="">Select method...</option>
+              <option value="">Seleccionar metodo:</option>
               <option value="cash">Cash</option>
               <option value="transfer">Bank Transfer</option>
               <option value="card">Card</option>
@@ -128,24 +128,24 @@
           <!-- Reference Number -->
           <div id="reference_field" style="display: none">
             <label for="reference_number" class="block text-sm font-medium text-gray-700 mb-1">
-              Reference Number <span id="reference_required" class="text-red-500" style="display: none">*</span>
+              Numero de Referencia: <span id="reference_required" class="text-red-500" style="display: none">*</span>
             </label>
             <input type="text" id="reference_number" name="reference_number"
                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            <p class="mt-1 text-sm text-gray-500">Required for bank transfers and card payments</p>
+            <p class="mt-1 text-sm text-gray-500">Requerido para transferencias bancarias y pagos con tarjeta</p>
           </div>
         </div>
 
-        <!-- Mixed Payment Methods -->
+        <!-- Métodos de Pago Mixtos -->
         <div id="mixed_payment" style="display: none" class="space-y-4">
           <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md">
-            Enter the amount for each payment method. Total must match the payment amount.
+            Ingrese el monto para cada metodo de pago. El total debe coincidir con el monto del pago.
           </div>
 
           <!-- Total Amount for Mixed -->
           <div>
             <label for="total_amount" class="block text-sm font-medium text-gray-700 mb-1">
-              Total Payment Amount <span class="text-red-500">*</span>
+              Monto Total del Pago <span class="text-red-500">*</span>
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -169,7 +169,7 @@
               </div>
               <div id="method_cash" style="display: none" class="space-y-2">
                 <div>
-                  <label class="block text-sm text-gray-700">Amount</label>
+                  <label class="block text-sm text-gray-700">Monto</label>
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span class="text-gray-500">$</span>
@@ -192,7 +192,7 @@
               </div>
               <div id="method_transfer" style="display: none" class="space-y-2">
                 <div>
-                  <label class="block text-sm text-gray-700">Amount</label>
+                  <label class="block text-sm text-gray-700">Monto</label>
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span class="text-gray-500">$</span>
@@ -203,7 +203,7 @@
                   </div>
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-700">Reference Number <span class="text-red-500">*</span></label>
+                  <label class="block text-sm text-gray-700">Numero de Referencia <span class="text-red-500">*</span></label>
                   <input type="text" name="method_reference_transfer"
                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
@@ -220,7 +220,7 @@
               </div>
               <div id="method_card" style="display: none" class="space-y-2">
                 <div>
-                  <label class="block text-sm text-gray-700">Amount</label>
+                  <label class="block text-sm text-gray-700">Monto</label>
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span class="text-gray-500">$</span>
@@ -231,7 +231,7 @@
                   </div>
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-700">Reference Number <span class="text-red-500">*</span></label>
+                  <label class="block text-sm text-gray-700">Numero de Referencia <span class="text-red-500">*</span></label>
                   <input type="text" name="method_reference_card"
                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
@@ -242,11 +242,11 @@
           <!-- Mixed Total Display -->
           <div class="bg-yellow-50 rounded-lg p-4">
             <div class="flex justify-between items-center">
-              <span class="text-gray-700">Sum of Payment Methods:</span>
+              <span class="text-gray-700">Suma de Metodos de Pago:</span>
               <span id="mixed_total" class="text-xl font-bold text-gray-900">$0.00</span>
             </div>
             <div id="mixed_error" class="mt-2 text-sm text-red-600" style="display: none">
-              The sum must equal the total payment amount
+              La suma debe coincidir con el monto del pago.
             </div>
           </div>
         </div>
@@ -254,21 +254,21 @@
         <!-- Notes -->
         <div>
           <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
-            Notes
+            Notas
             {% if not balance_info.has_debt %}
               <span class="text-red-500">*</span>
-              <span class="text-xs text-gray-500">(Required for advance payments)</span>
+              <span class="text-xs text-gray-500">(Requerido para pagos anticipados)</span>
             {% else %}
-              <span class="text-xs text-gray-500">(Optional)</span>
+              <span class="text-xs text-gray-500">(Opcional)</span>
             {% endif %}
           </label>
           <textarea id="notes" name="notes" rows="3"
-                    placeholder="{% if not balance_info.has_debt %}Please specify the purpose of this advance payment{% else %}Add any additional notes{% endif %}"
+                    placeholder="{% if not balance_info.has_debt %}Por favor especifique el propósito de este pago anticipado{% else %}Agregar any additional notes{% endif %}"
                     class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     {% if not balance_info.has_debt %}required{% endif %}>{{ form_data.notes if form_data else '' }}</textarea>
           {% if not balance_info.has_debt %}
           <p class="mt-1 text-sm text-gray-500">
-            Example: "Advance payment for upcoming repair" or "Credit for future purchases"
+            Ejemplo: "Pago anticipado para reparación futura" o "Crédito para compras futuras"
           </p>
           {% endif %}
         </div>
@@ -278,7 +278,7 @@
         <div>
           <label class="flex items-center">
             <input type="checkbox" name="allow_overpayment" class="mr-2">
-            <span class="text-sm text-gray-700">Allow overpayment (requires authorization)</span>
+            <span class="text-sm text-gray-700">Permitir sobrepago (requiere autorización)</span>
           </label>
         </div>
         {% endif %}
@@ -287,11 +287,11 @@
         <div class="flex justify-between pt-4">
           <a href="/customers/{{ customer.id }}"
              class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md">
-            Cancel
+            Cancelar
           </a>
           <button type="submit"
                   class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-md">
-            Process Payment
+            Procesar Pago
           </button>
         </div>
       </form>
@@ -394,11 +394,11 @@
 
       if (resultingBalance < 0) {
         // Still has debt
-        resultingAmount.textContent = `Owes $${Math.abs(resultingBalance).toFixed(2)}`;
+        resultingAmount.textContent = `Debe $${Math.abs(resultingBalance).toFixed(2)}`;
         resultingAmount.className = 'text-lg font-semibold text-red-600';
       } else if (resultingBalance > 0) {
         // Will have credit
-        resultingAmount.textContent = `Credit $${resultingBalance.toFixed(2)}`;
+        resultingAmount.textContent = `Credito $${resultingBalance.toFixed(2)}`;
         resultingAmount.className = 'text-lg font-semibold text-green-600';
       } else {
         // Exactly zero
@@ -415,7 +415,7 @@
     togglePaymentType();
     toggleReferenceField();
 
-    // Add event listener for amount input
+    // Agregar event listener for amount input
     const amountInput = document.getElementById('amount');
     amountInput.addEventListener('input', calculateResultingBalance);
     amountInput.addEventListener('change', calculateResultingBalance);

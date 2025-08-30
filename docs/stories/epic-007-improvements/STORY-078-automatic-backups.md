@@ -1,182 +1,234 @@
-# STORY-078: Automatic Database Backups to Google Drive
+# STORY-078: Manual Database Backup System (MVP)
 
-**Status:** Draft
-**Priority:** P3 (Low)
+**Status:** Ready for Development
+**Priority:** P2 (Medium)
 **Type:** Infrastructure
 **Epic:** [EPIC-007](./EPIC-007-system-improvements.md)
 
 ## Story
-As a system administrator, I need the database to automatically backup to Google Drive on a configurable schedule (daily/weekly) to ensure data safety and recovery capability.
+As a system administrator, I need to manually generate and download database backups from the admin dashboard to ensure data safety and enable recovery when needed.
 
 ## Business Value
 - Protects against data loss
 - Enables disaster recovery
-- Provides historical snapshots
-- Meets data retention requirements
+- Provides on-demand snapshots before major changes
+- Simple implementation without external dependencies
+- Works seamlessly on Railway platform
 - Peace of mind for business continuity
 
-## Acceptance Criteria
-- [ ] Configurable backup frequency (daily/weekly)
-- [ ] Automatic execution based on schedule
-- [ ] Backups uploaded to Google Drive
-- [ ] Retention policy (keep last 30 backups)
-- [ ] Email notification on backup failure
-- [ ] Manual backup command available
-- [ ] Backup logs viewable in admin panel
-- [ ] Restore instructions documented
+## MVP Acceptance Criteria
+- [ ] Manual backup generation from admin dashboard
+- [ ] Download backup as `.sql.gz` file
+- [ ] Admin-only access control
+- [ ] Progress indicator during backup generation
+- [ ] Clear restore instructions in documentation
+- [ ] Works in production (Railway) environment
+- [ ] Backup includes all tables and data
+- [ ] Filename includes timestamp for identification
 
 ## Technical Implementation
 
+### MVP Architecture
+Simple on-demand backup system with direct download, no external storage dependencies.
+
 ### Files to Create/Modify
 - `/src/app/services/backup_service.py` - Core backup logic
-- `/src/app/tasks/backup_task.py` - Scheduled task
-- `/src/app/config.py` - Backup configuration
-- `/src/app/cli/commands.py` - Manual backup command
-- `/src/app/web/admin.py` - Backup logs view
-- `/src/app/templates/admin/backups.html` - UI for logs
-- `/pyproject.toml` - Add dependencies
-- `/.env.example` - Google Drive credentials
+- `/src/app/api/v1/admin/backups.py` - Admin API endpoints
+- `/src/app/web/admin/backups.py` - Web interface routes
+- `/src/app/templates/admin/backups.html` - Admin UI
+- `/src/app/dependencies.py` - Admin authentication check
+- `/tests/test_services/test_backup_service.py` - Service tests
+- `/docs/admin/backup-restore-guide.md` - Documentation
 
-### Tasks
-- [ ] Set up Google Drive API credentials
-- [ ] Create backup service with PostgreSQL dump
-- [ ] Implement Google Drive upload
-- [ ] Create scheduled task runner
-- [ ] Add retention policy logic
-- [ ] Implement email notifications
-- [ ] Create manual backup command
-- [ ] Add admin panel for logs
-- [ ] Write restore documentation
-- [ ] Test backup and restore process
+### MVP Tasks
+- [ ] Create BackupService with pg_dump integration
+- [ ] Implement backup compression with gzip
+- [ ] Create API endpoint for backup generation
+- [ ] Add download endpoint with streaming response
+- [ ] Build admin dashboard interface
+- [ ] Add admin-only access control
+- [ ] Write comprehensive restore documentation
+- [ ] Test backup/restore process in staging
+- [ ] Verify Railway production compatibility
 
-### Implementation Design
+### MVP Implementation Design
+
 ```python
-# backup_service.py
+# services/backup_service.py
 import subprocess
+import gzip
+import tempfile
 from datetime import datetime
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from pathlib import Path
+from typing import Optional, BinaryIO
+from sqlalchemy.orm import Session
+from app.config import settings
 
 class BackupService:
-    def __init__(self):
-        self.drive_service = self._init_google_drive()
+    def __init__(self, db: Session):
+        self.db = db
 
-    def create_backup(self):
-        # Generate backup filename
+    def create_backup(self) -> tuple[str, Path]:
+        """Generate database backup and return filename and path"""
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"techstore_backup_{timestamp}.sql"
 
-        # Create PostgreSQL dump
-        subprocess.run([
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sql', delete=False) as tmp_file:
+            sql_path = Path(tmp_file.name)
+
+        # Generate PostgreSQL dump
+        result = subprocess.run([
             'pg_dump',
             settings.DATABASE_URL,
-            '-f', f'/tmp/{filename}'
-        ])
+            '--no-owner',
+            '--no-acl',
+            '--if-exists',
+            '--clean',
+            '-f', str(sql_path)
+        ], capture_output=True, text=True)
 
-        # Compress backup
-        subprocess.run([
-            'gzip', f'/tmp/{filename}'
-        ])
+        if result.returncode != 0:
+            raise Exception(f"Backup failed: {result.stderr}")
 
-        # Upload to Google Drive
-        self.upload_to_drive(f'/tmp/{filename}.gz')
+        # Compress the backup
+        gz_path = sql_path.with_suffix('.sql.gz')
+        with open(sql_path, 'rb') as f_in:
+            with gzip.open(gz_path, 'wb', compresslevel=9) as f_out:
+                f_out.writelines(f_in)
 
-        # Clean old backups
-        self.enforce_retention_policy()
+        # Clean up uncompressed file
+        sql_path.unlink()
 
-        # Log backup
-        self.log_backup(filename)
+        return f"{filename}.gz", gz_path
 
-        return filename
-
-    def upload_to_drive(self, file_path):
-        file_metadata = {
-            'name': os.path.basename(file_path),
-            'parents': [settings.GDRIVE_BACKUP_FOLDER_ID]
-        }
-
-        media = MediaFileUpload(
-            file_path,
-            mimetype='application/gzip'
-        )
-
-        self.drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
+    def get_backup_stream(self, backup_path: Path) -> BinaryIO:
+        """Return backup file as stream for download"""
+        return open(backup_path, 'rb')
 ```
 
 ```python
-# Scheduled task using APScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
+# api/v1/admin/backups.py
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from app.services.backup_service import BackupService
+from app.dependencies import get_admin_user
 
-scheduler = BackgroundScheduler()
+router = APIRouter(prefix="/admin/backups", tags=["admin"])
 
-def schedule_backups():
-    if settings.BACKUP_SCHEDULE == 'daily':
-        scheduler.add_job(
-            backup_service.create_backup,
-            'cron',
-            hour=3,  # 3 AM
-            minute=0
-        )
-    elif settings.BACKUP_SCHEDULE == 'weekly':
-        scheduler.add_job(
-            backup_service.create_backup,
-            'cron',
-            day_of_week=0,  # Monday
-            hour=3,
-            minute=0
-        )
+@router.post("/generate")
+async def generate_backup(
+    admin=Depends(get_admin_user),
+    backup_service: BackupService = Depends()
+):
+    """Generate new database backup"""
+    try:
+        filename, path = backup_service.create_backup()
+        return {
+            "status": "success",
+            "filename": filename,
+            "download_url": f"/api/v1/admin/backups/download/{filename}"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    scheduler.start()
+@router.get("/download/{filename}")
+async def download_backup(
+    filename: str,
+    admin=Depends(get_admin_user),
+    backup_service: BackupService = Depends()
+):
+    """Download backup file"""
+    # Security: validate filename format
+    if not filename.match(r'^techstore_backup_\d{8}_\d{6}\.sql\.gz$'):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    backup_path = Path(f"/tmp/{filename}")
+    if not backup_path.exists():
+        raise HTTPException(status_code=404, detail="Backup not found")
+
+    return StreamingResponse(
+        backup_service.get_backup_stream(backup_path),
+        media_type="application/gzip",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
 ```
 
-```bash
-# CLI command
-poetry run python -m app.cli backup-now
+```html
+<!-- templates/admin/backups.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Sistema de Backups</h1>
+
+    <div class="bg-white rounded-lg shadow p-6">
+        <button
+            hx-post="/api/v1/admin/backups/generate"
+            hx-indicator="#backup-spinner"
+            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Generar Backup
+        </button>
+
+        <div id="backup-spinner" class="htmx-indicator">
+            Generando backup...
+        </div>
+
+        <div id="backup-result" class="mt-4"></div>
+    </div>
+
+    <div class="mt-6 bg-gray-50 rounded-lg p-4">
+        <h2 class="font-semibold mb-2">Instrucciones de Restauración:</h2>
+        <pre class="text-sm">
+1. Descargar el archivo .sql.gz
+2. Descomprimir: gunzip backup.sql.gz
+3. Restaurar: psql $DATABASE_URL < backup.sql
+        </pre>
+    </div>
+</div>
+{% endblock %}
 ```
 
 ### Configuration
 ```python
-# config.py
-BACKUP_ENABLED = env.bool("BACKUP_ENABLED", False)
-BACKUP_SCHEDULE = env.str("BACKUP_SCHEDULE", "daily")  # daily|weekly
-BACKUP_RETENTION_DAYS = env.int("BACKUP_RETENTION_DAYS", 30)
-GDRIVE_CREDENTIALS_PATH = env.str("GDRIVE_CREDENTIALS_PATH")
-GDRIVE_BACKUP_FOLDER_ID = env.str("GDRIVE_BACKUP_FOLDER_ID")
-BACKUP_NOTIFICATION_EMAIL = env.str("BACKUP_NOTIFICATION_EMAIL")
+# No external configuration needed for MVP
+# Uses existing DATABASE_URL from environment
 ```
 
 ## Testing Requirements
-- Test manual backup command
-- Verify Google Drive upload
-- Test retention policy (delete old backups)
-- Simulate backup failure for notifications
-- Test restore from backup
-- Verify scheduling works
-- Test with large database
+- Test backup generation with mock pg_dump
+- Verify compression works correctly
+- Test download endpoint with streaming
+- Verify admin-only access control
+- Test with different database sizes
+- Validate restore process works
+- Test error handling for failed backups
+- Verify temporary file cleanup
 
 ## Security Considerations
-- Encrypt backups before upload
-- Secure Google Drive credentials
-- Limit API permissions (write-only)
-- Audit backup access
-- Consider GDPR compliance
+- Admin-only access required
+- Filename validation to prevent path traversal
+- Temporary files cleaned up after download
+- No sensitive data in logs
+- Database credentials from environment only
+- Consider adding backup encryption in future
 
-## Monitoring
-- Daily backup success/failure logs
-- Disk space monitoring
-- Google Drive quota monitoring
-- Alert on consecutive failures
+## Production Considerations
+- Railway compatible (uses pg_dump from system)
+- Temporary storage in /tmp (cleared on deploy)
+- Streaming download to handle large files
+- No external dependencies (Google Drive, S3)
+- Works with existing DATABASE_URL
 
-## Dev Notes
-- Consider incremental backups for large databases
-- May need to use Google Cloud Storage for larger files
-- Consider backup rotation strategy
-- Document restore procedure clearly
+## Future Enhancements (Phase 2)
+- Scheduled automatic backups (daily/weekly)
+- Upload to cloud storage (S3/Google Drive)
+- Backup retention policy
+- Email notifications on failure
+- Incremental backups for large databases
+- Backup history and management UI
+- One-click restore from UI
 
 ---
 

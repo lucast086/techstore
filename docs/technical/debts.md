@@ -20,6 +20,7 @@ Payment report when pay is made. maybe size a5
   permite cargar un producto nuevo si no existe. El valor total se plasma como gasto compras a proveedores. y se agregan los stocks a los productos.
 
 ### Analytics
+* story 77
 * ademas una seccion de estadisticas de ventas, reparaciones, y otras estadisticas que saco del coso de instagram. todas en admin panel.
 STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 
@@ -32,10 +33,9 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 
 ### Payments
  * Send Whatsapp when pay is made
- * Payments Pendientes (no accede)
+ * Payments Pendientes (no IMPLEMENTADO) QUE QUIERO LOGRAR CON ESTO? ELIMINAR OPTION?
 
 ### Sales
- * │   ├── STORY-041-quick-sale.md
  * Send periodic whatsapp remember account balance (only debt)
  * check filter behavior in sales history (customers, payment status, DATE)
  * when walk-in-customer payment method must be only cash
@@ -44,3 +44,9 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 
 ### dashboard
 * new lateral bar
+* estadisticas importantes (VALOR DOLAR - )
+
+
+### technical
+
+ * analyze coverage to get 80% test coverage?

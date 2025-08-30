@@ -435,7 +435,7 @@ block content %}
               rows="3"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               form="checkout-form"
-              placeholder="Optional sale notes..."
+              placeholder="Opcional sale notes..."
             ></textarea>
           </div>
 
@@ -640,11 +640,11 @@ block content %}
     document.getElementById("cart-tax").textContent = `$${tax.toFixed(2)}`;
     document.getElementById("cart-total").textContent = `$${total.toFixed(2)}`;
 
-    // Update change calculation if in cash mode
+    // Actualizar change calculation if in cash mode
     if (document.getElementById("payment_method").value === "cash") {
       calculateChange();
     }
-    // Update mixed payment required amount if in mixed mode
+    // Actualizar mixed payment required amount if in mixed mode
     if (document.getElementById("payment_method").value === "mixed") {
       updateMixedTotal();
     }
@@ -766,7 +766,7 @@ block content %}
 
     document.getElementById("mixed-total").textContent = `$${total.toFixed(2)}`;
 
-    // Update required amount
+    // Actualizar required amount
     const cartTotal = parseFloat(document.getElementById("cart-total").textContent.replace("$", "")) || 0;
     document.getElementById("required-amount").textContent = `$${cartTotal.toFixed(2)}`;
 
@@ -786,14 +786,14 @@ block content %}
     updateCartDisplay();
     togglePaymentFields(); // Initialize payment fields visibility
 
-    // Update datetime
+    // Actualizar datetime
     function updateDateTime() {
       const now = new Date();
       const formatted = now.toISOString().slice(0, 16).replace("T", " ");
       document.getElementById("current-datetime").textContent = formatted;
     }
     updateDateTime();
-    setInterval(updateDateTime, 60000); // Update every minute
+    setInterval(updateDateTime, 60000); // Actualizar every minute
   });
 
   // Customer search functions
@@ -832,7 +832,7 @@ block content %}
                   type="text"
                   id="customer-search-input"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="Search by name, phone, or email..."
+                  placeholder="Buscar by name, phone, or email..."
                   onkeyup="searchCustomers(this.value)"
                 >
               </div>
@@ -921,7 +921,7 @@ block content %}
               console.log('Set credit input max to:', data.balance);
             }
 
-            // Update mixed payment credit display if needed
+            // Actualizar mixed payment credit display if needed
             if (document.getElementById('payment_method').value === 'mixed') {
               document.getElementById('mixed-credit-section').style.display = 'flex';
               document.getElementById('mixed-available-credit').textContent = `$${data.balance.toFixed(2)}`;
@@ -1077,7 +1077,7 @@ block content %}
     return true;
   }
 
-  // Add form validation before submission
+  // Agregar form validation before submission
   document.addEventListener("DOMContentLoaded", function () {
     // Check if there's repair data to pre-load
     {% if repair_data %}
@@ -1093,7 +1093,7 @@ block content %}
       repairId: {{ repair_data.id }}
     };
 
-    // Add repair to cart
+    // Agregar repair to cart
     cart.push(repairItem);
     updateCartDisplay();
 
@@ -1113,7 +1113,7 @@ block content %}
     `;
     document.body.appendChild(notification);
 
-    // Remove notification after 3 seconds
+    // Eliminar notification after 3 seconds
     setTimeout(() => {
       notification.remove();
     }, 3000);

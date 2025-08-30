@@ -1,36 +1,36 @@
 {% extends "base.html" %}
 
-{% block title %}Create Warranty Claim{% endblock %}
+{% block title %}Crear Reclamo de Garantía{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <div class="bg-white shadow-sm rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-2xl font-semibold text-gray-800">Create Warranty Claim</h2>
+            <h2 class="text-2xl font-semibold text-gray-800">Crear Reclamo de Garantía</h2>
             <p class="mt-1 text-sm text-gray-600">
-                Warranty: {{ warranty.warranty_number }}
+                Garantía: {{ warranty.warranty_number }}
             </p>
         </div>
 
         <div class="px-6 py-4">
             <!-- Warranty Summary -->
             <div class="bg-gray-50 p-4 rounded-md mb-6">
-                <h3 class="text-sm font-medium text-gray-700 mb-2">Warranty Coverage</h3>
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Cobertura de Garantía</h3>
                 <div class="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                        <span class="font-medium">Parts:</span>
+                        <span class="font-medium">Partes:</span>
                         {% if warranty.is_parts_valid %}
-                        <span class="text-green-600">✓ Valid ({{ warranty.days_remaining_parts }} days remaining)</span>
+                        <span class="text-green-600">✓ Válida ({{ warranty.days_remaining_parts }} días restantes)</span>
                         {% else %}
-                        <span class="text-red-600">✗ Expired</span>
+                        <span class="text-red-600">✗ Expirada</span>
                         {% endif %}
                     </div>
                     <div>
                         <span class="font-medium">Labor:</span>
                         {% if warranty.is_labor_valid %}
-                        <span class="text-green-600">✓ Valid ({{ warranty.days_remaining_labor }} days remaining)</span>
+                        <span class="text-green-600">✓ Válida ({{ warranty.days_remaining_labor }} días restantes)</span>
                         {% else %}
-                        <span class="text-red-600">✗ Expired</span>
+                        <span class="text-red-600">✗ Expirada</span>
                         {% endif %}
                     </div>
                 </div>
@@ -43,19 +43,19 @@
 
                 <div>
                     <label for="issue_description" class="block text-sm font-medium text-gray-700">
-                        Issue Description <span class="text-red-500">*</span>
+                        Descripción del Problema <span class="text-red-500">*</span>
                     </label>
                     <textarea id="issue_description"
                               name="issue_description"
                               rows="4"
                               required
-                              placeholder="Describe the issue with the device..."
+                              placeholder="Describe el problema con el dispositivo..."
                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"></textarea>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Coverage Required
+                        Cobertura Requerida
                     </label>
                     <div class="space-y-2">
                         <div class="flex items-center">
@@ -66,7 +66,7 @@
                                    {% if not warranty.is_parts_valid %}disabled{% endif %}
                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label for="parts_covered" class="ml-2 text-sm text-gray-700 {% if not warranty.is_parts_valid %}text-gray-400{% endif %}">
-                                Parts Coverage
+                                Cobertura de Repuestos
                                 {% if not warranty.is_parts_valid %}(Expired){% endif %}
                             </label>
                         </div>
@@ -78,7 +78,7 @@
                                    {% if not warranty.is_labor_valid %}disabled{% endif %}
                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label for="labor_covered" class="ml-2 text-sm text-gray-700 {% if not warranty.is_labor_valid %}text-gray-400{% endif %}">
-                                Labor Coverage
+                                Cobertura de Labor
                                 {% if not warranty.is_labor_valid %}(Expired){% endif %}
                             </label>
                         </div>
@@ -87,19 +87,19 @@
 
                 <div class="bg-yellow-50 p-4 rounded-md">
                     <p class="text-sm text-yellow-800">
-                        <strong>Note:</strong> Creating a warranty claim will generate a new repair order for this device.
-                        The customer will be notified about the claim.
+                        <strong>Nota:</strong> Crear un reclamo de garantía generará una nueva orden de reparación para este dispositivo.
+                        El cliente será notificado sobre el reclamo.
                     </p>
                 </div>
 
                 <div class="flex space-x-4 pt-4">
                     <button type="submit"
                             class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Create Claim
+                        Crear Reclamo
                     </button>
                     <a href="/warranties/{{ warranty.id }}"
                        class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 text-center">
-                        Cancel
+                        Cancelar
                     </a>
                 </div>
             </form>

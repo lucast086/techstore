@@ -64,14 +64,14 @@ async def create_sale(
         )
 
         # Check if debt was generated and create notification message
-        message = "Sale created successfully"
+        message = "Venta creada exitosamente"
         if sale.customer_id and sale.amount_due > 0:
             from app.services.debt_service import debt_service
 
             debt_message = debt_service.get_debt_notification_message(
                 db, sale.customer_id, sale.amount_due
             )
-            message = f"Sale created successfully. {debt_message}"
+            message = f"Venta creada exitosamente. {debt_message}"
 
         return ResponseSchema(
             success=True,
@@ -86,7 +86,7 @@ async def create_sale(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating sale: {str(e)}",
+            detail=f"Error al crear la venta: {str(e)}",
         ) from e
 
 
@@ -278,7 +278,7 @@ async def void_sale(
 
         return ResponseSchema(
             success=True,
-            message="Sale voided successfully",
+            message="Venta anulada exitosamente",
             data={"invoice_number": sale.invoice_number},
         )
     except ValueError as e:

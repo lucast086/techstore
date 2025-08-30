@@ -1,21 +1,21 @@
-{% extends "base.html" %} {% block title %}Payment History - {{ customer.name
+{% extends "base.html" %} {% block title %}Historial de Pagos - {{ customer.name
 }}{% endblock %} {% block content %}
 <div class="container mx-auto px-4 py-8">
   <div class="bg-white rounded-lg shadow-md p-6">
     <!-- Header -->
     <div class="flex justify-between items-start mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment History</h1>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Historial de Pagos</h1>
         <p class="text-gray-600">
-          Customer: <span class="font-medium">{{ customer.name }}</span>
+          Cliente: <span class="font-medium">{{ customer.name }}</span>
         </p>
       </div>
       <a href="/customers" class="text-blue-600 hover:text-blue-800">
-        ← Back to Customers
+        ← Volver a Clientes
       </a>
     </div>
 
-    <!-- Filter Options -->
+    <!-- Opciones de Filtro -->
     <div class="mb-6">
       <label class="inline-flex items-center">
         <input
@@ -30,11 +30,11 @@
           onchange="toggleVoided()"
           class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
-        <span class="ml-2 text-gray-700">Show voided payments</span>
+        <span class="ml-2 text-gray-700">Mostrar pagos anulados</span>
       </label>
     </div>
 
-    <!-- Payment List -->
+    <!-- Lista de Pagos -->
     {% if payments %}
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
@@ -43,42 +43,42 @@
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Receipt #
+              Recibo #
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Date
+              Fecha
             </th>
             <th
               class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Amount
+              Monto
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Method
+              Método
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Type
+              Tipo
             </th>
             <th
               class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Received By
+              Recibido Por
             </th>
             <th
               class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Status
+              Estado
             </th>
             <th
               class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Actions
+              Acciones
             </th>
           </tr>
         </thead>
@@ -145,7 +145,7 @@
                 <a
                   href="/payments/{{ payment.id }}/receipt"
                   class="text-blue-600 hover:text-blue-900"
-                  title="View Receipt"
+                  title="Ver Recibo"
                 >
                   📄
                 </a>
@@ -160,7 +160,7 @@
                 <button
                   onclick="voidPayment({{ payment.id }})"
                   class="text-red-600 hover:text-red-900"
-                  title="Void Payment"
+                  title="Anular Pago"
                 >
                   ❌
                 </button>
@@ -185,13 +185,13 @@
     </div>
     {% else %}
     <div class="text-center py-8 text-gray-500">
-      <p>No payments recorded yet.</p>
+      <p>No hay pagos registrados aún.</p>
     </div>
     {% endif %}
   </div>
 </div>
 
-<!-- Void Payment Modal -->
+<!-- Modal de Anular Pago -->
 <div
   id="voidModal"
   class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
@@ -201,7 +201,7 @@
   >
     <div class="mt-3">
       <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-        Void Payment
+        Anular Pago
       </h3>
       <form id="voidForm" method="POST">
         <div class="mb-4">
@@ -209,7 +209,7 @@
             for="void_reason"
             class="block text-sm font-medium text-gray-700 mb-1"
           >
-            Reason for voiding <span class="text-red-500">*</span>
+            Razón para anular <span class="text-red-500">*</span>
           </label>
           <textarea
             id="void_reason"
@@ -219,7 +219,7 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             required
           ></textarea>
-          <p class="mt-1 text-sm text-gray-500">Minimum 10 characters</p>
+          <p class="mt-1 text-sm text-gray-500">Mínimo 10 caracteres</p>
         </div>
         <div class="flex justify-end space-x-2">
           <button
@@ -227,13 +227,13 @@
             onclick="closeVoidModal()"
             class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-md"
           >
-            Cancel
+            Cancelar
           </button>
           <button
             type="submit"
             class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md"
           >
-            Void Payment
+            Anular Pago
           </button>
         </div>
       </form>
@@ -259,7 +259,7 @@
       })
       .catch((error) => {
         console.error("Error:", error);
-        alert("Failed to generate WhatsApp link");
+        alert("Error al generar el link de WhatsApp");
       });
   }
 
@@ -287,7 +287,7 @@
     form.submit();
   });
 
-  // Close modal when clicking outside
+  // Cerrar modal when clicking outside
   window.onclick = function (event) {
     const modal = document.getElementById("voidModal");
     if (event.target == modal) {

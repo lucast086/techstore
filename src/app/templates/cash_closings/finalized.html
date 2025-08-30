@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Cash Closing Finalized - TechStore SaaS{% endblock %}
+{% block title %}Cierre de Caja Finalizado - TechStore SaaS{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-  <!-- Success Header -->
+  <!-- Éxito Header -->
   <div class="mb-6">
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
       <div class="flex">
@@ -14,16 +14,16 @@
           </svg>
         </div>
         <div class="ml-3">
-          <h1 class="text-lg font-medium text-blue-800">Cash Closing Finalized</h1>
+          <h1 class="text-lg font-medium text-blue-800">Cierre de Caja Finalizado</h1>
           <p class="mt-1 text-sm text-blue-700">
-            The cash closing for {{ closing.closing_date.strftime('%B %d, %Y') }} has been finalized and is now immutable.
+            El cierre de caja para {{ closing.closing_date.strftime('%B %d, %Y') }} ha sido finalizado y es ahora inmutable.
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Finalized Status Banner -->
+  <!-- Finalizado Estado Banner -->
   <div class="mb-6">
     <div class="bg-white border-l-4 border-blue-400 rounded-lg p-4">
       <div class="flex items-center">
@@ -34,10 +34,10 @@
         </div>
         <div class="ml-3">
           <p class="text-sm font-medium text-blue-800">
-            This closing record is now locked and cannot be modified.
+            Este registro de cierre de caja está ahora bloqueado y no puede ser modificado.
           </p>
           <p class="text-xs text-blue-600 mt-1">
-            Sales for {{ closing.closing_date.strftime('%Y-%m-%d') }} are now prevented until a new day is opened.
+            Las ventas para {{ closing.closing_date.strftime('%Y-%m-%d') }} están ahora prohibidas hasta que se abra un nuevo día.
           </p>
         </div>
       </div>
@@ -46,42 +46,42 @@
 
   <!-- Final Summary -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Final Closing Summary</h2>
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Resumen Final del Cierre</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Financial Summary -->
       <div class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900 mb-3">Financial Details</h3>
+        <h3 class="text-sm font-medium text-gray-900 mb-3">Detalles Financieros</h3>
         <div class="flex justify-between">
-          <span class="text-sm text-gray-600">Opening Balance:</span>
+          <span class="text-sm text-gray-600">Saldo de Apertura:</span>
           <span class="text-sm font-medium">${{ "{:.2f}".format(closing.opening_balance) }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-sm text-gray-600">Sales Total:</span>
+          <span class="text-sm text-gray-600">Total de Ventas:</span>
           <span class="text-sm font-medium text-green-600">${{ "{:.2f}".format(closing.sales_total) }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-sm text-gray-600">Expenses Total:</span>
+          <span class="text-sm text-gray-600">Total de Gastos:</span>
           <span class="text-sm font-medium text-red-600">${{ "{:.2f}".format(closing.expenses_total) }}</span>
         </div>
         <div class="flex justify-between pt-2 border-t border-gray-200">
-          <span class="text-sm font-medium text-gray-900">Expected Cash:</span>
+          <span class="text-sm font-medium text-gray-900">Efectivo Esperado:</span>
           <span class="text-sm font-semibold">${{ "{:.2f}".format(closing.expected_cash) }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-sm font-medium text-gray-900">Actual Cash:</span>
+          <span class="text-sm font-medium text-gray-900">Efectivo Real:</span>
           <span class="text-sm font-semibold">${{ "{:.2f}".format(closing.cash_count) }}</span>
         </div>
       </div>
 
       <!-- Closing Details -->
       <div class="space-y-3">
-        <h3 class="text-sm font-medium text-gray-900 mb-3">Closing Information</h3>
+        <h3 class="text-sm font-medium text-gray-900 mb-3">Información del Cierre</h3>
 
         <!-- Final Difference -->
         <div class="p-4 rounded-lg {% if closing.cash_difference > 0 %}bg-green-50{% elif closing.cash_difference < 0 %}bg-red-50{% else %}bg-gray-50{% endif %}">
           <div class="text-center">
-            <div class="text-sm text-gray-600 mb-1">Final Cash Difference</div>
+            <div class="text-sm text-gray-600 mb-1">Diferencia de Efectivo Final</div>
             <div class="text-2xl font-bold {% if closing.cash_difference > 0 %}text-green-600{% elif closing.cash_difference < 0 %}text-red-600{% else %}text-gray-900{% endif %}">
               {% if closing.cash_difference > 0 %}
                 +${{ "{:.2f}".format(closing.cash_difference) }}
@@ -97,15 +97,15 @@
         <!-- Closing Details -->
         <div class="space-y-2 text-sm">
           <div class="flex justify-between">
-            <span class="text-gray-600">Closed By:</span>
+            <span class="text-gray-600">Cerrado Por:</span>
             <span class="font-medium">{{ closing.user.name if closing.user else 'Unknown' }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600">Finalized At:</span>
+            <span class="text-gray-600">Finalizado En:</span>
             <span class="font-medium">{{ closing.closed_at.strftime('%I:%M %p') }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600">Closing ID:</span>
+            <span class="text-gray-600">ID de Cierre:</span>
             <span class="font-medium">#{{ closing.id }}</span>
           </div>
         </div>
@@ -114,30 +114,30 @@
 
     {% if closing.notes %}
     <div class="mt-6 pt-4 border-t border-gray-200">
-      <h3 class="text-sm font-medium text-gray-900 mb-2">Notes</h3>
+      <h3 class="text-sm font-medium text-gray-900 mb-2">Notas</h3>
       <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded">{{ closing.notes }}</p>
     </div>
     {% endif %}
   </div>
 
-  <!-- What's Next Section -->
+  <!-- What's Siguiente Section -->
   <div class="bg-gray-50 rounded-lg p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-3">What's Next?</h2>
+    <h2 class="text-lg font-semibold text-gray-900 mb-3">¿Qué Siguiente?</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
       <div class="space-y-2">
-        <h3 class="font-medium text-gray-900">Automatic Actions:</h3>
+        <h3 class="font-medium text-gray-900">Acciones Automáticas:</h3>
         <ul class="space-y-1 text-gray-600">
-          <li>• Sales for this date are now blocked</li>
-          <li>• Cash count becomes opening balance for next day</li>
-          <li>• Record is permanently locked</li>
+          <li>• Las ventas para este día están ahora bloqueadas</li>
+          <li>• El conteo de efectivo se convierte en el saldo de apertura para el siguiente día</li>
+          <li>• El registro está ahora bloqueado permanentemente</li>
         </ul>
       </div>
       <div class="space-y-2">
-        <h3 class="font-medium text-gray-900">Recommended Actions:</h3>
+        <h3 class="font-medium text-gray-900">Acciones Recomendadas:</h3>
         <ul class="space-y-1 text-gray-600">
-          <li>• Download PDF document (when available)</li>
-          <li>• File physical cash count records</li>
-          <li>• Prepare register for next business day</li>
+          <li>• Descargar documento PDF (cuando esté disponible)</li>
+          <li>• Archivar registros físicos de conteo de efectivo</li>
+          <li>• Preparar el registro para el siguiente día de negocios</li>
         </ul>
       </div>
     </div>
@@ -147,7 +147,7 @@
   <div class="flex flex-col sm:flex-row gap-3">
     <a href="/cash-closings/{{ closing.closing_date }}"
        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-2 px-4 rounded-lg transition-colors">
-      View Full Details
+      Ver Detalles Completos
     </a>
 
     <a href="/api/v1/cash-closings/{{ closing.id }}/pdf"
@@ -155,12 +155,12 @@
       <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
       </svg>
-      Download PDF
+      Descargar PDF
     </a>
 
     <a href="/cash-closings"
        class="flex-1 bg-gray-800 hover:bg-gray-900 text-white text-center font-medium py-2 px-4 rounded-lg transition-colors">
-      Back to List
+      Volver a la Lista
     </a>
   </div>
 </div>

@@ -365,4 +365,4 @@ async def logout(
     # Log logout
     logger.info(f"User logged out: {current_user.email} (ID: {current_user.id})")
 
-    return {"message": "Successfully logged out"}
+    return {"message": "Cerraste sesión exitosamente"}

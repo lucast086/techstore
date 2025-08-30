@@ -96,7 +96,9 @@ class ProductBase(BaseModel):
     def validate_sale_prices(cls, v: Decimal, info) -> Decimal:
         """Validate that sale prices are not less than purchase price."""
         if "purchase_price" in info.data and v < info.data["purchase_price"]:
-            raise ValueError("Sale price cannot be less than purchase price")
+            raise ValueError(
+                "El precio de venta no puede ser menor que el precio de compra"
+            )
         return v
 
 
@@ -115,7 +117,7 @@ class ProductCreate(ProductBase):
     def validate_images(cls, v: list[str]) -> list[str]:
         """Validate image URLs and count."""
         if len(v) > 5:
-            raise ValueError("Maximum 5 images allowed")
+            raise ValueError("Máximo 5 imágenes permitidas")
         return v
 
 

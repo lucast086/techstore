@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}New Cash Closing - TechStore SaaS{% endblock %}
+{% block title %}Nuevo Cierre de Caja - TechStore SaaS{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -13,8 +13,8 @@
         </svg>
       </a>
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">New Cash Closing</h1>
-        <p class="text-gray-600">Close cash register for {{ closing_date.strftime('%B %d, %Y') }}</p>
+        <h1 class="text-2xl font-bold text-gray-900">Nuevo Cierre de Caja</h1>
+        <p class="text-gray-600">Cerrar registro de caja para {{ closing_date.strftime('%B %d, %Y') }}</p>
       </div>
     </div>
   </div>
@@ -29,19 +29,19 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Daily Summary -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Daily Summary</h2>
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Resumen Diario</h2>
 
       <div class="space-y-4">
         <!-- Sales Summary -->
         <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
           <div>
-            <div class="text-sm text-gray-600">Total Sales</div>
+            <div class="text-sm text-gray-600">Total de Ventas</div>
             <div class="text-lg font-semibold text-green-700">
               ${{ "{:.2f}".format(status_info.daily_summary.total_sales) }}
             </div>
           </div>
           <div class="text-right">
-            <div class="text-sm text-gray-600">Transactions</div>
+            <div class="text-sm text-gray-600">Transacciones</div>
             <div class="text-lg font-semibold text-gray-900">
               {{ status_info.daily_summary.sales_count }}
             </div>
@@ -51,36 +51,36 @@
         <!-- Expenses Summary -->
         <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
           <div>
-            <div class="text-sm text-gray-600">Total Expenses</div>
+            <div class="text-sm text-gray-600">Total de Gastos</div>
             <div class="text-lg font-semibold text-red-700">
               ${{ "{:.2f}".format(status_info.daily_summary.total_expenses) }}
             </div>
           </div>
           <div class="text-right">
-            <div class="text-sm text-gray-600">Expense Items</div>
+            <div class="text-sm text-gray-600">Items de Gastos</div>
             <div class="text-lg font-semibold text-gray-900">
               {{ status_info.daily_summary.expenses_count }}
             </div>
           </div>
         </div>
 
-        <!-- Opening Balance -->
+        <!-- Saldo de Apertura -->
         <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
           <div>
-            <div class="text-sm text-gray-600">Opening Balance</div>
+            <div class="text-sm text-gray-600">Saldo de Apertura</div>
             <div class="text-lg font-semibold text-blue-700">
               ${{ "{:.2f}".format(status_info.opening_balance) }}
             </div>
           </div>
           <div class="text-right">
-            <div class="text-sm text-gray-600">Set at Opening</div>
+            <div class="text-sm text-gray-600">Configurado al Apertura</div>
           </div>
         </div>
 
-        <!-- Expected Cash -->
+        <!-- Efectivo Esperado -->
         <div class="pt-3 border-t border-gray-200">
           <div class="flex justify-between items-center">
-            <span class="text-sm font-medium text-gray-900">Expected Cash:</span>
+            <span class="text-sm font-medium text-gray-900">Efectivo Esperado:</span>
             <span class="text-lg font-bold text-gray-900" id="expected-cash">
               ${{ "{:.2f}".format(status_info.opening_balance + status_info.daily_summary.total_sales - status_info.daily_summary.total_expenses) }}
             </span>
@@ -91,19 +91,19 @@
 
     <!-- Closing Form -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h2 class="text-lg font-semibold text-gray-900 mb-4">Cash Closing Form</h2>
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Formulario de Cierre de Caja</h2>
 
       <form action="/cash-closings/" method="post" class="space-y-4">
         <!-- Hidden closing date -->
-        <input type="hidden" name="closing_date" value="{{ closing_date }}">
+        <input type="hidden" name="closing_date" value="{{ closing_date.isoformat() }}">
 
-        <!-- Opening Balance (Hidden - already set when opening cash) -->
+        <!-- Saldo de Apertura (Hidden - already set when opening cash) -->
         <input type="hidden" name="opening_balance" id="opening_balance" value="{{ status_info.opening_balance }}">
 
-        <!-- Actual Cash Count -->
+        <!-- Efectivo Real Count -->
         <div>
           <label for="cash_count" class="block text-sm font-medium text-gray-700 mb-1">
-            Actual Cash Count <span class="text-red-500">*</span>
+            Efectivo Real <span class="text-red-500">*</span>
           </label>
           <div class="relative">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -122,7 +122,7 @@
                    hx-vals='{"sales_total": {{ status_info.daily_summary.total_sales }}, "expenses_total": {{ status_info.daily_summary.total_expenses }}}'
                    required>
           </div>
-          <p class="text-xs text-gray-500 mt-1">Count all cash in the register</p>
+          <p class="text-xs text-gray-500 mt-1">Cuenta todo el efectivo en el registro</p>
         </div>
 
         <!-- Cash Calculation Display -->
@@ -133,23 +133,23 @@
         <!-- Notes -->
         <div>
           <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
-            Notes (Optional)
+            Notas (Opcional)
           </label>
           <textarea name="notes"
                     id="notes"
                     rows="3"
                     class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Any observations or notes about the closing...">{{ notes or '' }}</textarea>
+                    placeholder="Cualquier observación o nota sobre el cierre...">{{ notes or '' }}</textarea>
         </div>
 
-        <!-- Submit Button -->
+        <!-- Enviar Button -->
         <div class="pt-4">
           <button type="submit"
                   class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-            Create Cash Closing (Draft)
+            Crear Cierre de Caja (Borrador)
           </button>
           <p class="text-xs text-gray-500 mt-2 text-center">
-            You can review and finalize the closing after creation
+            Puede revisar y finalizar el cierre después de su creación
           </p>
         </div>
       </form>

@@ -128,11 +128,11 @@ class CashClosingService:
             return True, ""
 
         if cash_difference > 0:
-            warning = f"Cash overage of ${abs_difference:.2f} exceeds threshold of ${threshold:.2f}"
+            warning = f"Sobregiro de efectivo de ${abs_difference:.2f} excede el umbral de ${threshold:.2f}"
         else:
-            warning = f"Cash shortage of ${abs_difference:.2f} exceeds threshold of ${threshold:.2f}"
+            warning = f"Déficit de efectivo de ${abs_difference:.2f} excede el umbral de ${threshold:.2f}"
 
-        logger.warning(f"Cash difference validation failed: {warning}")
+        logger.warning(f"Validación de diferencia de efectivo fallida: {warning}")
         return False, warning
 
     def get_pending_cash_register(self, db: Session) -> Optional[CashClosingResponse]:
@@ -218,9 +218,17 @@ class CashClosingService:
                 )
 
         if not existing:
-            # If no opening exists, we need to create the full record
-            logger.warning(
-                f"No opening record found for {closing_data.closing_date}, creating full closing"
+            # Cash register must be opened before it can be closed
+            raise ValueError(
+                f"Cannot close cash register for {closing_data.closing_date}. "
+                f"The cash register must be opened first."
+            )
+
+        # Verify that the cash register was actually opened (has opened_at)
+        if not existing.opened_at:
+            raise ValueError(
+                f"Cannot close cash register for {closing_data.closing_date}. "
+                f"The cash register was not properly opened."
             )
 
         # Get calculated totals for the date

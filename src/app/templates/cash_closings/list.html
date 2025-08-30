@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Cash Closings - TechStore SaaS{% endblock %}
+{% block title %}Cierre de Caja - TechStore{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -36,8 +36,8 @@
   <div class="mb-6">
     <div class="flex justify-between items-center">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Cash Closings</h1>
-        <p class="text-gray-600">Manage daily cash register closings</p>
+        <h1 class="text-2xl font-bold text-gray-900">Cierre de Caja</h1>
+        <p class="text-gray-600">Gestiona los cierres de caja diarios</p>
       </div>
 
       <!-- Action Buttons -->
@@ -65,9 +65,9 @@
     </div>
   </div>
 
-  <!-- Today's Status Card -->
+  <!-- Today's Estado Card -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Today's Status</h2>
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Estado de Hoy</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- Date -->
@@ -79,31 +79,31 @@
       <!-- Sales Summary -->
       <div class="text-center">
         <div class="text-2xl font-bold text-green-600">${{ "{:.2f}".format(today_status.daily_summary.total_sales) }}</div>
-        <div class="text-sm text-gray-600">{{ today_status.daily_summary.sales_count }} Sales</div>
+        <div class="text-sm text-gray-600">{{ today_status.daily_summary.sales_count }} Ventas</div>
       </div>
 
       <!-- Expenses -->
       <div class="text-center">
         <div class="text-2xl font-bold text-red-600">${{ "{:.2f}".format(today_status.daily_summary.total_expenses) }}</div>
-        <div class="text-sm text-gray-600">{{ today_status.daily_summary.expenses_count }} Expenses</div>
+        <div class="text-sm text-gray-600">{{ today_status.daily_summary.expenses_count }} Gastos</div>
       </div>
 
-      <!-- Status -->
+      <!-- Estado -->
       <div class="text-center">
         {% if today_status.has_closing %}
           {% if today_status.closing.is_finalized %}
-            <div class="text-2xl font-bold text-blue-600">Closed</div>
-            <div class="text-sm text-gray-600">Day Complete</div>
+            <div class="text-2xl font-bold text-blue-600">Cerrado</div>
+            <div class="text-sm text-gray-600">Día Completo</div>
           {% else %}
-            <div class="text-2xl font-bold text-yellow-600">Closing Draft</div>
-            <div class="text-sm text-gray-600">Not Finalized</div>
+            <div class="text-2xl font-bold text-yellow-600">Closing Borrador</div>
+            <div class="text-sm text-gray-600">No Finalizado</div>
           {% endif %}
         {% elif today_status.is_open %}
-          <div class="text-2xl font-bold text-green-600">Open</div>
-          <div class="text-sm text-gray-600">Register Active</div>
+          <div class="text-2xl font-bold text-green-600">Abrir</div>
+          <div class="text-sm text-gray-600">Registro Activo</div>
         {% else %}
-          <div class="text-2xl font-bold text-gray-600">Not Opened</div>
-          <div class="text-sm text-gray-600">Register Closed</div>
+          <div class="text-2xl font-bold text-gray-600">No Abierto</div>
+          <div class="text-sm text-gray-600">Registro Cerrado</div>
         {% endif %}
       </div>
     </div>
@@ -112,7 +112,7 @@
     <div class="mt-4 flex justify-center">
       <a href="/cash-closings/{{ today_status.date }}"
          class="text-blue-600 hover:text-blue-700 font-medium">
-        View Today's Closing →
+        Ver Cierre de Hoy →
       </a>
     </div>
     {% elif today_status.is_open %}
@@ -121,7 +121,7 @@
         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
-        Cash register is open. Sales can be processed.
+        Caja registradora abierta. Las ventas pueden procesarse.
       </p>
     </div>
     {% else %}
@@ -130,7 +130,7 @@
         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
         </svg>
-        Cash register must be opened before processing sales.
+        La caja registradora debe estar abierta antes de procesar ventas.
       </p>
     </div>
     {% endif %}
@@ -139,7 +139,7 @@
   <!-- Recent Closings -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200">
     <div class="px-6 py-4 border-b border-gray-200">
-      <h2 class="text-lg font-semibold text-gray-900">Recent Closings</h2>
+      <h2 class="text-lg font-semibold text-gray-900">Cierres Recientes</h2>
     </div>
 
     {% if closings %}
@@ -147,14 +147,14 @@
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opening</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expenses</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cash Count</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difference</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apertura</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ventas</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gastos</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Conteo de Efectivo</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diferencia</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -187,17 +187,17 @@
             <td class="px-6 py-4 whitespace-nowrap">
               {% if closing.is_finalized %}
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Finalized
+                  Cerrado
                 </span>
               {% else %}
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Draft
+                  Borrador
                 </span>
               {% endif %}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
               <a href="/cash-closings/{{ closing.closing_date }}"
-                 class="text-blue-600 hover:text-blue-700">View</a>
+                 class="text-blue-600 hover:text-blue-700">Ver</a>
             </td>
           </tr>
           {% endfor %}
@@ -206,8 +206,8 @@
     </div>
     {% else %}
     <div class="px-6 py-12 text-center">
-      <div class="text-gray-500">No cash closings found</div>
-      <p class="text-sm text-gray-400 mt-1">Create your first closing to get started</p>
+      <div class="text-gray-500">No hay cierres de caja encontrados</div>
+      <p class="text-sm text-gray-400 mt-1">Crea tu primer cierre de caja para comenzar</p>
     </div>
     {% endif %}
   </div>

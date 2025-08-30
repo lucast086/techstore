@@ -1,6 +1,6 @@
 <div class="p-6">
     <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">Add Diagnosis</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Agregar Diagnosis</h3>
         <button onclick="closeDiagnosisModal()" class="text-gray-400 hover:text-gray-600">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -80,11 +80,11 @@
             <button type="button"
                     onclick="closeDiagnosisModal()"
                     class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                Cancel
+                Cancelar
             </button>
             <button type="submit"
                     class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
-                Save Diagnosis
+                Guardar Diagnosis
             </button>
         </div>
     </form>
@@ -100,19 +100,19 @@ function updateRepairTotalCost() {
     const partsCost = parseFloat(partsInput.value) || 0;
     const totalCost = laborCost + partsCost;
 
-    // Update display
+    // Actualizar display
     const displayElement = document.getElementById('total-cost-display');
     if (displayElement) {
         displayElement.textContent = `$${totalCost.toFixed(2)}`;
     }
 
-    // Update hidden input for form submission
+    // Actualizar hidden input for form submission
     const hiddenInput = document.getElementById('estimated_cost');
     if (hiddenInput) {
         hiddenInput.value = totalCost.toFixed(2);
     }
 
-    // Add visual feedback
+    // Agregar visual feedback
     if (displayElement) {
         displayElement.classList.add('text-primary-600');
         setTimeout(() => {
@@ -130,10 +130,10 @@ function formatRepairCostInput(input) {
 
 // Initialize repair diagnosis form
 function initializeRepairDiagnosisForm() {
-    // Update total cost initially
+    // Actualizar total cost initially
     updateRepairTotalCost();
 
-    // Add blur event listeners for formatting
+    // Agregar blur event listeners for formatting
     const laborInput = document.getElementById('labor_cost');
     const partsInput = document.getElementById('parts_cost');
 

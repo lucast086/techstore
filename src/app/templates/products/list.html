@@ -40,7 +40,7 @@ block content %}
     <div class="px-4 py-5 sm:p-6">
       <form method="GET" action="/products" id="filter-form" class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Search Input -->
+          <!-- Buscar Input -->
           <div class="sm:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700">
               Buscar Productos
@@ -86,7 +86,7 @@ block content %}
             </select>
           </div>
 
-          <!-- Stock Status Filter -->
+          <!-- Stock Estado Filter -->
           <div>
             <label
               for="stock_status"
@@ -288,9 +288,9 @@ block content %}
     </div>
   </div>
 
-  <!-- Products Container -->
+  <!-- Contenedor de Productos -->
   <div id="products-container">
-    <!-- Products Table -->
+    <!-- Tabla de Productos -->
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
       {% if products %}
       <table class="min-w-full divide-y divide-gray-200">

@@ -1,19 +1,19 @@
-{% extends "base.html" %} {% block title %}New Payment - TechStore{% endblock %}
+{% extends "base.html" %} {% block title %}Nuevo Pago - TechStore{% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="md:flex md:items-center md:justify-between mb-6">
     <div class="flex-1 min-w-0">
-      <h1 class="text-2xl font-bold text-gray-900">New Payment</h1>
+      <h1 class="text-2xl font-bold text-gray-900">Nuevo Pago</h1>
       <p class="mt-1 text-sm text-gray-600">
-        Select a customer to record a payment
+        Selecciona un cliente para registrar un pago
       </p>
     </div>
   </div>
 
-  <!-- Search -->
+  <!-- Buscar -->
   <div class="mb-6">
     <div class="max-w-lg">
-      <label for="search" class="sr-only">Search customers</label>
+      <label for="search" class="sr-only">Buscar clientes:</label>
       <div class="relative">
         <div
           class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
@@ -36,7 +36,7 @@
           name="search"
           id="search"
           class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="Search by name, phone, or email..."
+          placeholder="Buscar por nombre, teléfono o email:"
           onkeyup="filterCustomers(this.value)"
         />
       </div>
@@ -68,14 +68,14 @@
             </div>
             <div class="ml-4 flex-shrink-0">
               <div class="text-right">
-                <p class="text-sm text-gray-500">Balance</p>
+                <p class="text-sm text-gray-500">Balance:</p>
                 <p
                   class="text-lg font-semibold {% if customer.get('balance', 0) < 0 %}text-red-600{% elif customer.get('balance', 0) > 0 %}text-green-600{% else %}text-gray-600{% endif %}"
                 >
                   {% if customer.get('balance', 0) < 0 %}
-                    Owes ${{ "{:,.2f}".format(-customer.get('balance', 0)) }}
+                    Debe ${{ "{:,.2f}".format(-customer.get('balance', 0)) }}
                   {% elif customer.get('balance', 0) > 0 %}
-                    Credit ${{ "{:,.2f}".format(customer.get('balance', 0)) }}
+                    Credito ${{ "{:,.2f}".format(customer.get('balance', 0)) }}
                   {% else %}
                     $0.00
                   {% endif %}
@@ -86,11 +86,11 @@
           <div class="mt-4">
             <div class="flex items-center justify-between text-sm">
               <span class="text-gray-500"
-                >Total Sales: ${{ "{:,.2f}".format(customer.get('sales_total',
+                >Ventas Totales: ${{ "{:,.2f}".format(customer.get('sales_total',
                 0)) }}</span
               >
               <span class="text-gray-500"
-                >Payments: ${{ "{:,.2f}".format(customer.get('payments_total',
+                >Pagos: ${{ "{:,.2f}".format(customer.get('payments_total',
                 0)) }}</span
               >
             </div>
@@ -114,9 +114,9 @@
             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
           />
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No customers</h3>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No hay clientes</h3>
         <p class="mt-1 text-sm text-gray-500">
-          Get started by creating a new customer.
+          Comience creando un nuevo cliente.
         </p>
         <div class="mt-6">
           <a
@@ -135,7 +135,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            New Customer
+            Nuevo Cliente
           </a>
         </div>
       </div>

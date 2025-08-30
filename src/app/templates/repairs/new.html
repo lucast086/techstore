@@ -7,7 +7,7 @@
         <!-- Header -->
         <div class="mb-6">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Nueva Orden de Reparación</h1>
-            <p class="text-gray-600">Register a new device for repair</p>
+            <p class="text-gray-600">Registrar un nuevo dispositivo para reparación</p>
         </div>
 
         <!-- Form -->
@@ -21,7 +21,7 @@
                         id="customer_id"
                         required
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                    <option value="">Select a customer...</option>
+                    <option value="">Seleccionar un cliente...</option>
                     {% for customer in customers %}
                     <option value="{{ customer.id }}" {% if selected_customer and selected_customer.id == customer.id %}selected{% endif %}>
                         {{ customer.name }} - {{ customer.phone }}
@@ -44,51 +44,52 @@
                                 id="device_type"
                                 required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                            <option value="">Select type...</option>
-                            <option value="phone">Phone</option>
-                            <option value="laptop">Laptop</option>
+                            <option value="">Seleccionar tipo...</option>
+                            <option value="phone">Smartphone</option>
+                            <option value="laptop">Notebook</option>
                             <option value="tablet">Tablet</option>
-                            <option value="desktop">Desktop</option>
-                            <option value="printer">Printer</option>
+                            <option value="desktop">Computadora</option>
+                            <option value="printer">Impresora</option>
                             <option value="monitor">Monitor</option>
-                            <option value="other">Other</option>
+                            <option value="consola">Consola</option>
+                            <option value="other">Otro</option>
                         </select>
                     </div>
 
                     <!-- Device Brand -->
                     <div>
                         <label for="device_brand" class="block text-sm font-medium text-gray-700 mb-1">
-                            Brand <span class="text-red-500">*</span>
+                            Marca <span class="text-red-500">*</span>
                         </label>
                         <input type="text"
                                name="device_brand"
                                id="device_brand"
                                required
-                               placeholder="e.g., Samsung, Apple, Dell"
+                               placeholder="e.g., Samsung, Apple, Huawei"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                     </div>
 
                     <!-- Device Model -->
                     <div>
                         <label for="device_model" class="block text-sm font-medium text-gray-700 mb-1">
-                            Model
+                            Modelo
                         </label>
                         <input type="text"
                                name="device_model"
                                id="device_model"
-                               placeholder="e.g., Galaxy S21, MacBook Pro"
+                               placeholder="e.g., Galaxy S21, MacBook Pro, Huawei P40"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                     </div>
 
                     <!-- Serial Number -->
                     <div>
                         <label for="serial_number" class="block text-sm font-medium text-gray-700 mb-1">
-                            Serial Number
+                            Número de Serie
                         </label>
                         <input type="text"
                                name="serial_number"
                                id="serial_number"
-                               placeholder="Device serial number"
+                               placeholder="Número de serie del dispositivo"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                     </div>
                 </div>
@@ -106,44 +107,44 @@
                               id="problem_description"
                               rows="4"
                               required
-                              placeholder="Describe the issue with the device..."
+                              placeholder="Describe el problema con el dispositivo..."
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
                 </div>
 
                 <!-- Device Condition -->
                 <div class="mt-4">
                     <label for="device_condition" class="block text-sm font-medium text-gray-700 mb-1">
-                        Physical Condition
+                        Condición Física
                     </label>
                     <textarea name="device_condition"
                               id="device_condition"
                               rows="2"
-                              placeholder="Note any physical damage, scratches, etc..."
+                              placeholder="Nota cualquier daño físico, rayas, etc."
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
                 </div>
 
                 <!-- Accessories -->
                 <div class="mt-4">
                     <label for="accessories_received" class="block text-sm font-medium text-gray-700 mb-1">
-                        Accessories Received
+                        Accesorios Recibidos
                     </label>
                     <input type="text"
                            name="accessories_received"
                            id="accessories_received"
-                           placeholder="e.g., Charger, case, cables..."
+                           placeholder="e.g., Charger, case, cables"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
             </div>
 
             <!-- Service Details -->
             <div class="border-t pt-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Service Details</h3>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Detalles de Servicio</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Estimated Completion -->
                     <div>
                         <label for="estimated_completion" class="block text-sm font-medium text-gray-700 mb-1">
-                            Estimated Completion Date
+                            Fecha Estimada
                         </label>
                         <input type="date"
                                name="estimated_completion"
@@ -155,12 +156,12 @@
                     <!-- Assigned Technician -->
                     <div>
                         <label for="assigned_technician" class="block text-sm font-medium text-gray-700 mb-1">
-                            Assign to Technician
+                            Asignar a Técnico
                         </label>
                         <select name="assigned_technician"
                                 id="assigned_technician"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                            <option value="">Not assigned</option>
+                            <option value="">No asignado</option>
                             {% for tech in technicians %}
                             <option value="{{ tech.id }}">{{ tech.full_name }}</option>
                             {% endfor %}
@@ -170,7 +171,7 @@
                     <!-- Warranty Days -->
                     <div>
                         <label for="warranty_days" class="block text-sm font-medium text-gray-700 mb-1">
-                            Warranty Period (days)
+                            Periodo de Garantía (días)
                         </label>
                         <input type="number"
                                name="warranty_days"
@@ -188,7 +189,7 @@
                                    id="is_express"
                                    value="true"
                                    class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                            <span class="ml-2 text-sm text-gray-700">Express Service</span>
+                            <span class="ml-2 text-sm text-gray-700">Servicio Express</span>
                         </label>
                         <p class="text-xs text-gray-500 mt-1">For repairs while customer waits</p>
                     </div>
@@ -198,7 +199,7 @@
             <!-- Form Actions -->
             <div class="border-t pt-6 flex justify-between">
                 <a href="/repairs" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg">
-                    Cancel
+                    Cancelar
                 </a>
                 <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-lg">
                     Crear Orden de Reparación
@@ -209,7 +210,7 @@
 </div>
 
 <script>
-// Add customer search/filter functionality
+// Agregar customer search/filter functionality
 document.addEventListener('DOMContentLoaded', function() {
     const customerSelect = document.getElementById('customer_id');
 

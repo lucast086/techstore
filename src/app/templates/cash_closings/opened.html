@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Cash Register Opened - TechStore SaaS{% endblock %}
+{% block title %}Registro de Caja Apertura - TechStore{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-  <!-- Success Message -->
+  <!-- Éxito Message -->
   <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
     <div class="flex">
       <div class="flex-shrink-0">
@@ -14,10 +14,10 @@
       </div>
       <div class="ml-3">
         <h3 class="text-lg font-medium text-green-900">
-          Cash Register Opened Successfully
+          Registro de Caja Apertura Exitosamente
         </h3>
         <div class="mt-2 text-sm text-green-700">
-          <p>The cash register has been opened for {{ opening.closing_date.strftime('%B %d, %Y') }}</p>
+          <p>El registro de caja ha sido abierto para {{ opening.closing_date.strftime('%B %d, %Y') }}</p>
         </div>
       </div>
     </div>
@@ -25,21 +25,21 @@
 
   <!-- Opening Details -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Opening Details</h2>
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Detalles de la Apertura</h2>
 
     <div class="space-y-3">
       <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="text-sm font-medium text-gray-600">Opening Time:</span>
+        <span class="text-sm font-medium text-gray-600">Hora de Apertura:</span>
         <span class="text-sm text-gray-900">{{ opening.opened_at.strftime('%I:%M %p') if opening.opened_at else 'Now' }}</span>
       </div>
 
       <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="text-sm font-medium text-gray-600">Opened By:</span>
+        <span class="text-sm font-medium text-gray-600">Apertura Por:</span>
         <span class="text-sm text-gray-900">{{ current_user.name }}</span>
       </div>
 
       <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="text-sm font-medium text-gray-600">Opening Balance:</span>
+        <span class="text-sm font-medium text-gray-600">Saldo de Apertura:</span>
         <span class="text-lg font-semibold text-gray-900">${{ "{:.2f}".format(opening.opening_balance) }}</span>
       </div>
     </div>
@@ -52,7 +52,7 @@
       <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
       </svg>
-      Go to Point of Sale
+      Ir al Punto de Venta
     </a>
 
     <a href="/cash-closings"
@@ -60,17 +60,17 @@
       <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
       </svg>
-      View Cash Closings
+      Ver Cierres de Caja
     </a>
   </div>
 
-  <!-- Next Steps -->
+  <!-- Siguiente Steps -->
   <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-    <h3 class="text-sm font-medium text-blue-900 mb-2">Next Steps:</h3>
+    <h3 class="text-sm font-medium text-blue-900 mb-2">Siguientes Pasos:</h3>
     <ul class="text-sm text-blue-700 space-y-1">
-      <li>• You can now process sales through the Point of Sale system</li>
-      <li>• All sales will be tracked for today's cash closing</li>
-      <li>• Remember to close the cash register at the end of the day</li>
+      <li>• Ahora puede procesar ventas a través del sistema de Punto de Venta</li>
+      <li>• Todas las ventas se rastrearán para el cierre de caja de hoy</li>
+      <li>• Recuerde cerrar el registro de caja al final del día</li>
     </ul>
   </div>
 </div>

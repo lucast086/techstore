@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ "Edit Expense" if expense else "New Expense" }} - TechStore{% endblock %}
+{% block title %}{{ "Editar Gasto" if expense else "Nuevo Gasto" }} - TechStore{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-2xl mx-auto">
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-2xl font-bold mb-6">
-                {{ "Edit Expense" if expense else "Register New Expense" }}
+                {{ "Editar Gasto" if expense else "Registrar Nuevo Gasto" }}
             </h2>
 
             {% if error %}
@@ -20,12 +20,12 @@
                 <!-- Category -->
                 <div class="mb-4">
                     <label for="category_id" class="block text-gray-700 text-sm font-bold mb-2">
-                        Category <span class="text-red-500">*</span>
+                        Categoría <span class="text-red-500">*</span>
                     </label>
                     <select name="category_id" id="category_id" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
                             {% if expense %}disabled{% endif %}>
-                        <option value="">Select a category</option>
+                        <option value="">Selecciona una categoría</option>
                         {% for category in categories %}
                         <option value="{{ category.id }}"
                                 {% if expense and expense.category_id == category.id %}selected{% endif %}>
@@ -38,7 +38,7 @@
                 <!-- Amount -->
                 <div class="mb-4">
                     <label for="amount" class="block text-gray-700 text-sm font-bold mb-2">
-                        Amount <span class="text-red-500">*</span>
+                        Monto <span class="text-red-500">*</span>
                     </label>
                     <input type="number" name="amount" id="amount" step="0.01" min="0.01" required
                            value="{{ expense.amount if expense else '' }}"
@@ -49,7 +49,7 @@
                 <!-- Description -->
                 <div class="mb-4">
                     <label for="description" class="block text-gray-700 text-sm font-bold mb-2">
-                        Description <span class="text-red-500">*</span>
+                        Descripción <span class="text-red-500">*</span>
                     </label>
                     <textarea name="description" id="description" rows="3" required
                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
@@ -59,7 +59,7 @@
                 <!-- Expense Date -->
                 <div class="mb-4">
                     <label for="expense_date" class="block text-gray-700 text-sm font-bold mb-2">
-                        Date <span class="text-red-500">*</span>
+                        Fecha <span class="text-red-500">*</span>
                     </label>
                     <input type="date" name="expense_date" id="expense_date" required
                            value="{{ expense.expense_date.isoformat() if expense else '' }}"
@@ -71,54 +71,54 @@
                 <!-- Payment Method -->
                 <div class="mb-4">
                     <label for="payment_method" class="block text-gray-700 text-sm font-bold mb-2">
-                        Payment Method <span class="text-red-500">*</span>
+                        Método de Pago <span class="text-red-500">*</span>
                     </label>
                     <select name="payment_method" id="payment_method" required
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200">
-                        <option value="">Select payment method</option>
+                        <option value="">Selecciona un método de pago</option>
                         <option value="cash" {% if expense and expense.payment_method == "cash" %}selected{% endif %}>Cash</option>
                         <option value="transfer" {% if expense and expense.payment_method == "transfer" %}selected{% endif %}>Bank Transfer</option>
                         <option value="card" {% if expense and expense.payment_method == "card" %}selected{% endif %}>Credit/Debit Card</option>
                     </select>
                 </div>
 
-                <!-- Receipt Number (Optional) -->
+                <!-- Receipt Number (Opcional) -->
                 <div class="mb-4">
                     <label for="receipt_number" class="block text-gray-700 text-sm font-bold mb-2">
-                        Receipt Number
+                        Número de Recibo
                     </label>
                     <input type="text" name="receipt_number" id="receipt_number"
                            value="{{ expense.receipt_number if expense and expense.receipt_number else '' }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                           placeholder="Optional">
+                           placeholder="Opcional">
                 </div>
 
-                <!-- Supplier Name (Optional) -->
+                <!-- Supplier Name (Opcional) -->
                 <div class="mb-4">
                     <label for="supplier_name" class="block text-gray-700 text-sm font-bold mb-2">
-                        Supplier Name
+                        Nombre del Proveedor
                     </label>
                     <input type="text" name="supplier_name" id="supplier_name"
                            value="{{ expense.supplier_name if expense and expense.supplier_name else '' }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-200"
-                           placeholder="Optional">
+                           placeholder="Opcional">
                 </div>
 
                 <!-- Buttons -->
                 <div class="flex justify-between items-center mt-6">
                     <a href="/expenses" class="text-gray-600 hover:text-gray-800">
-                        Cancel
+                        Cancelar
                     </a>
                     <button type="submit"
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
-                        {{ "Update Expense" if expense else "Register Expense" }}
+                        {{ "Actualizar Gasto" if expense else "Registrar Gasto" }}
                     </button>
                 </div>
             </form>
 
             {% if expense and expense.is_editable %}
             <div class="mt-6 pt-6 border-t border-gray-200">
-                <h3 class="text-lg font-semibold mb-4">Upload Receipt</h3>
+                <h3 class="text-lg font-semibold mb-4">Subir Recibo</h3>
                 <form id="receipt-upload-form"
                       hx-post="/expenses/{{ expense.id }}/receipt"
                       hx-encoding="multipart/form-data"
@@ -130,14 +130,14 @@
                     <div id="receipt-message"></div>
                     <button type="submit"
                             class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        Upload Receipt
+                        Subir Recibo
                     </button>
                 </form>
                 {% if expense.receipt_file_path %}
                 <p class="mt-2 text-sm text-gray-600">
-                    Receipt already uploaded:
+                    Recibo ya subido:
                     <a href="/{{ expense.receipt_file_path }}" target="_blank" class="text-blue-500 hover:underline">
-                        View Receipt
+                        Ver Recibo
                     </a>
                 </p>
                 {% endif %}

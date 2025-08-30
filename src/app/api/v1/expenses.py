@@ -43,7 +43,7 @@ async def list_expense_categories(
     categories = expense_service.get_all_categories(db, skip=skip, limit=limit)
     return ResponseSchema(
         success=True,
-        message="Categories retrieved successfully",
+        message="Categorías recuperadas exitosamente",
         data=categories,
     )
 
@@ -60,7 +60,7 @@ async def list_active_categories(
     categories = expense_service.get_categories_for_dropdown(db)
     return ResponseSchema(
         success=True,
-        message="Active categories retrieved successfully",
+        message="Categorías activas recuperadas exitosamente",
         data=categories,
     )
 
@@ -81,7 +81,7 @@ async def create_expense_category(
         category = expense_service.manage_category(db, category_create=category_in)
         return ResponseSchema(
             success=True,
-            message="Category created successfully",
+            message="Categoría creada exitosamente",
             data=ExpenseCategoryResponse.model_validate(category),
         )
     except ValueError as e:
@@ -109,7 +109,7 @@ async def update_expense_category(
         )
         return ResponseSchema(
             success=True,
-            message="Category updated successfully",
+            message="Categoría actualizada exitosamente",
             data=ExpenseCategoryResponse.model_validate(category),
         )
     except ValueError as e:
@@ -147,7 +147,7 @@ async def deactivate_expense_category(
 
         return ResponseSchema(
             success=True,
-            message="Category deactivated successfully",
+            message="Categoría desactivada exitosamente",
             data=ExpenseCategoryResponse.model_validate(category),
         )
     except ValueError as e:
@@ -184,7 +184,7 @@ async def create_expense(
 
         return ResponseSchema(
             success=True,
-            message="Expense created successfully",
+            message="Gasto creado exitosamente",
             data=ExpenseResponse(
                 **expense.__dict__,
                 category_name=expense.category.name,
@@ -230,7 +230,7 @@ async def list_expenses(
 
     return ResponseSchema(
         success=True,
-        message="Expenses retrieved successfully",
+        message="Gastos recuperados exitosamente",
         data=expenses,
     )
 
@@ -252,7 +252,7 @@ async def get_expense_summary(
 
     return ResponseSchema(
         success=True,
-        message=f"Expense summary for {target_date}",
+        message=f"Resumen de gastos para {target_date}",
         data=summary,
     )
 
@@ -280,7 +280,7 @@ async def get_expense(
 
     return ResponseSchema(
         success=True,
-        message="Expense retrieved successfully",
+        message="Gasto recuperado exitosamente",
         data=ExpenseResponse(
             **expense.__dict__,
             category_name=expense.category.name,
@@ -314,7 +314,7 @@ async def update_expense(
 
         return ResponseSchema(
             success=True,
-            message="Expense updated successfully",
+            message="Gasto actualizado exitosamente",
             data=ExpenseResponse(
                 **expense.__dict__,
                 category_name=expense.category.name,

@@ -114,7 +114,6 @@
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
                 <div id="phone-check" class="mt-1"></div>
-                <p class="mt-1 text-sm text-gray-500">Main contact number</p>
               </div>
 
               <div>
@@ -129,10 +128,9 @@
                   id="phone_secondary"
                   name="phone_secondary"
                   value="{{ (form_data.phone_secondary if form_data else customer.phone_secondary if customer else '') }}"
-                  placeholder="Optional"
+                  placeholder="Opcional"
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-400"
                 />
-                <p class="mt-1 text-sm text-gray-500">Alternative contact</p>
               </div>
             </div>
 
@@ -149,10 +147,9 @@
                 id="email"
                 name="email"
                 value="{{ (form_data.email if form_data else customer.email if customer else '') }}"
-                placeholder="Optional"
+                placeholder="Opcional"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-400"
               />
-              <p class="mt-1 text-sm text-gray-500">For electronic receipts</p>
             </div>
           </div>
         </div>
@@ -178,14 +175,11 @@
                 id="address"
                 name="address"
                 rows="3"
-                placeholder="Optional"
+                placeholder="Opcional"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-400"
               >
 {{ (form_data.address if form_data else customer.address if customer else '') }}</textarea
               >
-              <p class="mt-1 text-sm text-gray-500">
-                Physical address for deliveries
-              </p>
             </div>
 
             <!-- Notes Field -->
@@ -200,13 +194,13 @@
                 id="notes"
                 name="notes"
                 rows="3"
-                placeholder="Optional - Any special notes about this customer"
+                placeholder="Opcional"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder-gray-400"
               >
 {{ (form_data.notes if form_data else customer.notes if customer else '') }}</textarea
               >
               <p class="mt-1 text-sm text-gray-500">
-                Internal notes (not visible to customer)
+                Notas Internas (no visibles para el cliente)
               </p>
             </div>
           </div>

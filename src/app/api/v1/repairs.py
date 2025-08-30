@@ -49,7 +49,7 @@ async def create_repair(
         )
         return ResponseSchema(
             success=True,
-            message="Repair order created successfully",
+            message="Orden de reparación creada exitosamente",
             data=repair.model_dump(),
         )
     except ValueError as e:
@@ -61,7 +61,7 @@ async def create_repair(
         logger.error(f"Error creating repair: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error creating repair order",
+            detail="Error al crear la orden de reparación",
         ) from e
 
 
@@ -156,7 +156,7 @@ async def update_repair(
 
     return ResponseSchema(
         success=True,
-        message="Repair updated successfully",
+        message="Reparación actualizada exitosamente",
         data=repair.model_dump(),
     )
 
@@ -188,7 +188,7 @@ async def add_diagnosis(
 
         return ResponseSchema(
             success=True,
-            message="Diagnosis added successfully",
+            message="Diagnóstico agregado exitosamente",
             data=repair.model_dump(),
         )
     except ValueError as e:
@@ -230,7 +230,7 @@ async def update_repair_status(
 
         return ResponseSchema(
             success=True,
-            message=f"Status updated to {status_update.status}",
+            message=f"Estado de reparación actualizado a {status_update.status}",
             data=repair.model_dump(),
         )
     except ValueError as e:
@@ -265,7 +265,7 @@ async def complete_repair(
 
         return ResponseSchema(
             success=True,
-            message="Repair completed successfully",
+            message="Reparación completada exitosamente",
             data=repair.model_dump(),
         )
     except ValueError as e:
@@ -303,7 +303,7 @@ async def deliver_repair(
 
         return ResponseSchema(
             success=True,
-            message="Repair delivered successfully",
+            message="Reparación entregada exitosamente",
             data=repair.model_dump(),
         )
     except ValueError as e:
@@ -330,7 +330,7 @@ async def add_repair_part(
 
     return ResponseSchema(
         success=True,
-        message="Part added successfully",
+        message="Parte agregada exitosamente",
         data={"part_id": part_added.id},
     )
 
@@ -351,7 +351,7 @@ async def remove_repair_part(
 
     return ResponseSchema(
         success=True,
-        message="Part removed successfully",
+        message="Parte removida exitosamente",
     )
 
 
@@ -378,6 +378,6 @@ async def add_repair_photo(
 
     return ResponseSchema(
         success=True,
-        message="Photo added successfully",
+        message="Foto agregada exitosamente",
         data={"photo_id": photo_added.id},
     )

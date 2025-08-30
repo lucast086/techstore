@@ -198,10 +198,10 @@
         <!-- Print Button -->
         <div class="no-print" style="margin-bottom: 1rem; text-align: right;">
             <a href="/customers/{{ payment.customer_id }}" style="display: inline-block; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; color: #374151; text-decoration: none; margin-right: 0.5rem;">
-                ← Back to Customer
+                ← Volver a Cliente
             </a>
             <button onclick="window.print()" style="padding: 0.5rem 1rem; background: #2563eb; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
-                Print Receipt
+                Imprimir Recibo
             </button>
         </div>
 
@@ -210,75 +210,75 @@
 
     <div class="receipt-header">
         <div class="company-name">TechStore</div>
-        <div style="font-size: 12px;">123 Main Street, City, State 12345</div>
-        <div style="font-size: 12px;">Phone: (555) 123-4567</div>
+        <div style="font-size: 12px;">Saavedra 83 - San Basilio</div>
+        <div style="font-size: 12px;">Phone: (3585) 4242835</div>
         <div class="receipt-title">PAYMENT RECEIPT</div>
     </div>
 
     <div class="receipt-info">
         <div class="info-section">
-            <div class="info-label">Receipt Number</div>
+            <div class="info-label">Número de Recibo</div>
             <div class="info-value">{{ payment.receipt_number }}</div>
 
-            <div class="info-label">Date</div>
+            <div class="info-label">Fecha</div>
             <div class="info-value">{{ payment.created_at.strftime('%B %d, %Y') }}</div>
 
-            <div class="info-label">Time</div>
+            <div class="info-label">Hora</div>
             <div class="info-value">{{ payment.created_at.strftime('%I:%M %p') }}</div>
         </div>
 
         <div class="info-section">
-            <div class="info-label">Customer</div>
+            <div class="info-label">Cliente</div>
             <div class="info-value">{{ payment.customer.name }}</div>
 
-            <div class="info-label">Phone</div>
+            <div class="info-label">Teléfono</div>
             <div class="info-value">{{ payment.customer.phone }}</div>
 
             {% if payment.sale %}
-            <div class="info-label">Related Sale</div>
+            <div class="info-label">Venta Relacionada</div>
             <div class="info-value">{{ payment.sale.invoice_number }}</div>
             {% endif %}
         </div>
     </div>
 
     <div class="payment-details">
-        <h3 style="margin-top: 0; margin-bottom: 8px;">Payment Details</h3>
+        <h3 style="margin-top: 0; margin-bottom: 8px;">Detalles de Pago</h3>
 
         <div class="detail-row">
-            <div class="detail-label">Payment Method:</div>
+            <div class="detail-label">Método de Pago:</div>
             <div>{{ payment.payment_method.title() }}</div>
         </div>
 
         {% if payment.payment_method == "mixed" and payment.notes %}
         <div class="detail-row">
-            <div class="detail-label">Method Breakdown:</div>
+            <div class="detail-label">Desglose del Método:</div>
             <div>{{ payment.notes }}</div>
         </div>
         {% endif %}
 
         {% if payment.reference_number %}
         <div class="detail-row">
-            <div class="detail-label">Reference Number:</div>
+            <div class="detail-label">Número de Referencia:</div>
             <div>{{ payment.reference_number }}</div>
         </div>
         {% endif %}
 
         <div class="detail-row">
-            <div class="detail-label amount">Amount Received:</div>
+            <div class="detail-label amount">Monto Recibido:</div>
             <div class="amount">${{ "{:,.2f}".format(payment.amount) }}</div>
         </div>
     </div>
 
     <div class="balance-section {% if balance_after < 0 %}balance-negative{% endif %}">
-        <h3 style="margin-top: 0; margin-bottom: 8px;">Account Balance</h3>
+        <h3 style="margin-top: 0; margin-bottom: 8px;">Balance de la Cuenta</h3>
 
         <div class="detail-row">
-            <div class="detail-label">Balance Before Payment:</div>
+            <div class="detail-label">Balance Antes del Pago:</div>
             <div>
                 {% if balance_before < 0 %}
-                    Owed ${{ "{:,.2f}".format(-balance_before) }}
+                    Debe ${{ "{:,.2f}".format(-balance_before) }}
                 {% elif balance_before > 0 %}
-                    Credit ${{ "{:,.2f}".format(balance_before) }}
+                    Credito ${{ "{:,.2f}".format(balance_before) }}
                 {% else %}
                     $0.00
                 {% endif %}
@@ -286,19 +286,19 @@
         </div>
 
         <div class="detail-row">
-            <div class="detail-label">Payment Applied:</div>
+            <div class="detail-label">Pago Aplicado:</div>
             <div>${{ "{:,.2f}".format(payment.amount) }}</div>
         </div>
 
         <div class="detail-row">
-            <div class="detail-label amount">Current Balance:</div>
+            <div class="detail-label amount">Balance Actual:</div>
             <div class="amount">
                 {% if balance_after < 0 %}
-                    Owes ${{ "{:,.2f}".format(-balance_after) }}
+                    Debe ${{ "{:,.2f}".format(-balance_after) }}
                 {% elif balance_after > 0 %}
-                    Credit ${{ "{:,.2f}".format(balance_after) }}
+                    Credito ${{ "{:,.2f}".format(balance_after) }}
                 {% else %}
-                    PAID IN FULL
+                    PAGADO EN SU TOTALIDAD
                 {% endif %}
             </div>
         </div>
@@ -306,20 +306,20 @@
 
     {% if payment.notes and payment.payment_method != "mixed" %}
     <div class="payment-details">
-        <h3 style="margin-top: 0; margin-bottom: 5px;">Notes</h3>
+        <h3 style="margin-top: 0; margin-bottom: 5px;">Notas</h3>
         <p style="margin: 0; font-size: 14px;">{{ payment.notes }}</p>
     </div>
     {% endif %}
 
     <div class="signature-line">
-        <div style="font-size: 12px;">Received By</div>
+        <div style="font-size: 12px;">Recibido Por</div>
         <div style="margin-top: 3px; font-size: 14px;">{{ payment.received_by.full_name }}</div>
     </div>
 
     <div class="footer">
-        <p>Thank you for your payment!</p>
-        <p style="font-size: 10px;">This is a computer-generated receipt</p>
-        <p style="font-size: 10px;">For questions: (555) 123-4567</p>
+        <p>Gracias por su pago!</p>
+        <p style="font-size: 10px;">Este es un recibo generado por computadora</p>
+        <p style="font-size: 10px;">Para preguntas: (3585) 4242835</p>
     </div>
 
         </div> <!-- End receipt-container -->

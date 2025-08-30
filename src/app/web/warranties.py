@@ -196,7 +196,7 @@ async def void_warranty(
                 "request": request,
                 "warranty": warranty,
                 "current_user": current_user,
-                "message": "Warranty voided successfully",
+                "message": "Garantía anulada exitosamente",
             },
         )
     except ValueError as e:

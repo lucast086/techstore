@@ -3,25 +3,25 @@
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
+                    Fecha
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
+                    Categoría
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
+                    Descripción
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
+                    Monto
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment
+                    Pago
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created By
+                    Creado Por
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    Acciones
                 </th>
             </tr>
         </thead>
@@ -69,7 +69,7 @@
                         <a href="/{{ expense.receipt_file_path }}"
                            target="_blank"
                            class="text-blue-600 hover:text-blue-900"
-                           title="View Receipt">
+                           title="Ver Recibo">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -82,11 +82,11 @@
                         {% if expense.is_editable and expense.created_by == current_user.id %}
                         <a href="/expenses/{{ expense.id }}/edit"
                            class="text-indigo-600 hover:text-indigo-900">
-                            Edit
+                            Editar
                         </a>
                         {% else %}
                         <span class="text-gray-400" title="Can only edit same-day expenses you created">
-                            Edit
+                            Editar
                         </span>
                         {% endif %}
                     </div>
@@ -95,7 +95,7 @@
             {% else %}
             <tr>
                 <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                    No expenses found.
+                    No existen gastos.
                 </td>
             </tr>
             {% endfor %}
