@@ -155,6 +155,9 @@ class SaleItem(BaseModel):
         DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
     )
     total_price: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
+    is_custom_price: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, comment="Whether custom price was used"
+    )
 
     # Relationships
     sale: Mapped["Sale"] = relationship("Sale", back_populates="items")
@@ -168,3 +171,8 @@ class SaleItem(BaseModel):
     def subtotal(self) -> Decimal:
         """Calculate subtotal before discounts."""
         return self.unit_price * self.quantity
+
+    @property
+    def price_note(self) -> str:
+        """Return note about pricing type."""
+        return "Custom Price" if self.is_custom_price else ""

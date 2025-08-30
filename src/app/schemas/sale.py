@@ -15,12 +15,36 @@ class SaleItemBase(BaseModel):
     unit_price: Decimal = Field(ge=0, decimal_places=2)
     discount_percentage: Decimal = Field(default=Decimal("0"), ge=0, le=100)
     discount_amount: Decimal = Field(default=Decimal("0"), ge=0)
+    is_custom_price: bool = Field(
+        default=False, description="Whether custom price was used"
+    )
 
 
-class SaleItemCreate(SaleItemBase):
+class SaleItemCreate(BaseModel):
     """Schema for creating sale items."""
 
-    pass
+    product_id: int
+    quantity: int = Field(gt=0)
+    unit_price: Optional[Decimal] = Field(
+        None, ge=0, decimal_places=2, description="Custom price override"
+    )
+    is_custom_price: bool = Field(
+        default=False, description="Whether to use custom price"
+    )
+    discount_percentage: Decimal = Field(default=Decimal("0"), ge=0, le=100)
+    discount_amount: Decimal = Field(default=Decimal("0"), ge=0)
+
+    @field_validator("unit_price")
+    @classmethod
+    def validate_custom_price(
+        cls, unit_price: Optional[Decimal], values
+    ) -> Optional[Decimal]:
+        """Validate custom price when is_custom_price is True."""
+        if values.data.get("is_custom_price") and unit_price is None:
+            raise ValueError("unit_price is required when is_custom_price is True")
+        if unit_price is not None and unit_price > Decimal("999999.99"):
+            raise ValueError("Custom price exceeds maximum allowed")
+        return unit_price
 
 
 class SaleItemInDB(SaleItemBase):
@@ -40,6 +64,8 @@ class SaleItemResponse(SaleItemInDB):
 
     product_name: Optional[str] = None
     product_sku: Optional[str] = None
+    is_custom_price: bool = False
+    price_note: Optional[str] = None
 
 
 class SaleBase(BaseModel):

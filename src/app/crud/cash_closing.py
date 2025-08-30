@@ -55,8 +55,12 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         closed_by: int,
     ) -> CashClosing:
         """Create new daily closing with calculated values."""
-        # Calculate expected cash and difference
-        expected_cash = closing_data.opening_balance + sales_total - expenses_total
+        # Calculate expected cash (only cash transactions affect cash balance)
+        expected_cash = (
+            closing_data.opening_balance
+            + closing_data.sales_cash
+            - closing_data.expenses_cash
+        )
         cash_difference = closing_data.cash_count - expected_cash
 
         # Create closing record
@@ -68,6 +72,14 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             cash_count=closing_data.cash_count,
             expected_cash=expected_cash,
             cash_difference=cash_difference,
+            # Payment method breakdown
+            sales_cash=closing_data.sales_cash,
+            sales_credit=closing_data.sales_credit,
+            sales_transfer=closing_data.sales_transfer,
+            sales_mixed=closing_data.sales_mixed,
+            expenses_cash=closing_data.expenses_cash,
+            expenses_transfer=closing_data.expenses_transfer,
+            expenses_card=closing_data.expenses_card,
             notes=closing_data.notes,
             closed_by=closed_by,
             is_finalized=False,  # Always start as draft
@@ -99,7 +111,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         )
 
     def get_daily_summary(self, db: Session, *, target_date: date) -> DailySummary:
-        """Aggregate sales and expenses for a date."""
+        """Aggregate sales and expenses for a date with payment method breakdown."""
         # Get sales summary for the date
         sales_result = (
             db.query(
@@ -111,6 +123,30 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             .first()
         )
 
+        # Get sales by payment method
+        sales_by_method = (
+            db.query(Sale.payment_method, func.sum(Sale.total_amount).label("amount"))
+            .filter(func.date(Sale.sale_date) == target_date)
+            .filter(Sale.is_voided == False)  # noqa: E712
+            .group_by(Sale.payment_method)
+            .all()
+        )
+
+        sales_cash = Decimal("0.00")
+        sales_credit = Decimal("0.00")
+        sales_transfer = Decimal("0.00")
+        sales_mixed = Decimal("0.00")
+
+        for row in sales_by_method:
+            if row.payment_method == "cash":
+                sales_cash = row.amount or Decimal("0.00")
+            elif row.payment_method == "credit":
+                sales_credit = row.amount or Decimal("0.00")
+            elif row.payment_method == "transfer":
+                sales_transfer = row.amount or Decimal("0.00")
+            elif row.payment_method == "mixed":
+                sales_mixed = row.amount or Decimal("0.00")
+
         # Get expenses summary for the date
         expenses_result = (
             db.query(
@@ -120,6 +156,26 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             .filter(Expense.expense_date == target_date)
             .first()
         )
+
+        # Get expenses by payment method
+        expenses_by_method = (
+            db.query(Expense.payment_method, func.sum(Expense.amount).label("amount"))
+            .filter(Expense.expense_date == target_date)
+            .group_by(Expense.payment_method)
+            .all()
+        )
+
+        expenses_cash = Decimal("0.00")
+        expenses_transfer = Decimal("0.00")
+        expenses_card = Decimal("0.00")
+
+        for row in expenses_by_method:
+            if row.payment_method == "cash":
+                expenses_cash = row.amount or Decimal("0.00")
+            elif row.payment_method == "transfer":
+                expenses_transfer = row.amount or Decimal("0.00")
+            elif row.payment_method == "card":
+                expenses_card = row.amount or Decimal("0.00")
 
         total_expenses = expenses_result.total_expenses or Decimal("0.00")
         expenses_count = expenses_result.expenses_count or 0
@@ -134,6 +190,14 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             sales_count=sales_result.sales_count or 0,
             expenses_count=expenses_count,
             has_closing=has_closing,
+            # Payment method breakdown
+            sales_cash=sales_cash,
+            sales_credit=sales_credit,
+            sales_transfer=sales_transfer,
+            sales_mixed=sales_mixed,
+            expenses_cash=expenses_cash,
+            expenses_transfer=expenses_transfer,
+            expenses_card=expenses_card,
         )
 
     def get_finalized_closings(
@@ -223,6 +287,14 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             cash_count=opening_balance,  # Initially same as opening
             expected_cash=opening_balance,
             cash_difference=Decimal("0.00"),
+            # Initialize payment method breakdowns to zero
+            sales_cash=Decimal("0.00"),
+            sales_credit=Decimal("0.00"),
+            sales_transfer=Decimal("0.00"),
+            sales_mixed=Decimal("0.00"),
+            expenses_cash=Decimal("0.00"),
+            expenses_transfer=Decimal("0.00"),
+            expenses_card=Decimal("0.00"),
             opened_at=func.now(),
             opened_by=opened_by,
             closed_by=opened_by,  # Set to same user initially

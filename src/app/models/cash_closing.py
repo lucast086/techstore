@@ -68,6 +68,53 @@ class CashClosing(BaseModel):
     cash_difference: Mapped[Decimal] = mapped_column(
         DECIMAL(10, 2), nullable=False, comment="Difference (actual - expected)"
     )
+
+    # Payment method breakdown for sales
+    sales_cash: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Cash sales total",
+    )
+    sales_credit: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Credit sales total",
+    )
+    sales_transfer: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Transfer sales total",
+    )
+    sales_mixed: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Mixed payment sales total",
+    )
+
+    # Payment method breakdown for expenses
+    expenses_cash: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Cash expenses total",
+    )
+    expenses_transfer: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Transfer expenses total",
+    )
+    expenses_card: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Card expenses total",
+    )
+
     notes: Mapped[Optional[str]] = mapped_column(
         Text, nullable=True, comment="Closing notes or observations"
     )
@@ -119,9 +166,23 @@ class CashClosing(BaseModel):
         return "Draft"
 
     def calculate_expected_cash(self) -> Decimal:
-        """Calculate expected cash balance."""
+        """Calculate expected cash balance (deprecated - use calculate_expected_cash_amount)."""
         return self.opening_balance + self.sales_total - self.expenses_total
 
     def calculate_difference(self) -> Decimal:
         """Calculate cash difference (actual - expected)."""
         return self.cash_count - self.expected_cash
+
+    def calculate_sales_total(self) -> Decimal:
+        """Calculate total sales from payment method breakdown."""
+        return (
+            self.sales_cash + self.sales_credit + self.sales_transfer + self.sales_mixed
+        )
+
+    def calculate_expenses_total(self) -> Decimal:
+        """Calculate total expenses from payment method breakdown."""
+        return self.expenses_cash + self.expenses_transfer + self.expenses_card
+
+    def calculate_expected_cash_amount(self) -> Decimal:
+        """Calculate expected cash amount (only cash transactions)."""
+        return self.opening_balance + self.sales_cash - self.expenses_cash

@@ -13,6 +13,7 @@ from app.schemas.cash_closing import (
     CashClosingCreate,
     CashClosingResponse,
     DailySummary,
+    PaymentMethodBreakdown,
 )
 
 logger = logging.getLogger(__name__)
@@ -69,6 +70,45 @@ class CashClosingService:
         """
         logger.info(f"Calculating daily totals for {target_date}")
         return cash_closing.get_daily_summary(db, target_date=target_date)
+
+    def get_daily_summary_with_breakdown(
+        self, db: Session, target_date: date
+    ) -> DailySummary:
+        """Get daily summary with payment method breakdown.
+
+        Args:
+            db: Database session.
+            target_date: Date to get summary for.
+
+        Returns:
+            Daily summary with payment method breakdown.
+        """
+        logger.info(f"Getting daily summary with breakdown for {target_date}")
+        return cash_closing.get_daily_summary(db, target_date=target_date)
+
+    def calculate_payment_breakdown(
+        self, db: Session, target_date: date
+    ) -> PaymentMethodBreakdown:
+        """Calculate payment method breakdown for a date.
+
+        Args:
+            db: Database session.
+            target_date: Date to calculate breakdown for.
+
+        Returns:
+            Payment method breakdown.
+        """
+        daily_summary = self.get_daily_summary_with_breakdown(db, target_date)
+
+        return PaymentMethodBreakdown(
+            sales_cash=daily_summary.sales_cash,
+            sales_credit=daily_summary.sales_credit,
+            sales_transfer=daily_summary.sales_transfer,
+            sales_mixed=daily_summary.sales_mixed,
+            expenses_cash=daily_summary.expenses_cash,
+            expenses_transfer=daily_summary.expenses_transfer,
+            expenses_card=daily_summary.expenses_card,
+        )
 
     def validate_cash_difference(
         self, cash_difference: Decimal, threshold: Decimal = Decimal("10.00")
@@ -188,10 +228,11 @@ class CashClosingService:
 
         if existing:
             # Update the existing opening record with closing data
+            # Calculate expected cash (only cash transactions affect cash balance)
             expected_cash = (
                 closing_data.opening_balance
-                + daily_summary.total_sales
-                - daily_summary.total_expenses
+                + daily_summary.sales_cash
+                - daily_summary.expenses_cash
             )
             cash_difference = closing_data.cash_count - expected_cash
 
@@ -200,6 +241,14 @@ class CashClosingService:
             existing.cash_count = closing_data.cash_count
             existing.expected_cash = expected_cash
             existing.cash_difference = cash_difference
+            # Update payment method breakdown
+            existing.sales_cash = daily_summary.sales_cash
+            existing.sales_credit = daily_summary.sales_credit
+            existing.sales_transfer = daily_summary.sales_transfer
+            existing.sales_mixed = daily_summary.sales_mixed
+            existing.expenses_cash = daily_summary.expenses_cash
+            existing.expenses_transfer = daily_summary.expenses_transfer
+            existing.expenses_card = daily_summary.expenses_card
             existing.notes = closing_data.notes
             existing.closed_by = user_id
             existing.closed_at = func.now()
@@ -209,6 +258,15 @@ class CashClosingService:
             db_closing = existing
         else:
             # Create new closing record if no opening exists
+            # Update closing_data with payment method breakdown from daily summary
+            closing_data.sales_cash = daily_summary.sales_cash
+            closing_data.sales_credit = daily_summary.sales_credit
+            closing_data.sales_transfer = daily_summary.sales_transfer
+            closing_data.sales_mixed = daily_summary.sales_mixed
+            closing_data.expenses_cash = daily_summary.expenses_cash
+            closing_data.expenses_transfer = daily_summary.expenses_transfer
+            closing_data.expenses_card = daily_summary.expenses_card
+
             db_closing = cash_closing.create_closing(
                 db,
                 closing_data=closing_data,

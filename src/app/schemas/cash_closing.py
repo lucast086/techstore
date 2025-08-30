@@ -9,6 +9,32 @@ from pydantic import Field, validator
 from app.schemas.base import BaseSchema, TimestampSchema
 
 
+class PaymentMethodBreakdown(BaseSchema):
+    """Schema for payment method breakdown."""
+
+    sales_cash: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Cash sales total"
+    )
+    sales_credit: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Credit sales total"
+    )
+    sales_transfer: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Transfer sales total"
+    )
+    sales_mixed: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Mixed payment sales total"
+    )
+    expenses_cash: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Cash expenses total"
+    )
+    expenses_transfer: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Transfer expenses total"
+    )
+    expenses_card: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Card expenses total"
+    )
+
+
 class CashClosingBase(BaseSchema):
     """Base schema for cash closing operations."""
 
@@ -23,6 +49,32 @@ class CashClosingBase(BaseSchema):
         default=Decimal("0.00"), ge=0, description="Total expenses for the day"
     )
     cash_count: Decimal = Field(..., ge=0, description="Actual cash counted at closing")
+
+    # Payment method breakdown for sales
+    sales_cash: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Cash sales total"
+    )
+    sales_credit: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Credit sales total"
+    )
+    sales_transfer: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Transfer sales total"
+    )
+    sales_mixed: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Mixed payment sales total"
+    )
+
+    # Payment method breakdown for expenses
+    expenses_cash: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Cash expenses total"
+    )
+    expenses_transfer: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Transfer expenses total"
+    )
+    expenses_card: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Card expenses total"
+    )
+
     notes: Optional[str] = Field(None, max_length=1000, description="Closing notes")
 
 
@@ -34,6 +86,32 @@ class CashClosingCreate(BaseSchema):
         ..., ge=0, description="Cash balance at start of day"
     )
     cash_count: Decimal = Field(..., ge=0, description="Actual cash counted at closing")
+
+    # Payment method breakdown for sales
+    sales_cash: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Cash sales total"
+    )
+    sales_credit: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Credit sales total"
+    )
+    sales_transfer: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Transfer sales total"
+    )
+    sales_mixed: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Mixed payment sales total"
+    )
+
+    # Payment method breakdown for expenses
+    expenses_cash: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Cash expenses total"
+    )
+    expenses_transfer: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Transfer expenses total"
+    )
+    expenses_card: Decimal = Field(
+        default=Decimal("0.00"), ge=0, description="Card expenses total"
+    )
+
     notes: Optional[str] = Field(None, max_length=1000, description="Closing notes")
 
     @validator("closing_date")
@@ -113,6 +191,29 @@ class DailySummary(BaseSchema):
     sales_count: int = Field(default=0, description="Number of sales transactions")
     expenses_count: int = Field(default=0, description="Number of expense entries")
     has_closing: bool = Field(default=False, description="Whether day has been closed")
+
+    # Payment method breakdown for sales
+    sales_cash: Decimal = Field(default=Decimal("0.00"), description="Cash sales total")
+    sales_credit: Decimal = Field(
+        default=Decimal("0.00"), description="Credit sales total"
+    )
+    sales_transfer: Decimal = Field(
+        default=Decimal("0.00"), description="Transfer sales total"
+    )
+    sales_mixed: Decimal = Field(
+        default=Decimal("0.00"), description="Mixed payment sales total"
+    )
+
+    # Payment method breakdown for expenses
+    expenses_cash: Decimal = Field(
+        default=Decimal("0.00"), description="Cash expenses total"
+    )
+    expenses_transfer: Decimal = Field(
+        default=Decimal("0.00"), description="Transfer expenses total"
+    )
+    expenses_card: Decimal = Field(
+        default=Decimal("0.00"), description="Card expenses total"
+    )
 
 
 class CashClosingFinalize(BaseSchema):

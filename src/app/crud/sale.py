@@ -77,8 +77,16 @@ class SaleCRUD:
                         f"Available: {product.current_stock}, Requested: {item.quantity}"
                     )
 
+                # Use custom price if specified, otherwise use product's selling price
+                if item.is_custom_price and item.unit_price is not None:
+                    unit_price = item.unit_price
+                else:
+                    unit_price = product.selling_price
+                    # Update item with the product price for later use
+                    item.unit_price = unit_price
+
                 # Calculate item total
-                item_subtotal = item.unit_price * item.quantity
+                item_subtotal = unit_price * item.quantity
                 item_discount = (
                     item_subtotal * item.discount_percentage / 100
                 ) + item.discount_amount
@@ -94,8 +102,15 @@ class SaleCRUD:
                 product = (
                     db.query(Product).filter(Product.id == item.product_id).first()
                 )
+
+                # Use same price determination as above
+                if item.is_custom_price and item.unit_price is not None:
+                    unit_price = item.unit_price
+                else:
+                    unit_price = product.selling_price
+
                 # Calculate proportional tax for each item after sale discount
-                item_subtotal = item.unit_price * item.quantity
+                item_subtotal = unit_price * item.quantity
                 item_discount = (
                     item_subtotal * item.discount_percentage / 100
                 ) + item.discount_amount
@@ -162,8 +177,16 @@ class SaleCRUD:
                     db.query(Product).filter(Product.id == item.product_id).first()
                 )
 
+                # Use custom price if specified, otherwise use product's selling price
+                if item.is_custom_price and item.unit_price is not None:
+                    unit_price = item.unit_price
+                    is_custom_price = True
+                else:
+                    unit_price = product.selling_price
+                    is_custom_price = False
+
                 # Calculate item totals
-                item_subtotal = item.unit_price * item.quantity
+                item_subtotal = unit_price * item.quantity
                 item_discount = (
                     item_subtotal * item.discount_percentage / 100
                 ) + item.discount_amount
@@ -174,10 +197,11 @@ class SaleCRUD:
                     sale_id=sale.id,
                     product_id=item.product_id,
                     quantity=item.quantity,
-                    unit_price=item.unit_price,
+                    unit_price=unit_price,
                     discount_percentage=item.discount_percentage,
                     discount_amount=item.discount_amount,
                     total_price=item_total,
+                    is_custom_price=is_custom_price,
                 )
                 db.add(sale_item)
 
