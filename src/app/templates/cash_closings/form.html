@@ -95,7 +95,7 @@
 
       <form action="/cash-closings/" method="post" class="space-y-4">
         <!-- Hidden closing date -->
-        <input type="hidden" name="closing_date" value="{{ closing_date }}">
+        <input type="hidden" name="closing_date" value="{{ closing_date.isoformat() }}">
 
         <!-- Saldo de Apertura (Hidden - already set when opening cash) -->
         <input type="hidden" name="opening_balance" id="opening_balance" value="{{ status_info.opening_balance }}">

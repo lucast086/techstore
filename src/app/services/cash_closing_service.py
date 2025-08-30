@@ -178,44 +178,42 @@ class CashClosingService:
                 )
 
         if not existing:
-            # If no opening exists, we need to create the full record
-            logger.warning(
-                f"No opening record found for {closing_data.closing_date}, creating full closing"
+            # Cash register must be opened before it can be closed
+            raise ValueError(
+                f"Cannot close cash register for {closing_data.closing_date}. "
+                f"The cash register must be opened first."
+            )
+
+        # Verify that the cash register was actually opened (has opened_at)
+        if not existing.opened_at:
+            raise ValueError(
+                f"Cannot close cash register for {closing_data.closing_date}. "
+                f"The cash register was not properly opened."
             )
 
         # Get calculated totals for the date
         daily_summary = self.calculate_daily_totals(db, closing_data.closing_date)
 
-        if existing:
-            # Update the existing opening record with closing data
-            expected_cash = (
-                closing_data.opening_balance
-                + daily_summary.total_sales
-                - daily_summary.total_expenses
-            )
-            cash_difference = closing_data.cash_count - expected_cash
+        # Update the existing opening record with closing data
+        expected_cash = (
+            closing_data.opening_balance
+            + daily_summary.total_sales
+            - daily_summary.total_expenses
+        )
+        cash_difference = closing_data.cash_count - expected_cash
 
-            existing.sales_total = daily_summary.total_sales
-            existing.expenses_total = daily_summary.total_expenses
-            existing.cash_count = closing_data.cash_count
-            existing.expected_cash = expected_cash
-            existing.cash_difference = cash_difference
-            existing.notes = closing_data.notes
-            existing.closed_by = user_id
-            existing.closed_at = func.now()
+        existing.sales_total = daily_summary.total_sales
+        existing.expenses_total = daily_summary.total_expenses
+        existing.cash_count = closing_data.cash_count
+        existing.expected_cash = expected_cash
+        existing.cash_difference = cash_difference
+        existing.notes = closing_data.notes
+        existing.closed_by = user_id
+        existing.closed_at = func.now()
 
-            db.commit()
-            db.refresh(existing)
-            db_closing = existing
-        else:
-            # Create new closing record if no opening exists
-            db_closing = cash_closing.create_closing(
-                db,
-                closing_data=closing_data,
-                sales_total=daily_summary.total_sales,
-                expenses_total=daily_summary.total_expenses,
-                closed_by=user_id,
-            )
+        db.commit()
+        db.refresh(existing)
+        db_closing = existing
 
         # Validate cash difference
         is_valid, warning = self.validate_cash_difference(db_closing.cash_difference)

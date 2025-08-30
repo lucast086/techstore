@@ -219,6 +219,14 @@ async def cash_closing_form(
                 status_code=302,
             )
 
+        # Check if cash register is open for this date
+        if not status_info["is_open"]:
+            # Redirect to list with error message
+            return RedirectResponse(
+                url="/cash-closings?message=open_required",
+                status_code=303,
+            )
+
         return templates.TemplateResponse(
             "cash_closings/form.html",
             {
