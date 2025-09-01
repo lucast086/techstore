@@ -1,0 +1,8 @@
+#!/bin/bash
+# Convenience wrapper for test_db_connection.py that can be called from anywhere
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Call the actual script
+python "$SCRIPT_DIR/scripts/test_db_connection.py" "$@"
