@@ -145,7 +145,7 @@
         {% if total_pages > 1 %}
         <div class="bg-gray-50 px-6 py-3 flex items-center justify-between">
             <div class="text-sm text-gray-700">
-                Mostrando {{ ((page - 1) * page_size) + 1 }} a {{ min(page * page_size, total) }} de {{ total }} reparaciones
+                Mostrando {{ ((page - 1) * page_size) + 1 }} a {{ page * page_size if page * page_size < total else total }} de {{ total }} reparaciones
             </div>
             <div class="flex space-x-2">
                 {% if page > 1 %}

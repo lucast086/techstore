@@ -263,7 +263,7 @@ block content %}
     <div class="bg-gray-50 px-6 py-3 flex items-center justify-between">
       <div class="text-sm text-gray-700">
         Mostrando <span class="font-medium">{{ (page - 1) * 20 + 1 }}</span> a
-        <span class="font-medium">{{ min(page * 20, total) }}</span> de
+        <span class="font-medium">{{ page * 20 if page * 20 < total else total }}</span> de
         <span class="font-medium">{{ total }}</span> resultados
       </div>
       <div class="flex space-x-2">
