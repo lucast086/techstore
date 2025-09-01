@@ -494,7 +494,9 @@ block content %}
   let cartItemIndex = 0;
 
   function addToCart(productId, productName, productSku, price, stock) {
-    const existingItem = cart.find((item) => item.productId === productId);
+    // Ensure consistent productId type (convert to string)
+    const prodIdStr = String(productId);
+    const existingItem = cart.find((item) => String(item.productId) === prodIdStr);
 
     if (existingItem) {
       if (existingItem.quantity < stock) {
@@ -505,12 +507,14 @@ block content %}
       }
     } else {
       cart.push({
-        productId: productId,
+        productId: productId,  // Keep original type
         productName: productName,
         productSku: productSku,
         price: parseFloat(price),
+        originalPrice: parseFloat(price),  // Guardar precio original
         quantity: 1,
         stock: stock,
+        isCustomPrice: false  // Por defecto no es precio personalizado
       });
       updateCartDisplay();
     }
@@ -528,21 +532,45 @@ block content %}
   }
 
   function removeFromCart(productId) {
-    cart = cart.filter((item) => item.productId !== productId);
+    // Convert to string for comparison
+    cart = cart.filter((item) => String(item.productId) !== String(productId));
     updateCartDisplay();
   }
 
   function updateQuantity(productId, newQuantity) {
-    const item = cart.find((item) => item.productId === productId);
+    // Convert productId to match the type in cart (could be string or number)
+    const item = cart.find((item) => String(item.productId) === String(productId));
     if (item) {
-      if (newQuantity <= 0) {
+      const qty = parseInt(newQuantity);
+      if (qty <= 0) {
         removeFromCart(productId);
-      } else if (newQuantity <= item.stock) {
-        item.quantity = parseInt(newQuantity);
+      } else if (qty <= item.stock) {
+        item.quantity = qty;
         updateCartDisplay();
       } else {
         alert(`Stock máximo disponible: ${item.stock}`);
         document.getElementById(`qty-${productId}`).value = item.quantity;
+      }
+    }
+  }
+
+  function updateItemPrice(productId, newPrice) {
+    // Convert productId to match the type in cart (could be string or number)
+    const item = cart.find((item) => String(item.productId) === String(productId));
+    if (item) {
+      const price = parseFloat(newPrice);
+      if (!isNaN(price) && price >= 0) {
+        // Guardar el precio original si no lo hemos hecho ya
+        if (!item.originalPrice) {
+          item.originalPrice = item.price;
+        }
+        item.price = price;
+        // Marcar si es un precio personalizado (diferente al original)
+        item.isCustomPrice = (Math.abs(price - item.originalPrice) > 0.001);
+        updateCartDisplay();
+      } else {
+        alert('El precio debe ser mayor o igual a 0');
+        document.getElementById(`price-${productId}`).value = item.price.toFixed(2);
       }
     }
   }
@@ -575,6 +603,9 @@ block content %}
                     <input type="hidden" name="unit_price_${index}" value="${
                       item.price
                     }" form="checkout-form">
+                    <input type="hidden" name="is_custom_price_${index}" value="${
+                      item.isCustomPrice || false
+                    }" form="checkout-form">
                     <div class="text-sm">
                         <div class="font-medium">${item.productName}</div>
                         <div class="text-gray-500">${item.productSku}</div>
@@ -593,7 +624,21 @@ block content %}
                         onchange="updateQuantity('${item.productId}', this.value)"
                     >
                 </td>
-                <td class="text-center">$${item.price.toFixed(2)}</td>
+                <td class="text-center">
+                    <div class="relative inline-block">
+                        <input
+                            type="number"
+                            id="price-${item.productId}"
+                            value="${item.price.toFixed(2)}"
+                            min="0"
+                            step="0.01"
+                            class="w-20 px-2 py-1 text-center border ${item.isCustomPrice ? 'border-yellow-500 bg-yellow-50' : 'border-gray-300'} rounded"
+                            onchange="updateItemPrice('${item.productId}', this.value)"
+                            title="${item.isCustomPrice ? 'Precio personalizado (Original: $' + item.originalPrice.toFixed(2) + ')' : 'Haz clic para editar el precio'}"
+                        >
+                        ${item.isCustomPrice ? '<span class="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center" title="Precio personalizado">✎</span>' : ''}
+                    </div>
+                </td>
                 <td class="text-right">$${(item.price * item.quantity).toFixed(
                   2,
                 )}</td>

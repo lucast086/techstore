@@ -56,6 +56,12 @@ class Settings(BaseSettings):
         default="development", description="Environment (development/production)"
     )
 
+    # Timezone Configuration
+    TIMEZONE: str = Field(
+        default="America/Argentina/Buenos_Aires",
+        description="Local timezone for date/time operations (IANA timezone name)",
+    )
+
     # CORS
     backend_cors_origins: list[str] = Field(
         default=["http://localhost:8000", "http://127.0.0.1:8000"],

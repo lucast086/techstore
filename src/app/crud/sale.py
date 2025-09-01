@@ -46,12 +46,11 @@ class SaleCRUD:
         # Start transaction
         try:
             # Check if sales are allowed for today (cash closing check)
-            from datetime import date
-
             from app.services.cash_closing_service import cash_closing_service
+            from app.utils.timezone import get_local_date
 
             can_process, reason = cash_closing_service.check_can_process_sale(
-                db=db, sale_date=date.today()
+                db=db, sale_date=get_local_date()
             )
             if not can_process:
                 raise ValueError(reason)
@@ -77,11 +76,15 @@ class SaleCRUD:
                         f"Available: {product.current_stock}, Requested: {item.quantity}"
                     )
 
-                # Use custom price if specified, otherwise use product's selling price
+                # Use custom price if specified, otherwise use product's first sale price
                 if item.is_custom_price and item.unit_price is not None:
                     unit_price = item.unit_price
+                elif item.unit_price is not None:
+                    # Price was explicitly set (selected from the three options)
+                    unit_price = item.unit_price
                 else:
-                    unit_price = product.selling_price
+                    # Default to first sale price if no price specified
+                    unit_price = product.first_sale_price
                     # Update item with the product price for later use
                     item.unit_price = unit_price
 
@@ -106,8 +109,12 @@ class SaleCRUD:
                 # Use same price determination as above
                 if item.is_custom_price and item.unit_price is not None:
                     unit_price = item.unit_price
+                elif item.unit_price is not None:
+                    # Price was explicitly set (selected from the three options)
+                    unit_price = item.unit_price
                 else:
-                    unit_price = product.selling_price
+                    # Default to first sale price if no price specified
+                    unit_price = product.first_sale_price
 
                 # Calculate proportional tax for each item after sale discount
                 item_subtotal = unit_price * item.quantity
@@ -177,12 +184,17 @@ class SaleCRUD:
                     db.query(Product).filter(Product.id == item.product_id).first()
                 )
 
-                # Use custom price if specified, otherwise use product's selling price
+                # Use custom price if specified, otherwise use the selected price
                 if item.is_custom_price and item.unit_price is not None:
                     unit_price = item.unit_price
                     is_custom_price = True
+                elif item.unit_price is not None:
+                    # Price was explicitly set (selected from the three options)
+                    unit_price = item.unit_price
+                    is_custom_price = False
                 else:
-                    unit_price = product.selling_price
+                    # Default to first sale price if no price specified
+                    unit_price = product.first_sale_price
                     is_custom_price = False
 
                 # Calculate item totals

@@ -15,6 +15,7 @@ from app.schemas.cash_closing import (
     DailySummary,
     PaymentMethodBreakdown,
 )
+from app.utils.timezone import get_local_date
 
 logger = logging.getLogger(__name__)
 
@@ -382,7 +383,7 @@ class CashClosingService:
             Status information including whether closing exists and daily summary.
         """
         if target_date is None:
-            target_date = date.today()
+            target_date = get_local_date()
 
         # Get daily summary
         daily_summary = self.calculate_daily_totals(db, target_date)

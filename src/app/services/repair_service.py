@@ -178,11 +178,10 @@ class RepairService:
         """
         # Validate cash register is open when marking as delivered
         if status_update.status == "delivered":
-            from datetime import date
-
             from app.crud.cash_closing import cash_closing
+            from app.utils.timezone import get_local_date
 
-            if not cash_closing.is_cash_register_open(db, target_date=date.today()):
+            if not cash_closing.is_cash_register_open(db, target_date=get_local_date()):
                 logger.error(
                     f"Cannot deliver repair {repair_id}: Cash register is not open"
                 )
@@ -261,11 +260,11 @@ class RepairService:
             ValueError: If repair is not ready for delivery or cash register is not open.
         """
         # Validate cash register is open before delivering
-        from datetime import date
 
         from app.crud.cash_closing import cash_closing
+        from app.utils.timezone import get_local_date
 
-        if not cash_closing.is_cash_register_open(db, target_date=date.today()):
+        if not cash_closing.is_cash_register_open(db, target_date=get_local_date()):
             logger.error(
                 f"Cannot deliver repair {repair_id}: Cash register is not open"
             )

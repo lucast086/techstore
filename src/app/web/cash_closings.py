@@ -16,6 +16,7 @@ from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.cash_closing import CashClosingCreate
 from app.services.cash_closing_service import cash_closing_service
+from app.utils.timezone import get_local_date
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ async def cash_opening_form(
             )
 
         # Check if already open for today
-        today = date.today()
+        today = get_local_date()
         if cash_closing.is_cash_register_open(db, target_date=today):
             # Redirect to list if already open
             return RedirectResponse(url="/cash-closings", status_code=302)
@@ -135,7 +136,7 @@ async def open_cash_register(
 ):
     """Open cash register for the day."""
     try:
-        today = date.today()
+        today = get_local_date()
 
         # Open the cash register
         opening = cash_closing_service.open_cash_register(
@@ -169,7 +170,7 @@ async def open_cash_register(
                 "request": request,
                 "current_user": current_user,
                 "error": error_message,
-                "opening_date": date.today(),
+                "opening_date": get_local_date(),
                 "opening_balance": opening_balance,
                 "notes": notes,
                 "suggested_balance": opening_balance,
@@ -183,7 +184,7 @@ async def open_cash_register(
                 "request": request,
                 "current_user": current_user,
                 "error": f"System error: {str(e)}",
-                "opening_date": date.today(),
+                "opening_date": get_local_date(),
                 "opening_balance": opening_balance,
                 "notes": notes,
                 "suggested_balance": opening_balance,
@@ -201,7 +202,9 @@ async def cash_closing_form(
     """Render cash closing form page."""
     try:
         # Use today's date if none provided
-        target_date = date.fromisoformat(closing_date) if closing_date else date.today()
+        target_date = (
+            date.fromisoformat(closing_date) if closing_date else get_local_date()
+        )
 
         # Get current status and daily summary
         status_info = cash_closing_service.get_current_closing_status(
@@ -267,7 +270,7 @@ async def create_cash_closing(
                 "request": request,
                 "current_user": current_user,
                 "error": "Invalid date format. Please use YYYY-MM-DD format.",
-                "closing_date": date.today(),  # Default to today
+                "closing_date": get_local_date(),  # Default to today
                 "opening_balance": opening_balance,
                 "cash_count": cash_count,
                 "notes": notes,

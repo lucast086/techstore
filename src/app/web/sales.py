@@ -17,6 +17,7 @@ from app.models.user import User
 from app.schemas.sale import SaleCreate, SaleItemCreate
 from app.services.cash_closing_service import cash_closing_service
 from app.services.invoice_service import invoice_service
+from app.utils.timezone import get_local_date
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ async def pos_interface(
     """Render Point of Sale interface."""
     # Check if cash register is open for today
     can_process, reason = cash_closing_service.check_can_process_sale(
-        db=db, sale_date=datetime.now().date()
+        db=db, sale_date=get_local_date()
     )
 
     if not can_process:
@@ -262,6 +263,9 @@ async def process_checkout(
         product_id = form_data.get(f"product_id_{i}")
         quantity = form_data.get(f"quantity_{i}")
         unit_price = form_data.get(f"unit_price_{i}")
+        is_custom_price = (
+            form_data.get(f"is_custom_price_{i}", "false").lower() == "true"
+        )
 
         if product_id and quantity and unit_price:
             # Check if this is a repair item
@@ -291,6 +295,7 @@ async def process_checkout(
                             unit_price=Decimal(unit_price)
                             if unit_price and str(unit_price).strip()
                             else Decimal("0"),
+                            is_custom_price=is_custom_price,
                         )
                     )
                 else:
@@ -305,6 +310,7 @@ async def process_checkout(
                         unit_price=Decimal(unit_price)
                         if unit_price and str(unit_price).strip()
                         else Decimal("0"),
+                        is_custom_price=is_custom_price,
                     )
                 )
 
@@ -484,7 +490,7 @@ async def process_checkout(
     try:
         # Check if cash register is open for today
         can_process, reason = cash_closing_service.check_can_process_sale(
-            db=db, sale_date=datetime.now().date()
+            db=db, sale_date=get_local_date()
         )
         if not can_process:
             return HTMLResponse(

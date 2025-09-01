@@ -21,7 +21,7 @@
           <div class="flex items-center space-x-4">
             <div class="text-right">
               <p class="text-sm font-medium text-gray-900">
-                ${{ "{:,.2f}".format(product.selling_price or product.first_sale_price or 0) }}
+                ${{ "{:,.2f}".format(product.first_sale_price or 0) }}
               </p>
               <p class="text-xs {% if product.current_stock > 0 %}text-green-600{% else %}text-red-600{% endif %}">
                 Stock: {{ product.current_stock }}
