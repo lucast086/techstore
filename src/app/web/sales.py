@@ -485,6 +485,11 @@ async def process_checkout(
         notes=notes,
         items=items,
         amount_paid=amount_paid,  # Include the actual amount paid
+        # Include mixed payment components if applicable
+        cash_amount=safe_cash if payment_method == "mixed" else None,
+        transfer_amount=safe_transfer if payment_method == "mixed" else None,
+        card_amount=safe_card if payment_method == "mixed" else None,
+        credit_amount=safe_credit if payment_method == "mixed" else None,
     )
 
     try:

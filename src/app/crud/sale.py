@@ -173,6 +173,19 @@ class SaleCRUD:
                 total_amount=total_amount,
                 payment_status=payment_status,
                 payment_method=sale_in.payment_method,
+                # Store mixed payment components if applicable
+                cash_amount=sale_in.cash_amount
+                if sale_in.payment_method == "mixed"
+                else None,
+                transfer_amount=sale_in.transfer_amount
+                if sale_in.payment_method == "mixed"
+                else None,
+                card_amount=sale_in.card_amount
+                if sale_in.payment_method == "mixed"
+                else None,
+                credit_amount=sale_in.credit_amount
+                if sale_in.payment_method == "mixed"
+                else None,
                 notes=sale_in.notes,
             )
             db.add(sale)
@@ -226,22 +239,80 @@ class SaleCRUD:
                 # Create payment record for any amount paid
                 from app.models.payment import PaymentType
 
-                payment = Payment(
-                    customer_id=sale_in.customer_id,
-                    sale_id=sale.id,
-                    amount=amount_paid,
-                    payment_method=sale_in.payment_method or "cash",
-                    payment_type=PaymentType.payment.value,  # Explicitly use .value
-                    receipt_number=f"REC-{invoice_number}",
-                    received_by_id=user_id,
-                    notes=f"Payment for sale {invoice_number}"
-                    + (
-                        f" (Partial: ${amount_paid} of ${total_amount})"
-                        if amount_paid < total_amount
-                        else ""
-                    ),
-                )
-                db.add(payment)
+                # Handle mixed payments by creating multiple payment records
+                if sale_in.payment_method == "mixed":
+                    # Create separate payment records for each component
+                    if sale_in.cash_amount and sale_in.cash_amount > Decimal("0"):
+                        cash_payment = Payment(
+                            customer_id=sale_in.customer_id,
+                            sale_id=sale.id,
+                            amount=sale_in.cash_amount,
+                            payment_method="cash",
+                            payment_type=PaymentType.payment.value,
+                            receipt_number=f"REC-{invoice_number}-CASH",
+                            received_by_id=user_id,
+                            notes=f"Cash component of mixed payment for sale {invoice_number}",
+                        )
+                        db.add(cash_payment)
+
+                    if sale_in.transfer_amount and sale_in.transfer_amount > Decimal(
+                        "0"
+                    ):
+                        transfer_payment = Payment(
+                            customer_id=sale_in.customer_id,
+                            sale_id=sale.id,
+                            amount=sale_in.transfer_amount,
+                            payment_method="transfer",
+                            payment_type=PaymentType.payment.value,
+                            receipt_number=f"REC-{invoice_number}-TRANSFER",
+                            received_by_id=user_id,
+                            notes=f"Transfer component of mixed payment for sale {invoice_number}",
+                        )
+                        db.add(transfer_payment)
+
+                    if sale_in.card_amount and sale_in.card_amount > Decimal("0"):
+                        card_payment = Payment(
+                            customer_id=sale_in.customer_id,
+                            sale_id=sale.id,
+                            amount=sale_in.card_amount,
+                            payment_method="card",
+                            payment_type=PaymentType.payment.value,
+                            receipt_number=f"REC-{invoice_number}-CARD",
+                            received_by_id=user_id,
+                            notes=f"Card component of mixed payment for sale {invoice_number}",
+                        )
+                        db.add(card_payment)
+
+                    if sale_in.credit_amount and sale_in.credit_amount > Decimal("0"):
+                        credit_payment = Payment(
+                            customer_id=sale_in.customer_id,
+                            sale_id=sale.id,
+                            amount=sale_in.credit_amount,
+                            payment_method="account_credit",
+                            payment_type=PaymentType.payment.value,
+                            receipt_number=f"REC-{invoice_number}-CREDIT",
+                            received_by_id=user_id,
+                            notes=f"Account credit component of mixed payment for sale {invoice_number}",
+                        )
+                        db.add(credit_payment)
+                else:
+                    # Single payment method
+                    payment = Payment(
+                        customer_id=sale_in.customer_id,
+                        sale_id=sale.id,
+                        amount=amount_paid,
+                        payment_method=sale_in.payment_method or "cash",
+                        payment_type=PaymentType.payment.value,  # Explicitly use .value
+                        receipt_number=f"REC-{invoice_number}",
+                        received_by_id=user_id,
+                        notes=f"Payment for sale {invoice_number}"
+                        + (
+                            f" (Partial: ${amount_paid} of ${total_amount})"
+                            if amount_paid < total_amount
+                            else ""
+                        ),
+                    )
+                    db.add(payment)
 
             # Handle debt generation for partial payments
             if sale_in.customer_id and amount_paid < total_amount:

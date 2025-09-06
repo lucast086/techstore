@@ -84,6 +84,11 @@ class SaleCreate(SaleBase):
     items: list[SaleItemCreate] = Field(min_length=1)
     discount_amount: Decimal = Field(default=Decimal("0"), ge=0)
     amount_paid: Optional[Decimal] = Field(default=None, ge=0)
+    # Mixed payment components (only used when payment_method is "mixed")
+    cash_amount: Optional[Decimal] = Field(default=None, ge=0)
+    transfer_amount: Optional[Decimal] = Field(default=None, ge=0)
+    card_amount: Optional[Decimal] = Field(default=None, ge=0)
+    credit_amount: Optional[Decimal] = Field(default=None, ge=0)
 
     @field_validator("items")
     @classmethod

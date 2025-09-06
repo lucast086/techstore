@@ -77,14 +77,84 @@
           </div>
         </div>
 
+        <!-- Payment Method Breakdown -->
+        {% if status_info.daily_summary.sales_count > 0 %}
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div class="text-sm font-medium text-gray-700 mb-2">Desglose de Ventas por Método:</div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Efectivo:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.sales_cash) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Cuenta C.:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.sales_credit) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Transferencia:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.sales_transfer) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tarjeta:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.sales_mixed) }}</span>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if status_info.daily_summary.expenses_count > 0 %}
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div class="text-sm font-medium text-gray-700 mb-2">Desglose de Gastos por Método:</div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Efectivo:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.expenses_cash) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Transferencia:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.expenses_transfer) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tarjeta:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.expenses_card) }}</span>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if status_info.daily_summary.debt_payments_total > 0 %}
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+          <div class="text-sm font-medium text-blue-700 mb-2">Pagos de Cuentas Corrientes:</div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Efectivo:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.debt_payments_cash) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Transferencia:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.debt_payments_transfer) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Tarjeta:</span>
+              <span class="font-semibold">${{ "{:.2f}".format(status_info.daily_summary.debt_payments_card) }}</span>
+            </div>
+            <div class="flex justify-between col-span-2 pt-2 border-t border-blue-200">
+              <span class="text-gray-700 font-medium">Total Pagos Deudas:</span>
+              <span class="font-bold text-blue-700">${{ "{:.2f}".format(status_info.daily_summary.debt_payments_total) }}</span>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Efectivo Esperado -->
         <div class="pt-3 border-t border-gray-200">
           <div class="flex justify-between items-center">
             <span class="text-sm font-medium text-gray-900">Efectivo Esperado:</span>
             <span class="text-lg font-bold text-gray-900" id="expected-cash">
-              ${{ "{:.2f}".format(status_info.opening_balance + status_info.daily_summary.total_sales - status_info.daily_summary.total_expenses) }}
+              ${{ "{:.2f}".format(status_info.opening_balance + status_info.daily_summary.sales_cash + status_info.daily_summary.debt_payments_cash - status_info.daily_summary.expenses_cash) }}
             </span>
           </div>
+          <p class="text-xs text-gray-500 mt-1">Apertura + Ventas Efectivo + Pagos Deudas Efectivo - Gastos Efectivo</p>
         </div>
       </div>
     </div>

@@ -123,11 +123,50 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             .first()
         )
 
-        # Get sales by payment method
-        sales_by_method = (
+        # Get payments by method for accurate cash calculation
+        # This gets the actual amount paid, not the total sale amount
+        from app.models.payment import Payment, PaymentType
+
+        # Get ALL payments for the date, including:
+        # 1. Payments associated with sales (Payment.sale_id is not null)
+        # 2. Payments for customer accounts/debt (Payment.sale_id is null)
+        # We use created_at for payments without sales, and sale_date for payments with sales
+
+        # First, get payments associated with sales for this date
+        sale_payments = (
+            db.query(Payment.payment_method, func.sum(Payment.amount).label("amount"))
+            .join(Sale, Payment.sale_id == Sale.id)
+            .filter(func.date(Sale.sale_date) == target_date)
+            .filter(Sale.is_voided == False)  # noqa: E712
+            .filter(Payment.voided == False)  # noqa: E712
+            .group_by(Payment.payment_method)
+            .all()
+        )
+
+        # Then, get account payments (no sale_id) for this date - KEEP SEPARATE
+        account_payments = (
+            db.query(Payment.payment_method, func.sum(Payment.amount).label("amount"))
+            .filter(Payment.sale_id == None)  # noqa: E711
+            .filter(func.date(Payment.created_at) == target_date)
+            .filter(Payment.voided == False)  # noqa: E712
+            # Exclude refunds from cash calculations
+            .filter(Payment.payment_type != PaymentType.refund)
+            .group_by(Payment.payment_method)
+            .all()
+        )
+
+        # DON'T combine - keep sale payments separate from debt payments
+        payments_by_method = (
+            sale_payments  # Only sales-related payments for sales totals
+        )
+
+        # Get walk-in sales (no customer, paid in full)
+        walkin_sales = (
             db.query(Sale.payment_method, func.sum(Sale.total_amount).label("amount"))
             .filter(func.date(Sale.sale_date) == target_date)
             .filter(Sale.is_voided == False)  # noqa: E712
+            .filter(Sale.customer_id == None)  # noqa: E711
+            .filter(Sale.payment_status == "paid")
             .group_by(Sale.payment_method)
             .all()
         )
@@ -135,17 +174,94 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         sales_cash = Decimal("0.00")
         sales_credit = Decimal("0.00")
         sales_transfer = Decimal("0.00")
-        sales_mixed = Decimal("0.00")
+        sales_card = Decimal("0.00")  # Separate card payments
 
-        for row in sales_by_method:
+        # Consolidate payment methods from both sale and account payments
+        payment_totals = {}
+        for row in payments_by_method:
+            method = row.payment_method
+            amount = row.amount or Decimal("0.00")
+            if method in payment_totals:
+                payment_totals[method] += amount
+            else:
+                payment_totals[method] = amount
+
+        # Calculate actual payments received by method
+        for method, amount in payment_totals.items():
+            if method == "cash":
+                sales_cash += amount
+            elif method == "transfer":
+                sales_transfer += amount
+            elif method == "card":
+                sales_card += amount
+            elif method == "account_credit":
+                # Account credit used as payment
+                sales_credit += amount
+            elif method == "mixed":
+                # Mixed payments should now be handled as separate payment records
+                # This case should not occur with the new implementation
+                # But keeping for backward compatibility with old data
+                # Distribute to cash as fallback
+                sales_cash += amount
+
+        # Add walk-in sales (these are paid in full without Payment records)
+        for row in walkin_sales:
             if row.payment_method == "cash":
-                sales_cash = row.amount or Decimal("0.00")
-            elif row.payment_method == "credit":
-                sales_credit = row.amount or Decimal("0.00")
+                sales_cash += row.amount or Decimal("0.00")
             elif row.payment_method == "transfer":
-                sales_transfer = row.amount or Decimal("0.00")
+                sales_transfer += row.amount or Decimal("0.00")
+            elif row.payment_method == "card":
+                sales_card += row.amount or Decimal("0.00")
             elif row.payment_method == "mixed":
-                sales_mixed = row.amount or Decimal("0.00")
+                # For walk-in mixed payments, we need to get the breakdown from the Sale record
+                # Get all walk-in mixed sales for this date to get the breakdown
+                walkin_mixed_sales = (
+                    db.query(Sale)
+                    .filter(func.date(Sale.sale_date) == target_date)
+                    .filter(Sale.is_voided == False)  # noqa: E712
+                    .filter(Sale.customer_id == None)  # noqa: E711
+                    .filter(Sale.payment_method == "mixed")
+                    .all()
+                )
+                for sale in walkin_mixed_sales:
+                    if sale.cash_amount:
+                        sales_cash += sale.cash_amount
+                    if sale.transfer_amount:
+                        sales_transfer += sale.transfer_amount
+                    if sale.card_amount:
+                        sales_card += sale.card_amount
+                    # Note: credit_amount for walk-in should be 0, but included for completeness
+                    if sale.credit_amount:
+                        sales_credit += sale.credit_amount
+
+        # Calculate credit sales (unpaid portion of TODAY'S sales only)
+        # Credit sales are the unpaid portions of sales made TODAY
+        # This should NOT include payments for old debts
+
+        # Get the total unpaid amount from today's sales
+        credit_sales_result = (
+            db.query(
+                func.coalesce(
+                    func.sum(
+                        Sale.total_amount
+                        - func.coalesce(
+                            db.query(func.sum(Payment.amount))
+                            .filter(Payment.sale_id == Sale.id)
+                            .filter(Payment.voided == False)  # noqa: E712
+                            .scalar_subquery(),
+                            0,
+                        )
+                    ),
+                    0,
+                ).label("credit_amount")
+            )
+            .filter(func.date(Sale.sale_date) == target_date)
+            .filter(Sale.is_voided == False)  # noqa: E712
+            .filter(Sale.customer_id != None)  # noqa: E711 - Only sales to registered customers can have credit
+            .first()
+        )
+
+        sales_credit = credit_sales_result.credit_amount or Decimal("0.00")
 
         # Get expenses summary for the date
         expenses_result = (
@@ -180,6 +296,23 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         total_expenses = expenses_result.total_expenses or Decimal("0.00")
         expenses_count = expenses_result.expenses_count or 0
 
+        # Calculate debt payments separately (pagos de cuentas corrientes)
+        debt_payments_cash = Decimal("0.00")
+        debt_payments_transfer = Decimal("0.00")
+        debt_payments_card = Decimal("0.00")
+
+        for row in account_payments:
+            if row.payment_method == "cash":
+                debt_payments_cash += row.amount or Decimal("0.00")
+            elif row.payment_method == "transfer":
+                debt_payments_transfer += row.amount or Decimal("0.00")
+            elif row.payment_method == "card":
+                debt_payments_card += row.amount or Decimal("0.00")
+
+        debt_payments_total = (
+            debt_payments_cash + debt_payments_transfer + debt_payments_card
+        )
+
         # Check if closing exists
         has_closing = self.check_closing_exists(db, closing_date=target_date)
 
@@ -194,10 +327,15 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             sales_cash=sales_cash,
             sales_credit=sales_credit,
             sales_transfer=sales_transfer,
-            sales_mixed=sales_mixed,
+            sales_mixed=sales_card,  # Using sales_mixed field to store card payments
             expenses_cash=expenses_cash,
             expenses_transfer=expenses_transfer,
             expenses_card=expenses_card,
+            # Debt payments (pagos de cuentas corrientes)
+            debt_payments_cash=debt_payments_cash,
+            debt_payments_transfer=debt_payments_transfer,
+            debt_payments_card=debt_payments_card,
+            debt_payments_total=debt_payments_total,
         )
 
     def get_finalized_closings(

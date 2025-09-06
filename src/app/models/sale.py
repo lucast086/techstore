@@ -77,6 +77,19 @@ class Sale(BaseModel):
     payment_method: Mapped[Optional[str]] = mapped_column(
         String(20), nullable=True
     )  # cash, credit, transfer, mixed
+    # Mixed payment components (only used when payment_method is "mixed")
+    cash_amount: Mapped[Optional[Decimal]] = mapped_column(
+        DECIMAL(10, 2), nullable=True, default=None
+    )
+    transfer_amount: Mapped[Optional[Decimal]] = mapped_column(
+        DECIMAL(10, 2), nullable=True, default=None
+    )
+    card_amount: Mapped[Optional[Decimal]] = mapped_column(
+        DECIMAL(10, 2), nullable=True, default=None
+    )
+    credit_amount: Mapped[Optional[Decimal]] = mapped_column(
+        DECIMAL(10, 2), nullable=True, default=None
+    )
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_voided: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     void_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

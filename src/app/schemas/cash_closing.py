@@ -215,6 +215,20 @@ class DailySummary(BaseSchema):
         default=Decimal("0.00"), description="Card expenses total"
     )
 
+    # Account/debt payments (pagos de cuentas corrientes)
+    debt_payments_cash: Decimal = Field(
+        default=Decimal("0.00"), description="Cash payments for customer debts"
+    )
+    debt_payments_transfer: Decimal = Field(
+        default=Decimal("0.00"), description="Transfer payments for customer debts"
+    )
+    debt_payments_card: Decimal = Field(
+        default=Decimal("0.00"), description="Card payments for customer debts"
+    )
+    debt_payments_total: Decimal = Field(
+        default=Decimal("0.00"), description="Total payments for customer debts"
+    )
+
 
 class CashClosingFinalize(BaseSchema):
     """Schema for finalizing a cash closing."""
