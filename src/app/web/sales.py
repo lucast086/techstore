@@ -669,7 +669,7 @@ async def sales_history(
     request: Request,
     page: int = Query(1, ge=1),
     search: Optional[str] = None,
-    customer_id: Optional[str] = Query(None),
+    customer_search: Optional[str] = Query(None),
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
     payment_status: Optional[str] = None,
@@ -709,20 +709,14 @@ async def sales_history(
             except ValueError:
                 logger.warning(f"Invalid end_date format: {end_date}")
 
-    # Convert customer_id to int if provided
-    customer_id_int = None
-    if customer_id and customer_id.strip():
-        try:
-            customer_id_int = int(customer_id)
-        except ValueError:
-            logger.warning(f"Invalid customer_id: {customer_id}")
-
-    # Get sales
+    # Get sales with customer search
     sales, total = sale_crud.get_multi_with_filters(
         db,
         skip=skip,
         limit=page_size,
-        customer_id=customer_id_int,
+        customer_search=customer_search
+        if customer_search and customer_search.strip()
+        else None,
         start_date=start_datetime,
         end_date=end_datetime,
         payment_status=payment_status
@@ -743,7 +737,7 @@ async def sales_history(
         "page": page,
         "total_pages": total_pages,
         "search": search,
-        "customer_id": customer_id,
+        "customer_search": customer_search,
         "start_date": start_date,
         "end_date": end_date,
         "payment_status": payment_status,

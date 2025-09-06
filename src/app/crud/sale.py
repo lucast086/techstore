@@ -369,6 +369,7 @@ class SaleCRUD:
         skip: int = 0,
         limit: int = 100,
         customer_id: Optional[int] = None,
+        customer_search: Optional[str] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         payment_status: Optional[str] = None,
@@ -376,6 +377,8 @@ class SaleCRUD:
         is_voided: Optional[bool] = None,
     ) -> tuple[list[Sale], int]:
         """Get sales with filters and total count."""
+        from app.models.customer import Customer
+
         query = db.query(Sale).options(
             joinedload(Sale.customer),
             joinedload(Sale.user),
@@ -384,6 +387,15 @@ class SaleCRUD:
         # Apply filters
         if customer_id:
             query = query.filter(Sale.customer_id == customer_id)
+        # Add customer search by name, phone, or email
+        if customer_search:
+            query = query.join(Customer, Sale.customer_id == Customer.id).filter(
+                or_(
+                    Customer.name.ilike(f"%{customer_search}%"),
+                    Customer.phone.ilike(f"%{customer_search}%"),
+                    Customer.email.ilike(f"%{customer_search}%"),
+                )
+            )
         if start_date:
             query = query.filter(Sale.sale_date >= start_date)
         if end_date:
