@@ -866,3 +866,95 @@ async def void_sale_htmx(
             f'<div class="alert alert-danger">{str(e)}</div>',
             status_code=400,
         )
+
+
+@router.post("/{sale_id}/add-payment", response_class=HTMLResponse)
+async def add_payment_to_sale(
+    request: Request,
+    sale_id: int,
+    amount: Decimal = Form(..., gt=0),
+    payment_method: str = Form(...),
+    reference_number: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Add a payment to an existing sale."""
+    from app.schemas.payment import PaymentCreate
+    from app.services.payment_service import payment_service
+
+    try:
+        # Get the sale with details
+        sale = sale_crud.get_with_details(db, id=sale_id)
+        if not sale:
+            return HTMLResponse(
+                '<div class="p-4 bg-red-100 text-red-700 rounded">Venta no encontrada</div>',
+                status_code=404,
+            )
+
+        # Check if sale is voided
+        if sale.is_voided:
+            return HTMLResponse(
+                '<div class="p-4 bg-red-100 text-red-700 rounded">No se pueden agregar pagos a una venta anulada</div>',
+                status_code=400,
+            )
+
+        # Check if already fully paid
+        if sale.payment_status == "paid":
+            return HTMLResponse(
+                '<div class="p-4 bg-yellow-100 text-yellow-700 rounded">Esta venta ya está completamente pagada</div>',
+                status_code=400,
+            )
+
+        # Validate amount doesn't exceed amount due
+        if amount > sale.amount_due:
+            return HTMLResponse(
+                f'<div class="p-4 bg-red-100 text-red-700 rounded">El monto del pago (${amount}) excede el monto pendiente (${sale.amount_due})</div>',
+                status_code=400,
+            )
+
+        # Add sale info to notes
+        payment_notes = f"Pago para venta {sale.invoice_number}"
+        if notes:
+            payment_notes += f" - {notes}"
+
+        # Create payment data
+        payment_data = PaymentCreate(
+            amount=amount,
+            payment_method=payment_method,
+            reference_number=reference_number,
+            notes=payment_notes,
+        )
+
+        # Process the payment through the service
+        payment = payment_service.process_payment(
+            db=db,
+            customer_id=sale.customer_id,
+            sale_id=sale_id,
+            payment_data=payment_data,
+            user_id=current_user.id,
+            allow_overpayment=False,
+        )
+
+        logger.info(
+            f"Payment {payment.receipt_number} added to sale {sale.invoice_number}"
+        )
+
+        # Return success with HX-Redirect header to reload the page
+        return HTMLResponse(
+            f'<div class="p-4 bg-green-100 text-green-700 rounded">Pago procesado exitosamente. Recibo: {payment.receipt_number}</div>',
+            headers={"HX-Redirect": f"/sales/{sale_id}"},
+        )
+
+    except ValueError as e:
+        logger.error(f"Error adding payment to sale {sale_id}: {e}")
+        return HTMLResponse(
+            f'<div class="p-4 bg-red-100 text-red-700 rounded">{str(e)}</div>',
+            status_code=400,
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error adding payment to sale {sale_id}: {e}")
+        return HTMLResponse(
+            '<div class="p-4 bg-red-100 text-red-700 rounded">Error al procesar el pago</div>',
+            status_code=500,
+        )

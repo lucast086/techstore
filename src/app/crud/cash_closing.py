@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.crud.base import CRUDBase
@@ -143,14 +143,27 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             .all()
         )
 
-        # Then, get account payments (no sale_id) for this date - KEEP SEPARATE
+        # Then, get account payments (includes debt payments and payments for OLD sales)
+        # This includes:
+        # 1. Payments without sale_id (general account payments)
+        # 2. Payments for sales from PREVIOUS days (debt collection)
+
         account_payments = (
             db.query(Payment.payment_method, func.sum(Payment.amount).label("amount"))
-            .filter(Payment.sale_id == None)  # noqa: E711
-            .filter(func.date(Payment.created_at) == target_date)
+            .outerjoin(
+                Sale, Payment.sale_id == Sale.id
+            )  # LEFT JOIN to include payments without sale
+            .filter(func.date(Payment.created_at) == target_date)  # Payment made TODAY
             .filter(Payment.voided == False)  # noqa: E712
             # Exclude refunds from cash calculations
             .filter(Payment.payment_type != PaymentType.refund)
+            .filter(
+                or_(
+                    Payment.sale_id == None,  # noqa: E711 - Payments without sale
+                    func.date(Sale.sale_date)
+                    < target_date,  # Payments for sales from PREVIOUS days
+                )
+            )
             .group_by(Payment.payment_method)
             .all()
         )
