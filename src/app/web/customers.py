@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Annotated
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, Form, Query, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -303,6 +303,7 @@ async def send_balance_reminder(
 async def customer_detail(
     customer_id: int,
     request: Request,
+    success: str | None = Query(None),
     current_user: User = Depends(get_current_user_from_cookie),
     db: Session = Depends(get_db),
 ):
@@ -311,6 +312,7 @@ async def customer_detail(
     Args:
         customer_id: ID of the customer.
         request: FastAPI request object.
+        success: Optional success message.
         current_user: Currently authenticated user.
         db: Database session.
 
@@ -342,5 +344,125 @@ async def customer_detail(
             "balance_info": balance_info,
             "recent_transactions": transactions,
             "current_user": current_user,
+            "success": success,
         },
     )
+
+
+@router.get("/{customer_id}/edit", response_class=HTMLResponse)
+async def edit_customer_form(
+    customer_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db),
+):
+    """Show customer edit form.
+
+    Args:
+        customer_id: ID of the customer to edit.
+        request: FastAPI request object.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        HTML response with edit form.
+    """
+    customer = customer_service.get_customer(db, customer_id)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    return templates.TemplateResponse(
+        "customers/form.html",
+        {
+            "request": request,
+            "customer": customer,
+            "current_user": current_user,
+        },
+    )
+
+
+@router.post("/{customer_id}/edit")
+async def update_customer_submit(
+    customer_id: int,
+    request: Request,
+    name: Annotated[str, Form()],
+    phone: Annotated[str, Form()],
+    phone_secondary: Annotated[str | None, Form()] = None,
+    email: Annotated[str | None, Form()] = None,
+    address: Annotated[str | None, Form()] = None,
+    notes: Annotated[str | None, Form()] = None,
+    current_user: User = Depends(get_current_user_from_cookie),
+    db: Session = Depends(get_db),
+):
+    """Process customer update form submission.
+
+    Args:
+        customer_id: ID of the customer to update.
+        request: FastAPI request object.
+        name: Customer name.
+        phone: Primary phone number.
+        phone_secondary: Secondary phone number.
+        email: Email address.
+        address: Physical address.
+        notes: Additional notes.
+        current_user: Currently authenticated user.
+        db: Database session.
+
+    Returns:
+        Redirect to customer detail page or form with errors.
+    """
+    try:
+        # Prepare update data
+        from app.schemas.customer import CustomerUpdate
+
+        customer_update = CustomerUpdate(
+            name=name.strip(),
+            phone=phone.strip(),
+            phone_secondary=phone_secondary.strip() if phone_secondary else None,
+            email=email.strip() if email else None,
+            address=address.strip() if address else None,
+            notes=notes.strip() if notes else None,
+        )
+
+        # Update customer
+        updated_customer = customer_service.update_customer(
+            db=db, customer_id=customer_id, customer_update=customer_update
+        )
+
+        if not updated_customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+
+        logger.info(
+            f"Customer {customer_id} updated successfully by user {current_user.id}"
+        )
+
+        # Redirect to customer detail page
+        return RedirectResponse(
+            url=f"/customers/{customer_id}?success=Datos actualizados correctamente",
+            status_code=303,
+        )
+
+    except ValueError as e:
+        logger.error(f"Error updating customer: {e}")
+
+        # Get customer for form display
+        customer = customer_service.get_customer(db, customer_id)
+
+        return templates.TemplateResponse(
+            "customers/form.html",
+            {
+                "request": request,
+                "customer": customer,
+                "error": str(e),
+                "form_data": {
+                    "name": name,
+                    "phone": phone,
+                    "phone_secondary": phone_secondary,
+                    "email": email,
+                    "address": address,
+                    "notes": notes,
+                },
+                "current_user": current_user,
+            },
+            status_code=400,
+        )
