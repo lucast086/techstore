@@ -1160,16 +1160,23 @@ block content %}
         document.getElementById('credit_amount').value = cartTotal.toFixed(2);
       }
 
-      // Show credit confirmation modal
+      // Confirm credit usage
       if (!window.creditConfirmed) {
         event.preventDefault();
         const customerName = document.getElementById('selected-customer-name').textContent || 'Cliente';
-        openCreditConfirmationModal({
-          creditAmount: amountPaid,
-          availableCredit: customerCreditBalance,
-          totalAmount: cartTotal,
-          customerName: customerName
-        });
+        const confirmed = confirm(
+          `¿Confirmar uso de crédito?\n\n` +
+          `Cliente: ${customerName}\n` +
+          `Crédito disponible: $${customerCreditBalance.toFixed(2)}\n` +
+          `Crédito a usar: $${amountPaid.toFixed(2)}\n` +
+          `Total venta: $${cartTotal.toFixed(2)}`
+        );
+
+        if (confirmed) {
+          window.creditConfirmed = true;
+          // Re-submit the form
+          document.getElementById('checkout-form').requestSubmit();
+        }
         return false;
       }
     } else if (paymentMethod === 'mixed') {
@@ -1192,16 +1199,23 @@ block content %}
           return false;
         }
 
-        // Show credit confirmation modal for mixed payment
+        // Confirm credit usage for mixed payment
         if (!window.creditConfirmed) {
           event.preventDefault();
           const customerName = document.getElementById('selected-customer-name').textContent || 'Cliente';
-          openCreditConfirmationModal({
-            creditAmount: credit,
-            availableCredit: customerCreditBalance,
-            totalAmount: cartTotal,
-            customerName: customerName
-          });
+          const confirmed = confirm(
+            `¿Confirmar uso de crédito en pago mixto?\n\n` +
+            `Cliente: ${customerName}\n` +
+            `Crédito disponible: $${customerCreditBalance.toFixed(2)}\n` +
+            `Crédito a usar: $${credit.toFixed(2)}\n` +
+            `Total venta: $${cartTotal.toFixed(2)}`
+          );
+
+          if (confirmed) {
+            window.creditConfirmed = true;
+            // Re-submit the form
+            document.getElementById('checkout-form').requestSubmit();
+          }
           return false;
         }
       }

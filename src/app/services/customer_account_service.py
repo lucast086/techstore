@@ -168,22 +168,19 @@ class CustomerAccountService:
         # Get or create account
         account = self.get_or_create_account(db, sale.customer_id, created_by_id)
 
-        # Calculate unpaid amount (what increases the debt)
-        unpaid_amount = sale.total_amount - sale.paid_amount
-
-        if unpaid_amount <= 0:
-            logger.info(f"Sale {sale.id} is fully paid, no account transaction needed")
-            return None
+        # Record the FULL sale amount as a debit to customer account
+        # Payment will be recorded separately as a credit
+        sale_amount = sale.total_amount
 
         # Create transaction
         balance_before = account.account_balance
-        balance_after = balance_before + unpaid_amount
+        balance_after = balance_before + sale_amount
 
         transaction = CustomerTransaction(
             customer_id=sale.customer_id,
             account_id=account.id,
             transaction_type=TransactionType.SALE,
-            amount=unpaid_amount,
+            amount=sale_amount,
             balance_before=balance_before,
             balance_after=balance_after,
             reference_type="sale",
@@ -207,7 +204,7 @@ class CustomerAccountService:
 
         logger.info(
             f"Recorded sale transaction for customer {sale.customer_id}: "
-            f"${unpaid_amount} debt added, new balance: ${balance_after}"
+            f"${sale_amount} sale recorded, new balance: ${balance_after}"
         )
 
         return self._format_transaction_response(db, transaction)
