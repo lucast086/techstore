@@ -3,10 +3,12 @@
 from .base import Base, BaseModel, TimestampMixin
 from .cash_closing import CashClosing
 from .customer import Customer
+from .customer_account import CustomerAccount, CustomerTransaction, TransactionType
 from .expense import Expense, ExpenseCategory
 from .payment import Payment
 from .product import Category, Product, ProductImage, ProductSupplier
 from .repair import Repair, RepairPart, RepairPhoto, RepairStatusHistory
+from .repair_deposit import DepositStatus, PaymentMethod, RepairDeposit
 from .sale import Sale, SaleItem
 from .supplier import Supplier
 from .system_config import SystemConfig
@@ -19,6 +21,9 @@ __all__ = [
     "TimestampMixin",
     "User",
     "Customer",
+    "CustomerAccount",
+    "CustomerTransaction",
+    "TransactionType",
     "Payment",
     "Category",
     "Product",
@@ -31,6 +36,9 @@ __all__ = [
     "RepairStatusHistory",
     "RepairPart",
     "RepairPhoto",
+    "RepairDeposit",
+    "DepositStatus",
+    "PaymentMethod",
     "Warranty",
     "WarrantyClaim",
     "CashClosing",

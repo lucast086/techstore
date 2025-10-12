@@ -31,12 +31,16 @@ def clean_database():
 
         # Define tables to clean
         tables_to_clean = [
+            # Customer account transactions (must be first due to foreign keys)
+            ("customer_transactions", "Customer transactions"),
+            # Repair deposits
+            ("repair_deposits", "Repair deposits"),
             # Payment-related
             ("payments", "Payments"),
             # Sale-related
             ("sale_items", "Sale items"),
             ("sales", "Sales"),
-            # Repair-related (may not exist)
+            # Repair-related (must clean history before repairs)
             ("repairstatushistorys", "Repair status history"),
             ("repairparts", "Repair parts"),
             ("repairphotos", "Repair photos"),
@@ -49,6 +53,8 @@ def clean_database():
             ("cash_closings", "Cash closings"),
             # Inventory movements (may not exist)
             ("inventory_movements", "Inventory movements"),
+            # Customer accounts (reset balances - must be last)
+            ("customer_accounts", "Customer accounts"),
         ]
 
         # Clean each table
@@ -67,8 +73,8 @@ def clean_database():
                 db.rollback()
 
         # Reset sequences for cleaned tables
-        logger.info("Resetting sequences...")
-        sequences = [
+        logger.info("Resetting sequences for cleaned tables...")
+        cleaned_sequences = [
             "payments_id_seq",
             "sales_id_seq",
             "sale_items_id_seq",
@@ -80,9 +86,11 @@ def clean_database():
             "expenses_id_seq",
             "cash_closings_id_seq",
             "inventory_movements_id_seq",
+            "customer_transactions_id_seq",
+            "repair_deposits_id_seq",
         ]
 
-        for seq in sequences:
+        for seq in cleaned_sequences:
             try:
                 db.execute(text(f"ALTER SEQUENCE {seq} RESTART WITH 1;"))
                 db.commit()
@@ -92,6 +100,87 @@ def clean_database():
                     logger.debug(f"  Sequence {seq} does not exist, skipping...")
                 else:
                     logger.warning(f"  Could not reset sequence {seq}: {e}")
+                db.rollback()
+
+        # Fix sequences for preserved tables (in case they're out of sync)
+        logger.info("Fixing sequences for preserved tables...")
+        preserved_tables = [
+            ("users", "users_id_seq"),
+            ("customers", "customers_id_seq"),
+            ("products", "products_id_seq"),
+            ("categories", "categories_id_seq"),
+            ("expense_categories", "expense_categories_id_seq"),
+            ("suppliers", "suppliers_id_seq"),
+            ("customer_accounts", "customer_accounts_id_seq"),
+        ]
+
+        for table_name, seq_name in preserved_tables:
+            try:
+                # Set sequence to MAX(id) from table, or 1 if empty
+                result = db.execute(
+                    text(
+                        f"""
+                    SELECT setval('{seq_name}',
+                        COALESCE((SELECT MAX(id) FROM {table_name}), 1),
+                        true
+                    )
+                """
+                    )
+                )
+                new_value = result.scalar()
+                db.commit()
+                logger.info(f"  ✓ Fixed sequence {seq_name} -> {new_value}")
+            except Exception as e:
+                if "does not exist" in str(e):
+                    logger.debug(
+                        f"  Table/sequence {table_name}/{seq_name} does not exist, skipping..."
+                    )
+                else:
+                    logger.warning(f"  Could not fix sequence {seq_name}: {e}")
+                db.rollback()
+
+        # Clean orphaned records (records that reference deleted data)
+        logger.info("Cleaning orphaned records...")
+
+        orphan_cleanups = [
+            (
+                "repairstatushistorys",
+                "DELETE FROM repairstatushistorys WHERE repair_id NOT IN (SELECT id FROM repairs)",
+                "Orphaned repair status history",
+            ),
+            (
+                "repairparts",
+                "DELETE FROM repairparts WHERE repair_id NOT IN (SELECT id FROM repairs)",
+                "Orphaned repair parts",
+            ),
+            (
+                "repairphotos",
+                "DELETE FROM repairphotos WHERE repair_id NOT IN (SELECT id FROM repairs)",
+                "Orphaned repair photos",
+            ),
+            (
+                "sale_items",
+                "DELETE FROM sale_items WHERE sale_id NOT IN (SELECT id FROM sales)",
+                "Orphaned sale items",
+            ),
+        ]
+
+        for table_name, cleanup_sql, description in orphan_cleanups:
+            try:
+                result = db.execute(text(cleanup_sql))
+                count = result.rowcount
+                db.commit()
+                if count > 0:
+                    logger.info(f"  ✓ Removed {count} {description} records")
+            except Exception as e:
+                if "does not exist" in str(e):
+                    logger.debug(
+                        f"  Table {table_name} does not exist, skipping orphan cleanup..."
+                    )
+                else:
+                    logger.warning(
+                        f"  Could not clean orphaned records from {table_name}: {e}"
+                    )
                 db.rollback()
 
         # Re-enable foreign key checks

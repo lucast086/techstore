@@ -59,7 +59,7 @@
             </div>
             <div>
               <p class="text-sm font-medium text-gray-500">Date</p>
-              <p class="mt-1 text-gray-900">{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</p>
+              <p class="mt-1 text-gray-900">{{ sale.sale_date | local_datetime }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-500">Cliente</p>

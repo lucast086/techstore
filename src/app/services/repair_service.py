@@ -1,12 +1,15 @@
 """Repair service for managing device repairs."""
 
 import logging
-from typing import Optional
+from decimal import Decimal
+from typing import Any, Optional
 
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
 from app.crud.repair import repair_crud
 from app.models.repair import Repair, RepairPart, RepairPhoto
+from app.models.repair_deposit import DepositStatus, RepairDeposit
 from app.schemas.repair import (
     RepairComplete,
     RepairCreate,
@@ -22,6 +25,7 @@ from app.schemas.repair import (
     RepairStatusUpdate,
     RepairUpdate,
 )
+from app.utils.timezone import get_local_today
 
 logger = logging.getLogger(__name__)
 
@@ -178,11 +182,11 @@ class RepairService:
         """
         # Validate cash register is open when marking as delivered
         if status_update.status == "delivered":
-            from datetime import date
-
             from app.crud.cash_closing import cash_closing
 
-            if not cash_closing.is_cash_register_open(db, target_date=date.today()):
+            if not cash_closing.is_cash_register_open(
+                db, target_date=get_local_today()
+            ):
                 logger.error(
                     f"Cannot deliver repair {repair_id}: Cash register is not open"
                 )
@@ -274,6 +278,7 @@ class RepairService:
             )
 
         try:
+            # Mark repair as delivered
             repair = repair_crud.deliver_repair(
                 db=db, repair_id=repair_id, delivery=delivery
             )
@@ -357,6 +362,196 @@ class RepairService:
         """
         stats = repair_crud.get_repair_statistics(db)
         return RepairStatistics(**stats)
+
+    def prepare_for_sale(self, db: Session, repair_id: int) -> Optional[dict[str, Any]]:
+        """Prepare repair for POS sale.
+
+        Gets repair details, calculates deposits, and returns data needed
+        for adding the repair to POS cart.
+
+        Args:
+            db: Database session.
+            repair_id: Repair ID.
+
+        Returns:
+            Dictionary with repair sale data or None if not found.
+
+        Raises:
+            ValueError: If repair is not ready for delivery.
+        """
+        # Get repair
+        repair = repair_crud.get_repair(db, repair_id)
+        if not repair:
+            return None
+
+        # Validate repair is ready for delivery
+        if repair.status not in ["completed", "ready_for_pickup"]:
+            raise ValueError(
+                f"Repair {repair.repair_number} is not ready for delivery. "
+                f"Current status: {repair.status}"
+            )
+
+        # Must have final cost
+        if not repair.final_cost:
+            raise ValueError(
+                f"Repair {repair.repair_number} does not have a final cost set"
+            )
+
+        # Calculate total deposits
+        total_deposits = Decimal("0.00")
+        active_deposits = (
+            db.query(RepairDeposit)
+            .filter(
+                and_(
+                    RepairDeposit.repair_id == repair_id,
+                    RepairDeposit.status == DepositStatus.ACTIVE,
+                )
+            )
+            .all()
+        )
+
+        for deposit in active_deposits:
+            total_deposits += deposit.amount
+
+        # Calculate amount due
+        amount_due = repair.final_cost - total_deposits
+
+        logger.info(
+            f"Prepared repair {repair.repair_number} for sale: "
+            f"Total ${repair.final_cost}, Deposits ${total_deposits}, Due ${amount_due}"
+        )
+
+        return {
+            "repair_id": repair.id,
+            "repair_number": repair.repair_number,
+            "customer_id": repair.customer_id,
+            "customer_name": repair.customer.name,
+            "device": f"{repair.device_brand} {repair.device_model or ''}".strip(),
+            "device_type": repair.device_type,
+            "problem": repair.problem_description,
+            "total_cost": float(repair.final_cost),
+            "labor_cost": float(repair.labor_cost) if repair.labor_cost else 0,
+            "parts_cost": float(repair.parts_cost) if repair.parts_cost else 0,
+            "total_deposits": float(total_deposits),
+            "amount_due": float(amount_due),
+            "deposits": [
+                {
+                    "id": deposit.id,
+                    "amount": float(deposit.amount),
+                    "payment_method": deposit.payment_method,
+                    "receipt_number": deposit.receipt_number,
+                    "date": deposit.created_at.isoformat(),
+                }
+                for deposit in active_deposits
+            ],
+        }
+
+    def complete_sale_delivery(
+        self, db: Session, repair_id: int, sale_id: int, user_id: int
+    ) -> Optional[RepairResponse]:
+        """Complete repair delivery after POS sale.
+
+        Links repair to sale, applies deposits, and marks as delivered.
+
+        Args:
+            db: Database session.
+            repair_id: Repair ID.
+            sale_id: Sale ID from POS checkout.
+            user_id: User completing the delivery.
+
+        Returns:
+            Updated repair or None if not found.
+
+        Raises:
+            ValueError: If repair is not ready for delivery.
+        """
+        # Get repair
+        repair = repair_crud.get_repair(db, repair_id)
+        if not repair:
+            return None
+
+        # Validate repair is ready
+        if repair.status not in ["completed", "ready_for_pickup"]:
+            raise ValueError(
+                f"Repair {repair.repair_number} is not ready for delivery. "
+                f"Current status: {repair.status}"
+            )
+
+        try:
+            # Link repair to sale
+            repair.sale_id = sale_id
+            repair.delivered_by = user_id
+            repair.delivered_date = func.now()
+            repair.status = "delivered"
+
+            # Apply deposits to sale
+            deposits = (
+                db.query(RepairDeposit)
+                .filter(
+                    and_(
+                        RepairDeposit.repair_id == repair_id,
+                        RepairDeposit.status == DepositStatus.ACTIVE,
+                    )
+                )
+                .all()
+            )
+
+            for deposit in deposits:
+                deposit.status = DepositStatus.APPLIED
+                deposit.sale_id = sale_id
+                logger.info(
+                    f"Applied deposit {deposit.receipt_number} (${deposit.amount}) to sale {sale_id}"
+                )
+
+            # Add status history
+            from app.models.repair import RepairStatusHistory
+
+            status_history = RepairStatusHistory(
+                repair_id=repair_id,
+                status="delivered",
+                notes=f"Delivered through POS sale #{sale_id}",
+                changed_by=user_id,
+            )
+            db.add(status_history)
+
+            # Set warranty expiration if applicable
+            if repair.warranty_days > 0:
+                from datetime import timedelta
+
+                repair.warranty_expires = get_local_today() + timedelta(
+                    days=repair.warranty_days
+                )
+
+            db.commit()
+
+            logger.info(
+                f"Completed delivery of repair {repair.repair_number} through sale {sale_id}"
+            )
+
+            return self._format_repair_response(db, repair)
+
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Failed to complete repair delivery: {e}")
+            raise
+
+    def get_repair_by_number(
+        self, db: Session, repair_number: str
+    ) -> Optional[RepairResponse]:
+        """Get repair by repair number.
+
+        Args:
+            db: Database session.
+            repair_number: Repair number to search.
+
+        Returns:
+            Repair details or None if not found.
+        """
+        repair = db.query(Repair).filter(Repair.repair_number == repair_number).first()
+        if not repair:
+            return None
+
+        return self._format_repair_response(db, repair)
 
     def _format_repair_response(self, db: Session, repair: Repair) -> RepairResponse:
         """Format repair object into response schema.

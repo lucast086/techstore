@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Statement: {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-bold text-gray-900">Account Statement</h1>
+            <div class="flex space-x-3">
+                <button onclick="window.print()"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print
+                </button>
+                <a href="/customers/{{ customer.id }}/account"
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    Back to Account
+                </a>
+            </div>
+        </div>
+
+        <!-- Date Range Form -->
+        <form method="get" action="/customers/{{ customer.id }}/statement" class="bg-white shadow rounded-lg p-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                    <input type="date" id="start_date" name="start_date"
+                           value="{{ statement.period_start | local_date('%Y-%m-%d') }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+                    <input type="date" id="end_date" name="end_date"
+                           value="{{ statement.period_end | local_date('%Y-%m-%d') }}"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statement Content -->
+    <div class="bg-white shadow rounded-lg print:shadow-none">
+        <!-- Statement Header -->
+        <div class="p-8 border-b border-gray-200">
+            <div class="grid grid-cols-2 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">TechStore</h2>
+                    <p class="text-sm text-gray-600">Account Statement</p>
+                    <p class="text-sm text-gray-600">Generated: {{ statement.statement_date | local_date('%B %d, %Y') }}</p>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="text-right">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ statement.customer_name }}</h3>
+                    <p class="text-sm text-gray-600">Customer ID: {{ statement.customer_id }}</p>
+                    {% if customer.phone %}
+                    <p class="text-sm text-gray-600">Phone: {{ customer.phone }}</p>
+                    {% endif %}
+                    {% if customer.email %}
+                    <p class="text-sm text-gray-600">Email: {{ customer.email }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statement Period -->
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Statement Period</h3>
+                <p class="text-sm text-gray-900">
+                    {{ statement.period_start | local_date('%B %d, %Y') }} - {{ statement.period_end | local_date('%B %d, %Y') }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="p-8 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Summary</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Opening Balance</dt>
+                    <dd class="mt-1 text-lg font-semibold {% if statement.opening_balance > 0 %}text-red-600{% elif statement.opening_balance < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                        ${{ "{:,.2f}".format(statement.opening_balance|abs) }}
+                        {% if statement.opening_balance > 0 %}DR{% elif statement.opening_balance < 0 %}CR{% endif %}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Total Debits</dt>
+                    <dd class="mt-1 text-lg font-semibold text-red-600">
+                        ${{ "{:,.2f}".format(statement.total_debits) }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Total Credits</dt>
+                    <dd class="mt-1 text-lg font-semibold text-green-600">
+                        ${{ "{:,.2f}".format(statement.total_credits) }}
+                    </dd>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Closing Balance</dt>
+                    <dd class="mt-1 text-lg font-semibold {% if statement.closing_balance > 0 %}text-red-600{% elif statement.closing_balance < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                        ${{ "{:,.2f}".format(statement.closing_balance|abs) }}
+                        {% if statement.closing_balance > 0 %}DR{% elif statement.closing_balance < 0 %}CR{% endif %}
+                    </dd>
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-medium text-blue-900">Current Account Status</h4>
+                        <p class="mt-1 text-sm text-blue-700">
+                            {% if statement.current_balance > 0 %}
+                            Customer owes: ${{ "{:,.2f}".format(statement.current_balance) }}
+                            {% elif statement.current_balance < 0 %}
+                            Customer has credit: ${{ "{:,.2f}".format(statement.current_balance|abs) }}
+                            {% else %}
+                            Account is settled
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-blue-700">Credit Limit: ${{ "{:,.2f}".format(statement.credit_limit) }}</p>
+                        <p class="text-sm text-blue-700">Available Credit: ${{ "{:,.2f}".format(statement.available_credit) }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="p-8">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Transaction Details</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Date</th>
+                            <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Description</th>
+                            <th class="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Debit</th>
+                            <th class="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Credit</th>
+                            <th class="text-right text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        <!-- Opening Balance Row -->
+                        <tr class="bg-gray-50">
+                            <td class="py-2 text-sm text-gray-900">{{ statement.period_start | local_date('%b %d, %Y') }}</td>
+                            <td class="py-2 text-sm font-medium text-gray-900">Opening Balance</td>
+                            <td class="py-2 text-sm text-right">-</td>
+                            <td class="py-2 text-sm text-right">-</td>
+                            <td class="py-2 text-sm text-right font-medium {% if statement.opening_balance > 0 %}text-red-600{% elif statement.opening_balance < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                                ${{ "{:,.2f}".format(statement.opening_balance|abs) }}
+                                {% if statement.opening_balance > 0 %}DR{% elif statement.opening_balance < 0 %}CR{% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Transactions -->
+                        {% for transaction in statement.transactions %}
+                        <tr>
+                            <td class="py-2 text-sm text-gray-900">
+                                {{ transaction.transaction_date | local_date('%b %d, %Y') }}
+                            </td>
+                            <td class="py-2 text-sm text-gray-900">
+                                {{ transaction.description }}
+                                {% if transaction.reference_type and transaction.reference_id %}
+                                <span class="text-gray-500">({{ transaction.reference_type|title }} #{{ transaction.reference_id }})</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-2 text-sm text-right text-red-600">
+                                {% if transaction.is_debit %}
+                                ${{ "{:,.2f}".format(transaction.amount) }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td class="py-2 text-sm text-right text-green-600">
+                                {% if transaction.is_credit %}
+                                ${{ "{:,.2f}".format(transaction.amount) }}
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                            <td class="py-2 text-sm text-right font-medium {% if transaction.balance_after > 0 %}text-red-600{% elif transaction.balance_after < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                                ${{ "{:,.2f}".format(transaction.balance_after|abs) }}
+                                {% if transaction.balance_after > 0 %}DR{% elif transaction.balance_after < 0 %}CR{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <!-- Closing Balance Row -->
+                        <tr class="bg-gray-50 font-semibold">
+                            <td class="py-2 text-sm text-gray-900">{{ statement.period_end | local_date('%b %d, %Y') }}</td>
+                            <td class="py-2 text-sm text-gray-900">Closing Balance</td>
+                            <td class="py-2 text-sm text-right text-red-600">
+                                ${{ "{:,.2f}".format(statement.total_debits) }}
+                            </td>
+                            <td class="py-2 text-sm text-right text-green-600">
+                                ${{ "{:,.2f}".format(statement.total_credits) }}
+                            </td>
+                            <td class="py-2 text-sm text-right {% if statement.closing_balance > 0 %}text-red-600{% elif statement.closing_balance < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                                ${{ "{:,.2f}".format(statement.closing_balance|abs) }}
+                                {% if statement.closing_balance > 0 %}DR{% elif statement.closing_balance < 0 %}CR{% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Statement Notes -->
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Notes</h4>
+                <ul class="text-sm text-gray-600 space-y-1">
+                    <li>• This statement shows all transactions for the specified period</li>
+                    <li>• DR = Debit (amount owed), CR = Credit (amount in favor)</li>
+                    <li>• Please contact us if you have any questions about this statement</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    body {
+        font-size: 12pt;
+    }
+    .shadow, .shadow-lg {
+        box-shadow: none !important;
+    }
+}
+</style>
+{% endblock %}

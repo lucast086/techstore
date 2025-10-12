@@ -5,12 +5,12 @@ from pathlib import Path
 import markdown
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 
 from app.core.web_auth import get_current_user_optional
 from app.models.user import User
+from app.utils.templates import create_templates
 
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 router = APIRouter(prefix="/ayuda", tags=["help"])
 

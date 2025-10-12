@@ -6,7 +6,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
@@ -14,11 +13,12 @@ from app.dependencies import get_db
 from app.models.user import User
 from app.schemas.product import ProductCreate
 from app.services.product_service import CategoryService, ProductService
+from app.utils.templates import create_templates
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/products", tags=["products-web"])
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 
 @router.get("/", response_class=HTMLResponse)

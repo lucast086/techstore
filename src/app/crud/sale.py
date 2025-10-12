@@ -13,6 +13,7 @@ from app.models.payment import Payment
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.schemas.sale import SaleCreate
+from app.utils.timezone import get_local_today, get_utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class SaleCRUD:
 
     def generate_invoice_number(self, db: Session) -> str:
         """Generate unique invoice number."""
-        current_year = datetime.now().year
+        current_year = get_utc_now().year
 
         # Get the last invoice number for current year
         last_sale = (
@@ -46,12 +47,10 @@ class SaleCRUD:
         # Start transaction
         try:
             # Check if sales are allowed for today (cash closing check)
-            from datetime import date
-
             from app.services.cash_closing_service import cash_closing_service
 
             can_process, reason = cash_closing_service.check_can_process_sale(
-                db=db, sale_date=date.today()
+                db=db, sale_date=get_local_today()
             )
             if not can_process:
                 raise ValueError(reason)
@@ -71,7 +70,8 @@ class SaleCRUD:
                 if not product:
                     raise ValueError(f"Product {item.product_id} not found")
 
-                if product.current_stock < item.quantity:
+                # Only check stock for physical products, not services
+                if not product.is_service and product.current_stock < item.quantity:
                     raise ValueError(
                         f"Insufficient stock for {product.name}. "
                         f"Available: {product.current_stock}, Requested: {item.quantity}"
@@ -181,41 +181,77 @@ class SaleCRUD:
                 )
                 db.add(sale_item)
 
-                # Update inventory
-                product.current_stock -= item.quantity
-                db.add(product)
+                # Update inventory (only for physical products, not services)
+                if not product.is_service:
+                    product.current_stock -= item.quantity
+                    db.add(product)
+
+            # Update sale with actual paid amount
+            sale.paid_amount = amount_paid
 
             # Handle payment creation and debt generation
-            if sale_in.customer_id and amount_paid > Decimal("0"):
+            # Skip creating payment if payment_method is account_credit (credit will be applied separately)
+            if (
+                sale_in.customer_id
+                and amount_paid > Decimal("0")
+                and sale_in.payment_method != "account_credit"
+            ):
                 # Create payment record for any amount paid
+                # IMPORTANT: Only record payment up to the total amount
+                # If customer gave more (e.g., $3100 for $3000 sale), the difference is change,
+                # not credit to be applied to the account
+                payment_amount = min(amount_paid, total_amount)
+
                 from app.models.payment import PaymentType
 
                 payment = Payment(
                     customer_id=sale_in.customer_id,
                     sale_id=sale.id,
-                    amount=amount_paid,
+                    amount=payment_amount,
                     payment_method=sale_in.payment_method or "cash",
                     payment_type=PaymentType.payment.value,  # Explicitly use .value
                     receipt_number=f"REC-{invoice_number}",
                     received_by_id=user_id,
                     notes=f"Payment for sale {invoice_number}"
                     + (
-                        f" (Partial: ${amount_paid} of ${total_amount})"
-                        if amount_paid < total_amount
+                        f" (Partial: ${payment_amount} of ${total_amount})"
+                        if payment_amount < total_amount
                         else ""
                     ),
                 )
                 db.add(payment)
+                db.flush()  # Ensure payment is created
 
-            # Handle debt generation for partial payments
-            if sale_in.customer_id and amount_paid < total_amount:
-                # Debt is automatically tracked via the balance service
-                # The unpaid portion becomes customer debt
-                debt_amount = total_amount - amount_paid
-                logger.info(
-                    f"Debt of ${debt_amount} generated for customer {sale_in.customer_id} "
-                    f"from sale {invoice_number}"
+                # Record payment in customer account (new system)
+                from app.services.customer_account_service import (
+                    customer_account_service,
                 )
+
+                try:
+                    customer_account_service.record_payment(db, payment, user_id)
+                except Exception as e:
+                    logger.warning(f"Failed to record payment in account system: {e}")
+
+            # Handle customer account transaction for the sale
+            # Skip recording debt if payment_method is account_credit (credit will be applied separately)
+            if sale_in.customer_id and sale_in.payment_method != "account_credit":
+                # Record sale in customer account (new system)
+                from app.services.customer_account_service import (
+                    customer_account_service,
+                )
+
+                try:
+                    customer_account_service.record_sale(db, sale, user_id)
+                except Exception as e:
+                    logger.warning(f"Failed to record sale in account system: {e}")
+
+                # Log debt if exists
+                if amount_paid < total_amount:
+                    debt_amount = total_amount - amount_paid
+                    logger.info(
+                        f"Debt of ${debt_amount} generated for customer {sale_in.customer_id} "
+                        f"from sale {invoice_number}"
+                    )
 
             db.commit()
             db.refresh(sale)
@@ -346,7 +382,7 @@ class SaleCRUD:
                 payment.voided = True
                 payment.void_reason = f"Sale {sale.invoice_number} voided"
                 payment.voided_by_id = user_id
-                payment.voided_at = datetime.now()
+                payment.voided_at = get_utc_now()
                 db.add(payment)
 
             # Update payment status

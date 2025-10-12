@@ -16,7 +16,7 @@
         <div class="ml-3">
           <h1 class="text-lg font-medium text-blue-800">Cash Closing Finalized</h1>
           <p class="mt-1 text-sm text-blue-700">
-            The cash closing for {{ closing.closing_date.strftime('%B %d, %Y') }} has been finalized and is now immutable.
+            The cash closing for {{ closing.closing_date | local_date('%B %d, %Y') }} has been finalized and is now immutable.
           </p>
         </div>
       </div>
@@ -37,7 +37,7 @@
             This closing record is now locked and cannot be modified.
           </p>
           <p class="text-xs text-blue-600 mt-1">
-            Sales for {{ closing.closing_date.strftime('%Y-%m-%d') }} are now prevented until a new day is opened.
+            Sales for {{ closing.closing_date | local_date('%Y-%m-%d') }} are now prevented until a new day is opened.
           </p>
         </div>
       </div>
@@ -102,7 +102,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">Finalized At:</span>
-            <span class="font-medium">{{ closing.closed_at.strftime('%I:%M %p') }}</span>
+            <span class="font-medium">{{ closing.closed_at | local_time('%I:%M %p') }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">Closing ID:</span>

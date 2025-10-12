@@ -92,6 +92,7 @@ class Product(BaseModel):
         maximum_stock: Maximum stock level.
         location: Storage location in warehouse.
         is_active: Whether product is active for sale.
+        is_service: Whether this is a service product (not physical inventory).
         created_by: ID of user who created the product.
         category: Product category relationship.
         creator: User who created the product.
@@ -127,6 +128,7 @@ class Product(BaseModel):
     maximum_stock: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     location: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_service: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_by: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )

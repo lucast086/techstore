@@ -1,6 +1,6 @@
 """CRUD operations for warranty management."""
 
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 from typing import Optional
 
 from sqlalchemy import and_, func, or_
@@ -17,6 +17,7 @@ from app.schemas.warranty import (
     WarrantyUpdate,
     WarrantyVoid,
 )
+from app.utils.timezone import get_local_today, get_utc_now
 
 
 class CRUDWarranty(CRUDBase[Warranty, WarrantyCreate, WarrantyUpdate]):
@@ -34,7 +35,7 @@ class CRUDWarranty(CRUDBase[Warranty, WarrantyCreate, WarrantyUpdate]):
         warranty_number = self._generate_warranty_number(db)
 
         # Calculate expiry dates
-        start_date = date.today()
+        start_date = get_local_today()
         parts_expiry_date = start_date + timedelta(
             days=warranty_create.parts_warranty_days
         )
@@ -77,7 +78,7 @@ class CRUDWarranty(CRUDBase[Warranty, WarrantyCreate, WarrantyUpdate]):
 
         warranty.status = WarrantyStatus.VOIDED
         warranty.void_reason = void_data.void_reason
-        warranty.voided_at = datetime.utcnow()
+        warranty.voided_at = get_utc_now()
         warranty.voided_by = void_data.voided_by
 
         db.commit()
@@ -140,7 +141,7 @@ class CRUDWarranty(CRUDBase[Warranty, WarrantyCreate, WarrantyUpdate]):
 
         # Expired filter
         if params.expired is not None:
-            today = date.today()
+            today = get_local_today()
             if params.expired:
                 query = query.filter(
                     and_(
@@ -193,7 +194,7 @@ class CRUDWarranty(CRUDBase[Warranty, WarrantyCreate, WarrantyUpdate]):
 
     def update_expired_warranties(self, db: Session) -> int:
         """Update status of expired warranties."""
-        today = date.today()
+        today = get_local_today()
 
         expired_warranties = (
             db.query(Warranty)
@@ -288,7 +289,7 @@ class CRUDWarranty(CRUDBase[Warranty, WarrantyCreate, WarrantyUpdate]):
 
     def _generate_warranty_number(self, db: Session) -> str:
         """Generate unique warranty number."""
-        year = datetime.now().year
+        year = get_utc_now().year
 
         # Get the last warranty number for the current year
         last_warranty = (
@@ -328,13 +329,13 @@ class CRUDWarrantyClaim(
             warranty_id=claim_create.warranty_id,
             repair_id=repair_id,
             claim_number=claim_number,
-            claim_date=date.today(),
+            claim_date=get_local_today(),
             issue_description=claim_create.issue_description,
             parts_covered=claim_create.parts_covered,
             labor_covered=claim_create.labor_covered,
             approved=True,
             approved_by=claim_create.approved_by,
-            approved_at=datetime.utcnow() if claim_create.approved_by else None,
+            approved_at=get_utc_now() if claim_create.approved_by else None,
         )
 
         db.add(db_claim)
@@ -369,7 +370,7 @@ class CRUDWarrantyClaim(
         if claim_update.approved is not None:
             claim.approved = claim_update.approved
             claim.approved_by = claim_update.approved_by
-            claim.approved_at = datetime.utcnow() if claim_update.approved_by else None
+            claim.approved_at = get_utc_now() if claim_update.approved_by else None
 
         db.commit()
         db.refresh(claim)
@@ -391,7 +392,7 @@ class CRUDWarrantyClaim(
 
     def _generate_claim_number(self, db: Session) -> str:
         """Generate unique claim number."""
-        year = datetime.now().year
+        year = get_utc_now().year
 
         # Get the last claim number for the current year
         last_claim = (

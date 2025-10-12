@@ -9,7 +9,6 @@ from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, Form, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
@@ -19,11 +18,12 @@ from app.models.user import User
 from app.schemas.customer import CustomerCreate
 from app.services.balance_service import balance_service
 from app.services.customer import customer_service
+from app.utils.templates import create_templates
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/customers", tags=["customers-web"])
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -224,9 +224,58 @@ async def customer_statement(
             status_code=404,
         )
 
-    # Get balance and transactions
-    balance_info = balance_service.get_balance_summary(db, customer_id)
-    transactions = balance_service.get_transaction_history(db, customer_id)
+    # Get balance and transactions from customer account service (new system)
+    from app.crud.customer_account import customer_account_crud
+    from app.models.customer_account import CustomerTransaction
+
+    # Get or create account
+    account = customer_account_crud.get_or_create(db, customer_id, 1)  # System user
+    db.commit()
+
+    # Format balance info
+    balance_info = {
+        "current_balance": account.account_balance,
+        "has_debt": account.has_debt,
+        "has_credit": account.has_credit,
+        "status": "debt"
+        if account.has_debt
+        else "credit"
+        if account.has_credit
+        else "clear",
+        "formatted": f"Owes ${abs(account.account_balance):,.2f}"
+        if account.has_debt
+        else f"Credit ${account.account_balance:,.2f}"
+        if account.has_credit
+        else "$0.00",
+    }
+
+    # Get all transactions
+    transactions_query = (
+        db.query(CustomerTransaction)
+        .filter(CustomerTransaction.customer_id == customer_id)
+        .order_by(CustomerTransaction.transaction_date.desc())
+        .all()
+    )
+
+    # Format transactions
+    transactions = []
+    for trans in transactions_query:
+        transactions.append(
+            {
+                "date": trans.transaction_date,
+                "type": trans.transaction_type.value
+                if hasattr(trans.transaction_type, "value")
+                else trans.transaction_type,
+                "description": trans.description,
+                "amount": float(trans.amount)
+                if trans.is_credit
+                else -float(trans.amount),
+                "reference": f"{trans.reference_type}_{trans.reference_id}"
+                if trans.reference_type
+                else "",
+                "running_balance": float(trans.balance_after),
+            }
+        )
 
     if format == "pdf":
         # Generate PDF using simple HTML to PDF approach
@@ -280,16 +329,20 @@ async def send_balance_reminder(
     if not customer:
         return {"error": "Customer not found"}
 
-    balance_info = balance_service.get_balance_summary(db, customer_id)
+    # Get balance from customer account service (new system)
+    from app.crud.customer_account import customer_account_crud
 
-    if not balance_info["has_debt"]:
+    account = customer_account_crud.get_or_create(db, customer_id, current_user.id)
+    db.commit()
+
+    if not account.has_debt:
         return {"error": "Customer has no outstanding debt"}
 
     # Generate WhatsApp message
     message = (
         f"Hello {customer.name},\n\n"
         f"This is a friendly reminder about your account balance.\n"
-        f"Current balance: ${abs(balance_info['current_balance']):,.2f}\n\n"
+        f"Current balance: ${abs(account.account_balance):,.2f}\n\n"
         f"Please contact us to arrange payment.\n"
         f"Thank you!"
     )
@@ -328,11 +381,60 @@ async def customer_detail(
             status_code=404,
         )
 
-    # Get balance info
-    balance_info = balance_service.get_balance_summary(db, customer_id)
+    # Get balance info from customer account service (new system)
+    from app.crud.customer_account import customer_account_crud
 
-    # Get recent transactions (last 10)
-    transactions = balance_service.get_transaction_history(db, customer_id, limit=10)
+    # Get or create account
+    account = customer_account_crud.get_or_create(db, customer_id, current_user.id)
+    db.commit()
+
+    # Format balance info to match template expectations
+    balance_info = {
+        "current_balance": account.account_balance,
+        "has_debt": account.has_debt,
+        "has_credit": account.has_credit,
+        "status": "debt"
+        if account.has_debt
+        else "credit"
+        if account.has_credit
+        else "clear",
+        "formatted": f"Owes ${abs(account.account_balance):,.2f}"
+        if account.has_debt
+        else f"Credit ${account.account_balance:,.2f}"
+        if account.has_credit
+        else "$0.00",
+    }
+
+    # Get recent transactions from account (last 10)
+    from app.models.customer_account import CustomerTransaction
+
+    transactions_query = (
+        db.query(CustomerTransaction)
+        .filter(CustomerTransaction.customer_id == customer_id)
+        .order_by(CustomerTransaction.transaction_date.desc())
+        .limit(10)
+        .all()
+    )
+
+    # Format transactions to match template expectations
+    transactions = []
+    for trans in transactions_query:
+        transactions.append(
+            {
+                "date": trans.transaction_date,
+                "type": trans.transaction_type.value
+                if hasattr(trans.transaction_type, "value")
+                else trans.transaction_type,
+                "description": trans.description,
+                "amount": float(trans.amount)
+                if trans.is_credit
+                else -float(trans.amount),  # Credits positive, debits negative
+                "reference": f"{trans.reference_type}_{trans.reference_id}"
+                if trans.reference_type
+                else "",
+                "running_balance": float(trans.balance_after),
+            }
+        )
 
     return templates.TemplateResponse(
         "customers/detail.html",

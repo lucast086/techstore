@@ -2,7 +2,6 @@
 
 import io
 import logging
-from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
@@ -14,6 +13,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 
 from app.models.cash_closing import CashClosing
 from app.models.user import User
+from app.utils.timezone import get_local_now
 
 logger = logging.getLogger(__name__)
 
@@ -218,7 +218,7 @@ class PDFService:
         )
         elements.append(
             Paragraph(
-                f"Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')} | TechStore SaaS",
+                f"Generated on {get_local_now().strftime('%B %d, %Y at %I:%M %p')} | TechStore SaaS",
                 footer_style,
             )
         )

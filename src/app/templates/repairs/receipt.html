@@ -210,7 +210,7 @@
                             <span class="text-gray-600">Phone:</span> {{ repair.customer_phone }}
                         </div>
                         <div class="text-right">
-                            <span class="text-gray-600">Date:</span> <span class="font-semibold">{{ repair.received_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                            <span class="text-gray-600">Date:</span> <span class="font-semibold">{{ repair.received_date | local_datetime('%Y-%m-%d %H:%M') }}</span>
                         </div>
                     </div>
 
@@ -288,7 +288,7 @@
 
                         <!-- Footer -->
                         <div class="text-center mt-2 text-xs text-gray-500">
-                            <p>{{ company.name or "TechStore" }} - {{ repair.received_date.strftime('%Y-%m-%d %H:%M') }}</p>
+                            <p>{{ company.name or "TechStore" }} - {{ repair.received_date | local_datetime('%Y-%m-%d %H:%M') }}</p>
                         </div>
                     </div>
                 </div> <!-- End receipt-content -->

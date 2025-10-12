@@ -5,7 +5,6 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.crud.cash_closing import cash_closing
@@ -14,6 +13,7 @@ from app.schemas.cash_closing import (
     CashClosingResponse,
     DailySummary,
 )
+from app.utils.timezone import get_local_today
 
 logger = logging.getLogger(__name__)
 
@@ -167,55 +167,23 @@ class CashClosingService:
             f"Creating closing for {closing_data.closing_date} by user {user_id}"
         )
 
-        # Get existing record (from opening) or check if already closed
-        existing = cash_closing.get_by_date(db, closing_date=closing_data.closing_date)
-
-        if existing and existing.closed_at and existing.closed_by:
-            # If it was already properly closed (not just opened)
-            if existing.opened_at != existing.closed_at:
-                raise ValueError(
-                    f"Closing already exists for date {closing_data.closing_date}"
-                )
-
-        if not existing:
-            # If no opening exists, we need to create the full record
-            logger.warning(
-                f"No opening record found for {closing_data.closing_date}, creating full closing"
+        # Check if register was opened for this date
+        if not cash_closing.is_cash_register_open(
+            db, target_date=closing_data.closing_date
+        ):
+            raise ValueError(
+                f"Cannot close cash register for {closing_data.closing_date}. "
+                "The cash register must be opened first."
             )
 
-        # Get calculated totals for the date
-        daily_summary = self.calculate_daily_totals(db, closing_data.closing_date)
-
-        if existing:
-            # Update the existing opening record with closing data
-            expected_cash = (
-                closing_data.opening_balance
-                + daily_summary.total_sales
-                - daily_summary.total_expenses
-            )
-            cash_difference = closing_data.cash_count - expected_cash
-
-            existing.sales_total = daily_summary.total_sales
-            existing.expenses_total = daily_summary.total_expenses
-            existing.cash_count = closing_data.cash_count
-            existing.expected_cash = expected_cash
-            existing.cash_difference = cash_difference
-            existing.notes = closing_data.notes
-            existing.closed_by = user_id
-            existing.closed_at = func.now()
-
-            db.commit()
-            db.refresh(existing)
-            db_closing = existing
-        else:
-            # Create new closing record if no opening exists
-            db_closing = cash_closing.create_closing(
-                db,
-                closing_data=closing_data,
-                sales_total=daily_summary.total_sales,
-                expenses_total=daily_summary.total_expenses,
-                closed_by=user_id,
-            )
+        # Use the close_cash_register method which has proper validation
+        db_closing = cash_closing.close_cash_register(
+            db,
+            target_date=closing_data.closing_date,
+            cash_count=closing_data.cash_count,
+            closed_by=user_id,
+            notes=closing_data.notes,
+        )
 
         # Validate cash difference
         is_valid, warning = self.validate_cash_difference(db_closing.cash_difference)
@@ -316,7 +284,7 @@ class CashClosingService:
             Status information including whether closing exists and daily summary.
         """
         if target_date is None:
-            target_date = date.today()
+            target_date = get_local_today()
 
         # Get daily summary
         daily_summary = self.calculate_daily_totals(db, target_date)

@@ -72,8 +72,8 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <!-- Date -->
       <div class="text-center">
-        <div class="text-2xl font-bold text-gray-900">{{ today_status.date.strftime('%d') }}</div>
-        <div class="text-sm text-gray-600">{{ today_status.date.strftime('%b %Y') }}</div>
+        <div class="text-2xl font-bold text-gray-900">{{ today_status.date | local_date('%d') }}</div>
+        <div class="text-sm text-gray-600">{{ today_status.date | local_date('%b %Y') }}</div>
       </div>
 
       <!-- Sales Summary -->
@@ -161,7 +161,7 @@
           {% for closing in closings %}
           <tr class="hover:bg-gray-50">
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-              {{ closing.closing_date.strftime('%Y-%m-%d') }}
+              {{ closing.closing_date | local_date }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               ${{ "{:.2f}".format(closing.opening_balance) }}

@@ -22,6 +22,7 @@ from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     from app.models.customer import Customer
+    from app.models.repair_deposit import RepairDeposit
     from app.models.user import User
     from app.models.warranty import Warranty
 
@@ -294,6 +295,12 @@ class Repair(BaseModel):
         cascade="all, delete-orphan",
         lazy="select",
         uselist=False,
+    )
+    deposits: Mapped[list["RepairDeposit"]] = relationship(
+        "RepairDeposit",
+        back_populates="repair",
+        cascade="all, delete-orphan",
+        lazy="select",
     )
 
     def __repr__(self) -> str:

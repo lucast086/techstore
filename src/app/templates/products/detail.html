@@ -334,13 +334,13 @@ endblock %} {% block content %}
             <div class="bg-gray-50 px-4 py-5">
               <dt class="text-sm font-medium text-gray-500">Creado</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {{ product.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                {{ product.created_at | local_datetime('%B %d, %Y at %I:%M %p') }}
               </dd>
             </div>
             <div class="bg-white px-4 py-5">
               <dt class="text-sm font-medium text-gray-500">Última Actualización</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {{ product.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
+                {{ product.updated_at | local_datetime('%B %d, %Y at %I:%M %p') }}
               </dd>
             </div>
           </dl>

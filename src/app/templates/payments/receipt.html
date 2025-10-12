@@ -221,10 +221,10 @@
             <div class="info-value">{{ payment.receipt_number }}</div>
 
             <div class="info-label">Date</div>
-            <div class="info-value">{{ payment.created_at.strftime('%B %d, %Y') }}</div>
+            <div class="info-value">{{ payment.created_at | local_date('%B %d, %Y') }}</div>
 
             <div class="info-label">Time</div>
-            <div class="info-value">{{ payment.created_at.strftime('%I:%M %p') }}</div>
+            <div class="info-value">{{ payment.created_at | local_time('%I:%M %p') }}</div>
         </div>
 
         <div class="info-section">

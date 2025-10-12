@@ -22,6 +22,11 @@ from app.schemas.repair import (
     RepairStatusUpdate,
     RepairUpdate,
 )
+from app.schemas.repair_deposit import (
+    DepositCreate,
+    DepositRefund,
+)
+from app.services.repair_deposit_service import repair_deposit_service
 from app.services.repair_service import repair_service
 
 logger = logging.getLogger(__name__)
@@ -381,3 +386,191 @@ async def add_repair_photo(
         message="Photo added successfully",
         data={"photo_id": photo_added.id},
     )
+
+
+# ============= Deposit Management Endpoints =============
+
+
+@router.post("/{repair_id}/deposits", response_model=ResponseSchema)
+async def record_deposit(
+    repair_id: int,
+    deposit_in: DepositCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ResponseSchema:
+    """Record a new deposit for a repair.
+
+    - **amount**: Deposit amount (required, must be positive)
+    - **payment_method**: Payment method (cash, card, transfer, etc.)
+    - **notes**: Optional notes about the deposit
+    """
+    try:
+        # Override repair_id from URL
+        deposit_in.repair_id = repair_id
+
+        deposit = repair_deposit_service.record_deposit(
+            db=db, deposit_data=deposit_in, received_by_id=current_user.id
+        )
+
+        return ResponseSchema(
+            success=True,
+            message=f"Deposit recorded successfully. Receipt: {deposit.receipt_number}",
+            data=deposit.model_dump(),
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.error(f"Error recording deposit: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error recording deposit",
+        ) from e
+
+
+@router.get("/{repair_id}/deposits", response_model=ResponseSchema)
+async def get_repair_deposits(
+    repair_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ResponseSchema:
+    """Get all deposits for a repair with summary."""
+    summary = repair_deposit_service.get_repair_deposits(db=db, repair_id=repair_id)
+
+    return ResponseSchema(
+        success=True,
+        message=f"Found {summary.deposit_count} deposits",
+        data=summary.model_dump(),
+    )
+
+
+@router.get("/deposits/{deposit_id}", response_model=ResponseSchema)
+async def get_deposit(
+    deposit_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ResponseSchema:
+    """Get deposit details by ID."""
+    deposit = repair_deposit_service.get_deposit(db=db, deposit_id=deposit_id)
+    if not deposit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Deposit not found",
+        )
+
+    return ResponseSchema(
+        success=True,
+        message="Deposit retrieved successfully",
+        data=deposit.model_dump(),
+    )
+
+
+@router.post("/deposits/{deposit_id}/refund", response_model=ResponseSchema)
+async def refund_deposit(
+    deposit_id: int,
+    refund_data: DepositRefund,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ResponseSchema:
+    """Refund a deposit.
+
+    - **refund_amount**: Amount to refund (optional, defaults to full amount)
+    - **refund_reason**: Reason for refund (required)
+    """
+    try:
+        deposit = repair_deposit_service.refund_deposit(
+            db=db,
+            deposit_id=deposit_id,
+            refund_data=refund_data,
+            refunded_by_id=current_user.id,
+        )
+
+        return ResponseSchema(
+            success=True,
+            message=f"Deposit {deposit.receipt_number} refunded successfully",
+            data=deposit.model_dump(),
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.error(f"Error refunding deposit: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing refund",
+        ) from e
+
+
+@router.post("/deposits/{deposit_id}/void", response_model=ResponseSchema)
+async def void_deposit(
+    deposit_id: int,
+    reason: str = Query(..., description="Reason for voiding"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ResponseSchema:
+    """Void a deposit.
+
+    Only active deposits can be voided.
+    """
+    try:
+        deposit = repair_deposit_service.void_deposit(
+            db=db,
+            deposit_id=deposit_id,
+            reason=reason,
+            voided_by_id=current_user.id,
+        )
+
+        return ResponseSchema(
+            success=True,
+            message=f"Deposit {deposit.receipt_number} voided successfully",
+            data=deposit.model_dump(),
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.error(f"Error voiding deposit: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error voiding deposit",
+        ) from e
+
+
+@router.post("/{repair_id}/deposits/apply-to-sale", response_model=ResponseSchema)
+async def apply_deposits_to_sale(
+    repair_id: int,
+    sale_id: int = Query(..., description="Sale ID to apply deposits to"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ResponseSchema:
+    """Apply all active deposits of a repair to a sale.
+
+    This is typically done when converting a repair to a sale.
+    """
+    try:
+        deposits = repair_deposit_service.apply_deposits_to_sale(
+            db=db, repair_id=repair_id, sale_id=sale_id
+        )
+
+        return ResponseSchema(
+            success=True,
+            message=f"Applied {len(deposits)} deposits to sale {sale_id}",
+            data={"deposits": [d.model_dump() for d in deposits]},
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.error(f"Error applying deposits: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error applying deposits to sale",
+        ) from e

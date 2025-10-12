@@ -123,7 +123,7 @@ Profile{% endblock %} {% block content %}
             <div>
               <dt class="text-sm font-medium text-gray-500">Customer Since</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {{ customer.created_at.strftime('%B %d, %Y') }}
+                {{ customer.created_at | local_date('%B %d, %Y') }}
               </dd>
             </div>
             <div>
@@ -245,7 +245,7 @@ Profile{% endblock %} {% block content %}
                       }} {% endif %}
                     </div>
                     <div class="text-sm text-gray-500">
-                      {{ transaction.date.strftime('%B %d, %Y at %I:%M %p') }}
+                      {{ transaction.date | local_datetime('%B %d, %Y at %I:%M %p') }}
                     </div>
                     {% if transaction.reference_number %}
                     <div class="text-xs text-gray-400">

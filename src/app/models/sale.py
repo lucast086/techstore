@@ -71,6 +71,9 @@ class Sale(BaseModel):
         DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
     )
     total_amount: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
+    paid_amount: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
+    )  # Total amount paid so far
     payment_status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="pending"
     )  # pending, partial, paid

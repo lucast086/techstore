@@ -203,3 +203,48 @@ def test_expense(db_session, test_user, test_expense_category):
     db_session.add(expense)
     db_session.commit()
     return expense
+
+
+@pytest.fixture
+def test_service_category(db_session):
+    """Create a service category for repair products."""
+    from app.models.product import Category
+
+    category = Category(
+        name="Services",
+        description="Service products",
+        is_active=True,
+    )
+    db_session.add(category)
+    db_session.commit()
+    db_session.refresh(category)
+    return category
+
+
+@pytest.fixture
+def test_repair_service_product(db_session, test_user, test_service_category):
+    """Create a repair service product."""
+    from decimal import Decimal
+
+    from app.models.product import Product
+
+    product = Product(
+        sku="REPAIR-SERVICE",
+        name="Repair Service",
+        description="Service product for repair deliveries",
+        category_id=test_service_category.id,
+        purchase_price=Decimal("0.00"),
+        first_sale_price=Decimal("0.00"),
+        second_sale_price=Decimal("0.00"),
+        third_sale_price=Decimal("0.00"),
+        tax_rate=Decimal("0.00"),
+        current_stock=0,
+        minimum_stock=0,
+        is_active=True,
+        is_service=True,
+        created_by=test_user.id,
+    )
+    db_session.add(product)
+    db_session.commit()
+    db_session.refresh(product)
+    return product

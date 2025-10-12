@@ -7,7 +7,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
@@ -16,11 +15,13 @@ from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.cash_closing import CashClosingCreate
 from app.services.cash_closing_service import cash_closing_service
+from app.utils.templates import create_templates
+from app.utils.timezone import get_local_today
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 
 def require_admin_or_manager(
@@ -99,8 +100,8 @@ async def cash_opening_form(
                 status_code=303,
             )
 
-        # Check if already open for today
-        today = date.today()
+        # Check if already open for today (using local timezone)
+        today = get_local_today()
         if cash_closing.is_cash_register_open(db, target_date=today):
             # Redirect to list if already open
             return RedirectResponse(url="/cash-closings", status_code=302)
@@ -135,7 +136,8 @@ async def open_cash_register(
 ):
     """Open cash register for the day."""
     try:
-        today = date.today()
+        # Use local timezone for today
+        today = get_local_today()
 
         # Open the cash register
         opening = cash_closing_service.open_cash_register(
@@ -169,7 +171,7 @@ async def open_cash_register(
                 "request": request,
                 "current_user": current_user,
                 "error": error_message,
-                "opening_date": date.today(),
+                "opening_date": get_local_today(),
                 "opening_balance": opening_balance,
                 "notes": notes,
                 "suggested_balance": opening_balance,
@@ -183,7 +185,7 @@ async def open_cash_register(
                 "request": request,
                 "current_user": current_user,
                 "error": f"System error: {str(e)}",
-                "opening_date": date.today(),
+                "opening_date": get_local_today(),
                 "opening_balance": opening_balance,
                 "notes": notes,
                 "suggested_balance": opening_balance,
@@ -200,8 +202,10 @@ async def cash_closing_form(
 ):
     """Render cash closing form page."""
     try:
-        # Use today's date if none provided
-        target_date = date.fromisoformat(closing_date) if closing_date else date.today()
+        # Use today's date if none provided (local timezone)
+        target_date = (
+            date.fromisoformat(closing_date) if closing_date else get_local_today()
+        )
 
         # Get current status and daily summary
         status_info = cash_closing_service.get_current_closing_status(
@@ -217,6 +221,22 @@ async def cash_closing_form(
             return RedirectResponse(
                 url=f"/cash-closings/{target_date}",
                 status_code=302,
+            )
+
+        # Check if cash register is open
+        if not status_info["is_open"]:
+            # Return error page instead of form
+            return templates.TemplateResponse(
+                "cash_closings/error.html",
+                {
+                    "request": request,
+                    "current_user": current_user,
+                    "error_title": "Cash Register Not Open",
+                    "error_message": f"Cannot close the cash register for {target_date} because it was never opened. Please open the cash register first.",
+                    "target_date": target_date,
+                    "page_title": f"Cash Closing Error - {target_date}",
+                },
+                status_code=400,
             )
 
         return templates.TemplateResponse(

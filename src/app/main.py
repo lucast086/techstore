@@ -11,10 +11,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from app.api.v1 import auth as auth_api
 from app.api.v1 import cash_closings as cash_closings_api
+from app.api.v1 import customer_accounts as customer_accounts_api
 from app.api.v1 import customers as customers_api
 from app.api.v1 import expenses as expenses_api
 from app.api.v1 import health as health_api
@@ -31,6 +31,8 @@ from app.models import (  # noqa: F401
     CashClosing,
     Category,
     Customer,
+    CustomerAccount,
+    CustomerTransaction,
     Expense,
     ExpenseCategory,
     Payment,
@@ -44,6 +46,7 @@ from app.models import (  # noqa: F401
     Sale,
     SaleItem,
     Supplier,
+    TransactionType,
     User,
     Warranty,
     WarrantyClaim,
@@ -52,6 +55,7 @@ from app.web import (
     admin,
     auth,
     cash_closings,
+    customer_accounts,
     customers,
     expenses,
     help,
@@ -104,8 +108,10 @@ app.add_middleware(
 # Static files
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
-# Templates
-templates = Jinja2Templates(directory="src/app/templates")
+# Templates with custom filters
+from app.utils.templates import create_templates
+
+templates = create_templates()
 
 
 # Root redirect to login
@@ -119,6 +125,9 @@ async def root():
 app.include_router(health_api.router, prefix="/api/v1")
 app.include_router(auth_api.router)  # Auth API endpoints
 app.include_router(customers_api.router, prefix="/api/v1")  # Customer API endpoints
+app.include_router(
+    customer_accounts_api.router, prefix="/api/v1", tags=["customer-accounts"]
+)  # Customer Account API endpoints
 app.include_router(payments_api.router, prefix="/api/v1")  # Payment API endpoints
 app.include_router(
     sales_api.router, prefix="/api/v1/sales", tags=["sales"]
@@ -145,6 +154,9 @@ app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 # Customer routes (HTMX)
 app.include_router(customers.router, tags=["customers"])
+
+# Customer Account routes (HTMX)
+app.include_router(customer_accounts.router, tags=["customer-accounts"])
 
 # Payment routes (HTMX)
 app.include_router(payments.router, tags=["payments"])

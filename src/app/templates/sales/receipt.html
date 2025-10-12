@@ -232,7 +232,7 @@
                     <div class="info-value">{{ sale.invoice_number }}</div>
 
                     <div class="info-label">Date</div>
-                    <div class="info-value">{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</div>
+                    <div class="info-value">{{ sale.sale_date | local_datetime }}</div>
 
                     <div class="info-label">Cashier</div>
                     <div class="info-value">{{ sale.user.full_name }}</div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cierre de Caja - {{ closing.closing_date.strftime('%Y-%m-%d') }}</title>
+    <title>Cierre de Caja - {{ closing.closing_date | local_date('%Y-%m-%d') }}</title>
     <style>
         @media print {
             @page {
@@ -259,10 +259,10 @@
             <div class="receipt-info">
                 <div class="info-section">
                     <div class="info-label">Fecha de Cierre</div>
-                    <div class="info-value">{{ closing.closing_date.strftime('%d de %B, %Y') }}</div>
+                    <div class="info-value">{{ closing.closing_date | local_date('%d de %B, %Y') }}</div>
 
                     <div class="info-label">Hora de Cierre</div>
-                    <div class="info-value">{{ closing.closed_at.strftime('%I:%M %p') }}</div>
+                    <div class="info-value">{{ closing.closed_at | local_time('%I:%M %p') }}</div>
 
                     <div class="info-label">Estado</div>
                     <div class="info-value">
@@ -280,7 +280,7 @@
 
                     {% if closing.opened_at %}
                     <div class="info-label">Hora de Apertura</div>
-                    <div class="info-value">{{ closing.opened_at.strftime('%I:%M %p') }}</div>
+                    <div class="info-value">{{ closing.opened_at | local_time('%I:%M %p') }}</div>
                     {% endif %}
 
                     {% if closing.opener %}
@@ -382,7 +382,7 @@
             </div>
 
             <div class="footer">
-                <p>Cierre de Caja - {{ closing.closing_date.strftime('%Y-%m-%d') }}</p>
+                <p>Cierre de Caja - {{ closing.closing_date | local_date('%Y-%m-%d') }}</p>
                 <p style="font-size: 10px;">Este es un recibo generado por computadora</p>
                 <p style="font-size: 10px;">Para consultas: (555) 123-4567</p>
                 {% if closing.is_finalized %}

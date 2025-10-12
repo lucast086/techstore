@@ -2,10 +2,11 @@
 
 from fastapi import APIRouter, Form, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
-from fastapi.templating import Jinja2Templates
+
+from app.utils.templates import create_templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 # Variable para demo del contador
 counter_value = 0

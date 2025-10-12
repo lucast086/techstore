@@ -16,7 +16,7 @@
         <div class="ml-3">
           <h1 class="text-lg font-medium text-green-800">Cash Closing Created Successfully</h1>
           <p class="mt-1 text-sm text-green-700">
-            Your cash closing for {{ closing.closing_date.strftime('%B %d, %Y') }} has been created.
+            Your cash closing for {{ closing.closing_date | local_date('%B %d, %Y') }} has been created.
           </p>
         </div>
       </div>

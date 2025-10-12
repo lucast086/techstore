@@ -76,6 +76,17 @@ class PaymentService:
             if sale:
                 self.update_sale_payment_status(db, sale)
 
+        # Record payment in new customer account system
+        from app.services.customer_account_service import customer_account_service
+
+        try:
+            customer_account_service.record_payment(db, payment, user_id)
+            logger.info(
+                f"Payment recorded in customer account for customer {customer_id}"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record payment in account system: {e}")
+
         logger.info(
             f"Payment processed: {payment.receipt_number} for customer {customer_id}"
         )
