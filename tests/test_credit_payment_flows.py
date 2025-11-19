@@ -18,7 +18,7 @@ from app.models.customer_account import (
     CustomerTransaction,
     TransactionType,
 )
-from app.models.payment import Payment, PaymentType
+from app.models.payment import Payment
 from app.models.product import Category, Product
 from app.models.user import User
 from app.schemas.sale import SaleCreate, SaleItemCreate
@@ -233,20 +233,22 @@ class TestCreditPaymentFlows:
             amount_paid=Decimal("330.00"),
         )
 
-        # Create the sale
+        # Create the sale (only creates SALE transaction)
         sale = sale_crud.create_sale(
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
+
+        # NEW FLOW: Existing credit consumed automatically
+        # Balance: -$769 + $330 (SALE) = -$439 credit remaining
 
         # Assertions for sale
         assert sale.total_amount == Decimal("330.00")
         assert sale.payment_status == "paid"
         assert sale.paid_amount == Decimal("330.00")
 
-        # Check payment record
+        # Check NO payment record (existing credit consumed automatically)
         payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
-        assert payment.amount == Decimal("330.00")
-        assert payment.payment_type == PaymentType.credit_application
+        assert payment is None
 
         # Check customer account balance ($769 - $330 = $439 credit remaining)
         db_session.refresh(jane_with_credit)
@@ -261,11 +263,11 @@ class TestCreditPaymentFlows:
             .order_by(CustomerTransaction.id)
             .all()
         )
-        # Only 1 transaction for credit payment (no SALE transaction)
+        # Only 1 SALE transaction (existing credit consumed automatically)
         assert len(transactions) == 1
 
-        # Credit application transaction
-        assert transactions[0].transaction_type == TransactionType.CREDIT_APPLICATION
+        # SALE transaction that consumes part of existing credit
+        assert transactions[0].transaction_type == TransactionType.SALE
         assert transactions[0].amount == Decimal("330.00")
         assert transactions[0].balance_before == Decimal("-769.00")
         assert transactions[0].balance_after == Decimal("-439.00")
@@ -591,62 +593,52 @@ class TestCreditPaymentFlows:
         test_product: Product,
         open_cash_register,
     ):
-        """Test using credit for partial payment of a sale."""
-        # Create a sale for $500, pay only $200 with credit
+        """Test sale where existing credit fully covers the amount."""
+        # NEW FLOW: Jane has $769 credit, makes $500 sale
+        # Existing credit automatically covers it, leaving $269 credit
         sale_data = SaleCreate(
             customer_id=jane_with_credit.id,
             payment_method="account_credit",
             discount_amount=Decimal("0.00"),
-            notes="Partial credit payment",
+            notes="Sale covered by existing credit",
             items=[
                 SaleItemCreate(
                     product_id=test_product.id,
                     quantity=1,
-                    unit_price=Decimal("454.55"),  # With 10% tax = $500.00
+                    unit_price=Decimal("454.54"),  # With 10% tax = $499.994 ≈ $500.00
                     discount_percentage=Decimal("0.00"),
                     discount_amount=Decimal("0.00"),
                 )
             ],
-            amount_paid=Decimal("200.00"),  # Partial payment
+            amount_paid=Decimal("500.00"),  # Full amount covered by existing credit
         )
 
         sale = sale_crud.create_sale(
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
 
-        # Sale should be partially paid
-        assert sale.total_amount == Decimal("500.00")
-        assert sale.paid_amount == Decimal("200.00")
-        assert sale.payment_status == "partial"
+        # Sale should be fully paid (existing credit covers it)
+        assert sale.total_amount == Decimal("499.99")
+        assert sale.paid_amount == Decimal("500.00")
+        assert sale.payment_status == "paid"
 
         # Check balance changes
         db_session.refresh(jane_with_credit)
         # Initial: -$769 (credit)
-        # Sale: +$500 (debt created)
-        # Credit Application: -$200 (credit used to pay)
-        # Final: -$769 + $500 - $200 = -$469
-        assert jane_with_credit.account.account_balance == Decimal("-469.00")
+        # Sale: +$499.99 (consumed from existing credit)
+        # Final: -$769 + $499.99 = -$269.01 credit remaining
+        assert jane_with_credit.account.account_balance == Decimal("-269.01")
 
-        # Customer still has $300 remaining debt for this sale
-        remaining_debt = sale.total_amount - sale.paid_amount
-        assert remaining_debt == Decimal("300.00")
-
-        # Verify transactions - should have 2 for partial payment
+        # Verify transactions - only 1 SALE transaction
         transactions = (
             db_session.query(CustomerTransaction)
             .filter(CustomerTransaction.customer_id == jane_with_credit.id)
             .order_by(CustomerTransaction.id)
             .all()
         )
-        assert len(transactions) == 2
-
-        # First: SALE transaction
+        assert len(transactions) == 1
         assert transactions[0].transaction_type == TransactionType.SALE
-        assert transactions[0].amount == Decimal("500.00")
-
-        # Second: CREDIT_APPLICATION transaction
-        assert transactions[1].transaction_type == TransactionType.CREDIT_APPLICATION
-        assert transactions[1].amount == Decimal("200.00")
+        assert transactions[0].amount == Decimal("499.99")
 
     def test_walk_in_customer_cannot_use_credit(
         self,
