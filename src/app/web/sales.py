@@ -710,45 +710,134 @@ async def process_checkout(
                 status_code=400,
             )
 
-        # Create sale (this now handles credit application internally)
+        # Create sale (now only creates SALE transaction - debt)
+        # Payment processing happens below, following the refactor plan
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
 
-        # Handle mixed payment with credit
-        if (
-            payment_method == "mixed"
-            and mixed_credit_amount
-            and mixed_credit_amount.strip()
-            and sale.customer_id
-        ):
-            credit_used = Decimal(mixed_credit_amount)
-            logger.info(
-                f"Processing mixed payment credit usage: ${credit_used} for customer {sale.customer_id}"
-            )
+        # PHASE 2: Apply payments after sale creation
+        # This follows the refactor plan: centralize payment logic in web endpoint
+        if sale.customer_id and amount_paid and amount_paid > 0:
+            from app.models.payment import Payment, PaymentType
+            from app.services.customer_account_service import customer_account_service
 
-            # Apply customer credit using the payment service
-            from app.services.payment_service import PaymentService
+            # Cap payment amount to total (overpayment becomes change)
+            payment_amount = min(amount_paid, sale.total_amount)
 
-            payment_service = PaymentService()
-
-            try:
-                payment_service.apply_customer_credit(
-                    db=db,
+            # Create Payment record for non-credit payments
+            if payment_method not in ["account_credit", "mixed"]:
+                # Regular payments: cash, card, transfer
+                payment = Payment(
                     customer_id=sale.customer_id,
-                    credit_amount=credit_used,
                     sale_id=sale.id,
-                    user_id=current_user.id,
-                    notes=f"Credit portion applied to mixed payment for sale {sale.invoice_number}",
+                    amount=payment_amount,
+                    payment_method=payment_method,
+                    payment_type=PaymentType.payment.value,
+                    receipt_number=f"REC-{sale.invoice_number}",
+                    received_by_id=current_user.id,
+                    notes=f"Payment for sale {sale.invoice_number}",
                 )
+                db.add(payment)
+                db.flush()
+
+                # Record PAYMENT transaction
+                try:
+                    customer_account_service.record_payment(
+                        db, payment, current_user.id
+                    )
+                    logger.info(
+                        f"Recorded PAYMENT transaction: ${payment_amount} for sale {sale.invoice_number}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to record payment transaction: {e}")
+                    db.rollback()
+                    return HTMLResponse(
+                        f'<div class="alert alert-danger">Error recording payment: {str(e)}</div>',
+                        status_code=500,
+                    )
+
+        # Handle credit payments (account_credit or mixed with credit)
+        if sale.customer_id and payment_method in ["account_credit", "mixed"]:
+            from app.services.customer_account_service import customer_account_service
+
+            credit_to_apply = Decimal("0")
+
+            if payment_method == "account_credit":
+                # Full credit payment
+                credit_to_apply = (
+                    min(amount_paid, sale.total_amount)
+                    if amount_paid
+                    else sale.total_amount
+                )
+            elif (
+                payment_method == "mixed"
+                and mixed_credit_amount
+                and mixed_credit_amount.strip()
+            ):
+                # Mixed payment with credit portion
+                credit_to_apply = Decimal(mixed_credit_amount)
+
+            if credit_to_apply > 0:
                 logger.info(
-                    f"Mixed payment credit usage processed successfully for sale {sale.id}"
+                    f"Applying credit: ${credit_to_apply} for customer {sale.customer_id}"
                 )
-            except Exception as e:
-                logger.error(f"Failed to process mixed payment credit usage: {e}")
-                db.rollback()
-                return HTMLResponse(
-                    f'<div class="alert alert-danger">Error processing credit payment: {str(e)}</div>',
-                    status_code=500,
+
+                try:
+                    # Apply credit (creates CREDIT_APPLICATION transaction)
+                    customer_account_service.apply_credit(
+                        db=db,
+                        customer_id=sale.customer_id,
+                        amount=credit_to_apply,
+                        sale_id=sale.id,
+                        created_by_id=current_user.id,
+                        notes=f"Credit applied to sale {sale.invoice_number}",
+                    )
+                    logger.info(
+                        f"Credit application processed successfully for sale {sale.id}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to apply credit: {e}")
+                    db.rollback()
+                    return HTMLResponse(
+                        f'<div class="alert alert-danger">Error applying credit: {str(e)}</div>',
+                        status_code=500,
+                    )
+
+            # For mixed payments, also create Payment for non-credit portion
+            if payment_method == "mixed" and amount_paid and amount_paid > 0:
+                from app.models.payment import Payment, PaymentType
+
+                payment = Payment(
+                    customer_id=sale.customer_id,
+                    sale_id=sale.id,
+                    amount=amount_paid,
+                    payment_method="mixed",
+                    payment_type=PaymentType.payment.value,
+                    receipt_number=f"REC-{sale.invoice_number}",
+                    received_by_id=current_user.id,
+                    notes=f"Mixed payment (non-credit portion) for sale {sale.invoice_number}",
                 )
+                db.add(payment)
+                db.flush()
+
+                # Record PAYMENT transaction for non-credit portion
+                try:
+                    customer_account_service.record_payment(
+                        db, payment, current_user.id
+                    )
+                    logger.info(
+                        f"Recorded mixed PAYMENT transaction: ${amount_paid} for sale {sale.invoice_number}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to record mixed payment transaction: {e}")
+                    db.rollback()
+                    return HTMLResponse(
+                        f'<div class="alert alert-danger">Error recording payment: {str(e)}</div>',
+                        status_code=500,
+                    )
+
+        # Commit all payment transactions
+        db.commit()
+        db.refresh(sale)
 
         # If this sale was for repairs, complete the delivery process
         if repair_ids_to_invoice:

@@ -318,30 +318,57 @@ class CustomerAccountService:
         """
         account = self.get_or_create_account(db, customer_id, created_by_id)
 
-        # Check available credit
-        if account.account_balance >= 0:
+        # NEW FLOW: Calculate available credit considering that sale might already be recorded
+        # We need to check the credit balance BEFORE this sale was created
+        # Get the sale to subtract its amount from current balance
+        sale = db.query(Sale).filter(Sale.id == sale_id).first()
+        if not sale:
+            raise ValueError(f"Sale {sale_id} not found")
+
+        # Calculate original credit (before this sale)
+        # If sale was already recorded as SALE transaction, we need to subtract it
+        # to get the original credit balance
+        from app.models.customer_account import CustomerTransaction, TransactionType
+
+        sale_transaction_exists = (
+            db.query(CustomerTransaction)
+            .filter(
+                CustomerTransaction.customer_id == customer_id,
+                CustomerTransaction.reference_type == "sale",
+                CustomerTransaction.reference_id == sale_id,
+                CustomerTransaction.transaction_type == TransactionType.SALE,
+            )
+            .first()
+        )
+
+        if sale_transaction_exists:
+            # Sale was already recorded, calculate original credit
+            original_credit_balance = account.account_balance - sale.total_amount
+        else:
+            # Sale not recorded yet (old flow), use current balance
+            original_credit_balance = account.account_balance
+
+        # Check available credit based on original balance
+        if original_credit_balance >= 0:
             raise ValueError("Customer has no credit balance to apply")
 
-        available = abs(account.account_balance)
+        available = abs(original_credit_balance)
         if amount > available:
             raise ValueError(
                 f"Insufficient credit. Available: ${available}, Requested: ${amount}"
             )
 
-        # Get sale
-        sale = db.query(Sale).filter(Sale.id == sale_id).first()
-        if not sale:
-            raise ValueError(f"Sale {sale_id} not found")
-
         # Create transaction
         balance_before = account.account_balance
-        balance_after = balance_before + amount  # Using credit increases balance
+        balance_after = (
+            balance_before - amount
+        )  # Applying credit reduces balance (debt)
 
         transaction = CustomerTransaction(
             customer_id=customer_id,
             account_id=account.id,
             transaction_type=TransactionType.CREDIT_APPLICATION,
-            amount=amount,
+            amount=amount,  # Amount is always positive, transaction_type determines impact
             balance_before=balance_before,
             balance_after=balance_after,
             reference_type="sale",

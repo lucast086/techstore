@@ -300,31 +300,50 @@ class TestCreditPaymentFlows:
             amount_paid=Decimal("231.00"),  # Only the cash portion, not the credit
         )
 
-        # Create the sale (mixed payment details should be in form data, but for unit test we simulate the result)
+        # Create the sale (now only creates SALE transaction)
         sale = sale_crud.create_sale(
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
 
-        # For mixed payment with credit, the web endpoint would create an additional credit application payment
-        # Let's simulate that here
-        from app.services.payment_service import payment_service
+        # NEW FLOW: After sale creation, apply payments in correct order
+        # This simulates what web/sales.py does after create_sale()
+        # Order matters: Apply cash payment FIRST, then credit
+        from app.models.payment import Payment, PaymentType
+        from app.services.customer_account_service import customer_account_service
 
-        # Apply the credit portion
-        credit_payment = payment_service.apply_customer_credit(
-            db=db_session,
+        # Step 1: Create and record Payment for cash portion
+        # NOTE: Jane's existing credit (-$769) automatically offsets the sale debt
+        # After SALE transaction: balance went from -$769 to +$231 (used $769 credit)
+        # Now we just need to record the cash payment for the remaining $231
+        cash_payment = Payment(
             customer_id=jane_with_credit.id,
-            credit_amount=Decimal("769.00"),
             sale_id=sale.id,
-            user_id=test_user.id,
-            notes="Credit portion applied to mixed payment",
+            amount=Decimal("231.00"),
+            payment_method="mixed",
+            payment_type=PaymentType.payment.value,
+            receipt_number=f"REC-{sale.invoice_number}",
+            received_by_id=test_user.id,
+            notes="Mixed payment (cash portion)",
         )
+        db_session.add(cash_payment)
+        db_session.flush()
+
+        # Record PAYMENT transaction for cash portion
+        customer_account_service.record_payment(db_session, cash_payment, test_user.id)
+
+        # NO CREDIT_APPLICATION needed! Jane's existing credit was automatically consumed
+        # by the SALE transaction. The balance shows this: -$769 -> +$231 -> $0
+
+        db_session.commit()
+        db_session.refresh(sale)
 
         # Assertions for sale
         assert sale.total_amount == Decimal("1000.00")
         assert sale.payment_method == "mixed"
         assert sale.paid_amount == Decimal("231.00")  # Cash portion only
 
-        # Check payments - should have 2: cash payment and credit application
+        # Check payments - should have only 1: cash payment
+        # Credit applications don't create Payment records
         payments = (
             db_session.query(Payment)
             .filter(Payment.sale_id == sale.id)
@@ -332,17 +351,12 @@ class TestCreditPaymentFlows:
             .all()
         )
 
-        # Should have 2 payments: cash + credit application
-        assert len(payments) == 2
+        # Should have 1 payment: cash portion only
+        assert len(payments) == 1
 
-        # First payment: cash portion
-        cash_payment = payments[0]
+        # Payment: cash portion
         assert cash_payment.amount == Decimal("231.00")
-        assert cash_payment.payment_type == PaymentType.payment.value
-
-        # Second payment: credit application
-        assert credit_payment.amount == Decimal("769.00")
-        assert credit_payment.payment_type == PaymentType.credit_application.value
+        assert cash_payment.payment_type == PaymentType.payment
 
         # Check customer account balance (should be zero after using all credit)
         db_session.refresh(jane_with_credit)
@@ -358,8 +372,9 @@ class TestCreditPaymentFlows:
             .all()
         )
 
-        # Should have 3 transactions: SALE, PAYMENT (cash), CREDIT_APPLICATION
-        assert len(transactions) == 3
+        # Should have 2 transactions only: SALE, PAYMENT (cash)
+        # No CREDIT_APPLICATION because existing credit is automatically consumed
+        assert len(transactions) == 2
 
         # For mixed payment, only the cash portion would affect the cash register
         # Credit portions don't create cash register entries

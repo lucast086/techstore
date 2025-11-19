@@ -9,7 +9,6 @@ from sqlalchemy import and_, case, desc, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.models.payment import Payment
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.schemas.sale import SaleCreate
@@ -189,97 +188,26 @@ class SaleCRUD:
             # Update sale with actual paid amount
             sale.paid_amount = amount_paid
 
-            # Handle payment creation and debt generation
-            if sale_in.customer_id and amount_paid > Decimal("0"):
-                # Create payment record for any amount paid
-                # IMPORTANT: Only record payment up to the total amount
-                # If customer gave more (e.g., $3100 for $3000 sale), the difference is change,
-                # not credit to be applied to the account
-                payment_amount = min(amount_paid, total_amount)
-
-                from app.models.payment import PaymentType
-
-                # Determine payment type based on payment method
-                if sale_in.payment_method == "account_credit":
-                    payment_type = PaymentType.credit_application.value
-                    receipt_number = f"CREDIT-{invoice_number}"
-                    notes = f"Credit applied to sale {invoice_number}"
-                else:
-                    payment_type = PaymentType.payment.value
-                    receipt_number = f"REC-{invoice_number}"
-                    notes = f"Payment for sale {invoice_number}"
-                    if payment_amount < total_amount:
-                        notes += f" (Partial: ${payment_amount} of ${total_amount})"
-
-                payment = Payment(
-                    customer_id=sale_in.customer_id,
-                    sale_id=sale.id,
-                    amount=payment_amount,
-                    payment_method=sale_in.payment_method or "cash",
-                    payment_type=payment_type,
-                    receipt_number=receipt_number,
-                    received_by_id=user_id,
-                    notes=notes,
-                )
-                db.add(payment)
-                db.flush()  # Ensure payment is created
-
-            # Handle customer account transactions
-            # IMPORTANT: Order matters! Record SALE first, then PAYMENT
-            # This ensures correct balance calculation for partial payments
+            # SIMPLIFIED: Only record the SALE transaction (creates debt)
+            # Payment handling is now done in web/sales.py after sale creation
+            # This follows the refactor plan: separate sale creation from payment processing
             if sale_in.customer_id:
                 from app.services.customer_account_service import (
                     customer_account_service,
                 )
 
-                # Step 1: Record sale (creates debt) - UNLESS paid entirely with credit
-                should_record_sale = True
-                if (
-                    sale_in.payment_method == "account_credit"
-                    and amount_paid >= total_amount
-                ):
-                    # Sale paid entirely with credit - don't create SALE transaction
-                    # Only the credit application will be recorded
-                    should_record_sale = False
+                # ALWAYS record the sale as debt (SALE transaction)
+                # Payments will be applied separately by the web endpoint
+                try:
+                    customer_account_service.record_sale(db, sale, user_id)
                     logger.info(
-                        f"Sale {invoice_number} paid entirely with account credit "
-                        f"(${amount_paid} >= ${total_amount}), skipping sale transaction"
+                        f"Recorded SALE transaction for {invoice_number}: "
+                        f"${total_amount} debt for customer {sale_in.customer_id}"
                     )
+                except Exception as e:
+                    logger.warning(f"Failed to record sale in account system: {e}")
 
-                if should_record_sale:
-                    try:
-                        customer_account_service.record_sale(db, sale, user_id)
-                    except Exception as e:
-                        logger.warning(f"Failed to record sale in account system: {e}")
-
-                # Step 2: Record payment (reduces debt)
-                if amount_paid > Decimal("0"):
-                    try:
-                        if payment_type == PaymentType.credit_application.value:
-                            # For credit applications, use apply_credit
-                            # This consumes the customer's available credit
-                            customer_account_service.apply_credit(
-                                db=db,
-                                customer_id=sale_in.customer_id,
-                                amount=payment_amount,
-                                sale_id=sale.id,
-                                created_by_id=user_id,
-                                notes=notes,
-                            )
-                            logger.info(
-                                f"Applied ${payment_amount} credit for customer {sale_in.customer_id}"
-                            )
-                        else:
-                            # For regular payments (cash, card, etc.), record as payment
-                            customer_account_service.record_payment(
-                                db, payment, user_id
-                            )
-                    except Exception as e:
-                        logger.warning(
-                            f"Failed to record payment in account system: {e}"
-                        )
-
-                # Log debt if exists
+                # Log debt amount
                 if amount_paid < total_amount:
                     debt_amount = total_amount - amount_paid
                     logger.info(
