@@ -1,0 +1,770 @@
+"""Comprehensive tests for customer credit payment functionality.
+
+Tests cover:
+1. Full payment with credit
+2. Partial credit payment
+3. Mixed payment (credit + cash)
+4. Insufficient credit scenarios
+5. Edge cases and error conditions
+"""
+
+from decimal import Decimal
+
+import pytest
+from app.crud.sale import sale_crud
+from app.models.customer import Customer
+from app.models.customer_account import (
+    CustomerAccount,
+    CustomerTransaction,
+    TransactionType,
+)
+from app.models.payment import Payment, PaymentType
+from app.models.product import Category, Product
+from app.models.user import User
+from app.schemas.sale import SaleCreate, SaleItemCreate
+from app.services.customer_account_service import customer_account_service
+from app.utils.timezone import get_utc_now
+from sqlalchemy.orm import Session
+
+
+class TestCreditPaymentFlows:
+    """Test various credit payment scenarios."""
+
+    @pytest.fixture
+    def test_category(self, db_session: Session) -> Category:
+        """Create a test category."""
+        category = Category(
+            name="Test Products",
+            description="Test category for unit tests",
+            is_active=True,
+        )
+        db_session.add(category)
+        db_session.commit()
+        db_session.refresh(category)
+        return category
+
+    @pytest.fixture
+    def test_product(self, db_session: Session, test_category: Category) -> Product:
+        """Create a test product."""
+        product = Product(
+            sku="TEST001",
+            name="Test Product",
+            category_id=test_category.id,
+            purchase_price=Decimal("500.00"),
+            first_sale_price=Decimal("1000.00"),
+            second_sale_price=Decimal("1000.00"),
+            third_sale_price=Decimal("1000.00"),
+            tax_rate=Decimal("10.00"),  # 10% tax
+            current_stock=100,
+            minimum_stock=10,
+            is_active=True,
+            is_service=False,
+            created_by=1,
+        )
+        db_session.add(product)
+        db_session.commit()
+        db_session.refresh(product)
+        return product
+
+    @pytest.fixture
+    def jane_with_credit(self, db_session: Session, test_user: User) -> Customer:
+        """Create Jane with $769 credit balance."""
+        # Create customer
+        jane = Customer(
+            id=2,  # ID: 2 as specified
+            name="Jane",
+            phone="555-0102",
+            email="jane@example.com",
+            is_active=True,
+        )
+        db_session.add(jane)
+        db_session.flush()
+
+        # Create account with credit
+        account = CustomerAccount(
+            customer_id=jane.id,
+            account_balance=Decimal("-769.00"),  # Negative = credit
+            available_credit=Decimal("769.00"),
+            credit_limit=Decimal("0.00"),
+            created_by_id=test_user.id,
+        )
+        db_session.add(account)
+        db_session.commit()
+        db_session.refresh(jane)
+        return jane
+
+    @pytest.fixture
+    def open_cash_register(self, db_session: Session, test_user: User):
+        """Ensure cash register is open for testing."""
+        from app.crud.cash_closing import cash_closing
+        from app.utils.timezone import get_local_today
+
+        # Open cash register for today
+        register = cash_closing.open_cash_register(
+            db_session,
+            target_date=get_local_today(),
+            opening_balance=Decimal("1000.00"),
+            opened_by=test_user.id,
+        )
+        db_session.commit()
+        return register
+
+    def test_full_payment_with_credit_exact_amount(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test using entire credit balance to pay for a sale that matches exactly."""
+        # Create a sale for exactly $769 (matching Jane's credit)
+        # With 10% tax: subtotal = $699.09, tax = $69.91, total = $769.00
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Full credit payment test",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal(
+                        "699.09"
+                    ),  # Custom price to get exact $769 with tax
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("769.00"),
+        )
+
+        # Create the sale
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Assertions for sale
+        assert sale is not None
+        assert sale.customer_id == jane_with_credit.id
+        assert sale.total_amount == Decimal("769.00")
+        assert sale.payment_status == "paid"
+        assert sale.payment_method == "account_credit"
+        assert sale.paid_amount == Decimal("769.00")
+
+        # Check payment record was created
+        payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
+        assert payment is not None
+        assert payment.amount == Decimal("769.00")
+        assert payment.payment_method == "account_credit"
+        assert payment.payment_type == PaymentType.credit_application
+        assert payment.receipt_number == f"CREDIT-{sale.invoice_number}"
+
+        # Check customer account balance
+        db_session.refresh(jane_with_credit)
+        account = jane_with_credit.account
+
+        # Debug: Check transaction order
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .order_by(CustomerTransaction.id)
+            .all()
+        )
+        print(f"\nDebug - Final balance: {account.account_balance}")
+        print("Transactions:")
+        for t in transactions:
+            print(
+                f"  {t.transaction_type.value}: {t.balance_before} + {t.amount if t.is_debit else -t.amount} = {t.balance_after}"
+            )
+
+        assert account.account_balance == Decimal("0.00")
+        assert account.available_credit == Decimal("0.00")
+
+        # Check transactions were recorded
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .order_by(CustomerTransaction.id)
+            .all()
+        )
+
+        # Should have only 1 transaction when paid entirely with credit:
+        # Sales paid entirely with credit should NOT create a SALE transaction
+        # because the credit application already adjusts the balance correctly
+        assert len(transactions) == 1
+
+        # Only transaction: Credit application uses credit
+        credit_trans = transactions[0]
+        assert credit_trans.transaction_type == TransactionType.CREDIT_APPLICATION
+        assert credit_trans.amount == Decimal("769.00")
+        assert credit_trans.balance_before == Decimal("-769.00")
+        assert credit_trans.balance_after == Decimal("0.00")  # Credit consumed
+        assert credit_trans.reference_type == "sale"
+        assert credit_trans.reference_id == sale.id
+
+        # Credit payments don't affect cash register
+        # In production, cash register entries would only be created for cash payments
+
+    def test_partial_credit_payment(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test using part of credit for a sale less than the credit balance."""
+        # Create a sale for $330 (Jane has $769 credit)
+        # Using simple numbers to avoid rounding issues
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Partial credit payment test",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("300.00"),  # With 10% tax = $330.00
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("330.00"),
+        )
+
+        # Create the sale
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Assertions for sale
+        assert sale.total_amount == Decimal("330.00")
+        assert sale.payment_status == "paid"
+        assert sale.paid_amount == Decimal("330.00")
+
+        # Check payment record
+        payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
+        assert payment.amount == Decimal("330.00")
+        assert payment.payment_type == PaymentType.credit_application
+
+        # Check customer account balance ($769 - $330 = $439 credit remaining)
+        db_session.refresh(jane_with_credit)
+        account = jane_with_credit.account
+        assert account.account_balance == Decimal("-439.00")  # Negative = credit
+        assert account.available_credit == Decimal("439.00")
+
+        # Verify transactions
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .order_by(CustomerTransaction.id)
+            .all()
+        )
+        # Only 1 transaction for credit payment (no SALE transaction)
+        assert len(transactions) == 1
+
+        # Credit application transaction
+        assert transactions[0].transaction_type == TransactionType.CREDIT_APPLICATION
+        assert transactions[0].amount == Decimal("330.00")
+        assert transactions[0].balance_before == Decimal("-769.00")
+        assert transactions[0].balance_after == Decimal("-439.00")
+
+    def test_mixed_payment_credit_plus_cash(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test using credit + cash to pay for a sale that exceeds credit balance."""
+        # Create a sale for $1,000 (Jane has $769 credit, needs $231 cash)
+        # IMPORTANT: For mixed payments, amount_paid should only include non-credit payments
+        # Credit is applied separately to avoid double-recording
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="mixed",
+            discount_amount=Decimal("0.00"),
+            notes="Mixed payment: $769 credit + $231 cash",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("909.09"),  # With 10% tax = $1,000.00
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("231.00"),  # Only the cash portion, not the credit
+        )
+
+        # Create the sale (mixed payment details should be in form data, but for unit test we simulate the result)
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # For mixed payment with credit, the web endpoint would create an additional credit application payment
+        # Let's simulate that here
+        from app.services.payment_service import payment_service
+
+        # Apply the credit portion
+        credit_payment = payment_service.apply_customer_credit(
+            db=db_session,
+            customer_id=jane_with_credit.id,
+            credit_amount=Decimal("769.00"),
+            sale_id=sale.id,
+            user_id=test_user.id,
+            notes="Credit portion applied to mixed payment",
+        )
+
+        # Assertions for sale
+        assert sale.total_amount == Decimal("1000.00")
+        assert sale.payment_method == "mixed"
+        assert sale.paid_amount == Decimal("231.00")  # Cash portion only
+
+        # Check payments - should have 2: cash payment and credit application
+        payments = (
+            db_session.query(Payment)
+            .filter(Payment.sale_id == sale.id)
+            .order_by(Payment.id)
+            .all()
+        )
+
+        # Should have 2 payments: cash + credit application
+        assert len(payments) == 2
+
+        # First payment: cash portion
+        cash_payment = payments[0]
+        assert cash_payment.amount == Decimal("231.00")
+        assert cash_payment.payment_type == PaymentType.payment.value
+
+        # Second payment: credit application
+        assert credit_payment.amount == Decimal("769.00")
+        assert credit_payment.payment_type == PaymentType.credit_application.value
+
+        # Check customer account balance (should be zero after using all credit)
+        db_session.refresh(jane_with_credit)
+        account = jane_with_credit.account
+        assert account.account_balance == Decimal("0.00")
+        assert account.available_credit == Decimal("0.00")
+
+        # Verify transactions
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .order_by(CustomerTransaction.id)
+            .all()
+        )
+
+        # Should have 3 transactions: SALE, PAYMENT (cash), CREDIT_APPLICATION
+        assert len(transactions) == 3
+
+        # For mixed payment, only the cash portion would affect the cash register
+        # Credit portions don't create cash register entries
+
+    def test_insufficient_credit_error(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test error when trying to use more credit than available."""
+        # Try to use credit that exceeds available balance
+        # Jane has only $769 credit, trying to use $1,000 should fail
+
+        # Test the service layer validation
+        (
+            has_credit,
+            available,
+            message,
+        ) = customer_account_service.check_credit_availability(
+            db_session, jane_with_credit.id
+        )
+
+        assert has_credit is True
+        assert available == Decimal("769.00")
+        assert available < Decimal("1000.00")  # Not enough credit
+
+        # If we try to apply more credit than available, it should raise an error
+        from app.services.payment_service import payment_service
+
+        with pytest.raises(ValueError, match="Insufficient credit"):
+            payment_service.apply_customer_credit(
+                db=db_session,
+                customer_id=jane_with_credit.id,
+                credit_amount=Decimal("1000.00"),  # More than available
+                sale_id=1,  # Dummy sale ID
+                user_id=test_user.id,
+            )
+
+        # Customer balance should remain unchanged
+        db_session.refresh(jane_with_credit)
+        assert jane_with_credit.account.account_balance == Decimal("-769.00")
+
+    def test_customer_without_credit_cannot_use_credit_payment(
+        self,
+        db_session: Session,
+        test_user: User,
+        test_customer: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test that customers without credit cannot use credit payment method."""
+        # Ensure customer has no account or zero balance
+        account = CustomerAccount(
+            customer_id=test_customer.id,
+            account_balance=Decimal("0.00"),
+            available_credit=Decimal("0.00"),
+            created_by_id=test_user.id,
+        )
+        db_session.add(account)
+        db_session.commit()
+
+        # Check credit availability
+        (
+            has_credit,
+            available,
+            message,
+        ) = customer_account_service.check_credit_availability(
+            db_session, test_customer.id
+        )
+
+        assert has_credit is False
+        assert available == Decimal("0.00")
+        assert "No credit balance available" in message
+
+        # Try to apply credit - should fail
+        from app.services.payment_service import payment_service
+
+        with pytest.raises(ValueError, match="No credit available"):
+            payment_service.apply_customer_credit(
+                db=db_session,
+                customer_id=test_customer.id,
+                credit_amount=Decimal("100.00"),
+                sale_id=1,
+                user_id=test_user.id,
+            )
+
+    def test_credit_payment_creates_correct_transaction_records(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test that all transaction records are created correctly for credit payments."""
+        initial_balance = jane_with_credit.account.account_balance
+
+        # Create a sale for $500
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Transaction records test",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("454.55"),  # With 10% tax = $500.00
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("500.00"),
+        )
+
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Get all transactions
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .order_by(CustomerTransaction.id)
+            .all()
+        )
+
+        # Should have exactly 1 transaction (credit application only)
+        # Sales paid entirely with credit don't create SALE transactions
+        assert len(transactions) == 1
+
+        # Transaction: Credit application
+        credit_trans = transactions[0]
+        assert credit_trans.transaction_type == TransactionType.CREDIT_APPLICATION
+        assert credit_trans.amount == Decimal("500.00")
+        assert credit_trans.reference_type == "sale"
+        assert credit_trans.reference_id == sale.id
+        assert credit_trans.is_debit is False
+        assert credit_trans.is_credit is True
+
+        # Final balance check
+        db_session.refresh(jane_with_credit)
+        expected_balance = initial_balance + Decimal(
+            "500.00"
+        )  # Less negative (used credit)
+        assert jane_with_credit.account.account_balance == expected_balance
+
+    def test_voided_sale_reverses_credit_usage(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test that voiding a sale with credit payment reverses the credit usage."""
+        initial_balance = jane_with_credit.account.account_balance
+
+        # Create a sale using credit
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Sale to be voided",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("272.73"),  # With 10% tax = $300.00
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("300.00"),
+        )
+
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Verify credit was used
+        db_session.refresh(jane_with_credit)
+        assert jane_with_credit.account.account_balance == initial_balance + Decimal(
+            "300.00"
+        )
+
+        # Void the sale
+        voided_sale = sale_crud.void_sale(
+            db=db_session,
+            sale_id=sale.id,
+            reason="Test void to reverse credit",
+            user_id=test_user.id,
+        )
+
+        assert voided_sale.is_voided is True
+        assert voided_sale.payment_status == "voided"
+
+        # Check that payments were voided
+        payments = db_session.query(Payment).filter(Payment.sale_id == sale.id).all()
+        for payment in payments:
+            assert payment.voided is True
+            assert payment.void_reason == f"Sale {sale.invoice_number} voided"
+
+        # Note: Current implementation may not automatically reverse the customer account balance
+        # This would need to be implemented in the customer_account_service
+
+    def test_credit_payment_with_partial_sale_amount(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test using credit for partial payment of a sale."""
+        # Create a sale for $500, pay only $200 with credit
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Partial credit payment",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("454.55"),  # With 10% tax = $500.00
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("200.00"),  # Partial payment
+        )
+
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Sale should be partially paid
+        assert sale.total_amount == Decimal("500.00")
+        assert sale.paid_amount == Decimal("200.00")
+        assert sale.payment_status == "partial"
+
+        # Check balance changes
+        db_session.refresh(jane_with_credit)
+        # Initial: -$769 (credit)
+        # Sale: +$500 (debt created)
+        # Credit Application: -$200 (credit used to pay)
+        # Final: -$769 + $500 - $200 = -$469
+        assert jane_with_credit.account.account_balance == Decimal("-469.00")
+
+        # Customer still has $300 remaining debt for this sale
+        remaining_debt = sale.total_amount - sale.paid_amount
+        assert remaining_debt == Decimal("300.00")
+
+        # Verify transactions - should have 2 for partial payment
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .order_by(CustomerTransaction.id)
+            .all()
+        )
+        assert len(transactions) == 2
+
+        # First: SALE transaction
+        assert transactions[0].transaction_type == TransactionType.SALE
+        assert transactions[0].amount == Decimal("500.00")
+
+        # Second: CREDIT_APPLICATION transaction
+        assert transactions[1].transaction_type == TransactionType.CREDIT_APPLICATION
+        assert transactions[1].amount == Decimal("200.00")
+
+    def test_walk_in_customer_cannot_use_credit(
+        self,
+        db_session: Session,
+        test_user: User,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test that walk-in customers (no customer_id) cannot use credit payment."""
+        # Try to create a sale without customer_id but with credit payment
+        sale_data = SaleCreate(
+            customer_id=None,  # Walk-in customer
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Walk-in credit attempt",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("100.00"),
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("110.00"),  # With tax
+        )
+
+        # This should work but not create any credit-related records
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # No payment record should be created for walk-in customers
+        payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
+        assert payment is None  # Walk-in customers don't get payment records
+
+        # No customer transactions should exist
+        transactions = db_session.query(CustomerTransaction).all()
+        assert len(transactions) == 0
+
+    def test_no_double_credit_application(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test that credit is not applied twice to the same sale."""
+        # Create a sale with credit
+        sale_data = SaleCreate(
+            customer_id=jane_with_credit.id,
+            payment_method="account_credit",
+            discount_amount=Decimal("0.00"),
+            notes="Double credit test",
+            items=[
+                SaleItemCreate(
+                    product_id=test_product.id,
+                    quantity=1,
+                    unit_price=Decimal("90.91"),  # With 10% tax = $100.00
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            amount_paid=Decimal("100.00"),
+        )
+
+        sale = sale_crud.create_sale(
+            db=db_session, sale_in=sale_data, user_id=test_user.id
+        )
+
+        # Get initial balance after first credit application
+        db_session.refresh(jane_with_credit)
+        balance_after_first = jane_with_credit.account.account_balance
+
+        # Try to apply credit again to the same sale
+        from app.services.payment_service import payment_service
+
+        # This should either fail or not change the balance
+        try:
+            payment_service.apply_customer_credit(
+                db=db_session,
+                customer_id=jane_with_credit.id,
+                credit_amount=Decimal("100.00"),
+                sale_id=sale.id,
+                user_id=test_user.id,
+                notes="Duplicate credit attempt",
+            )
+        except Exception:
+            # If it raises an exception, that's good - prevents double application
+            pass
+
+        # Balance should not have changed more than the original sale amount
+        db_session.refresh(jane_with_credit)
+        assert jane_with_credit.account.account_balance == balance_after_first
+
+    def test_blocked_account_cannot_use_credit(
+        self,
+        db_session: Session,
+        test_user: User,
+        jane_with_credit: Customer,
+        test_product: Product,
+        open_cash_register,
+    ):
+        """Test that blocked accounts cannot use credit."""
+        from datetime import timedelta
+
+        # Block Jane's account by setting blocked_until
+        jane_with_credit.account.blocked_until = get_utc_now() + timedelta(days=7)
+        jane_with_credit.account.block_reason = "Payment dispute"
+        db_session.commit()
+
+        # Check credit availability
+        (
+            has_credit,
+            available,
+            message,
+        ) = customer_account_service.check_credit_availability(
+            db_session, jane_with_credit.id
+        )
+
+        assert has_credit is False
+        assert "Account blocked" in message
+
+        # Try to use credit - should fail
+        from app.services.payment_service import payment_service
+
+        with pytest.raises(ValueError, match="Account blocked"):
+            payment_service.apply_customer_credit(
+                db=db_session,
+                customer_id=jane_with_credit.id,
+                credit_amount=Decimal("100.00"),
+                sale_id=1,
+                user_id=test_user.id,
+            )

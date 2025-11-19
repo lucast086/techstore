@@ -190,12 +190,7 @@ class SaleCRUD:
             sale.paid_amount = amount_paid
 
             # Handle payment creation and debt generation
-            # Skip creating payment if payment_method is account_credit (credit will be applied separately)
-            if (
-                sale_in.customer_id
-                and amount_paid > Decimal("0")
-                and sale_in.payment_method != "account_credit"
-            ):
+            if sale_in.customer_id and amount_paid > Decimal("0"):
                 # Create payment record for any amount paid
                 # IMPORTANT: Only record payment up to the total amount
                 # If customer gave more (e.g., $3100 for $3000 sale), the difference is change,
@@ -204,52 +199,91 @@ class SaleCRUD:
 
                 from app.models.payment import PaymentType
 
+                # Determine payment type based on payment method
+                if sale_in.payment_method == "account_credit":
+                    payment_type = PaymentType.credit_application.value
+                    receipt_number = f"CREDIT-{invoice_number}"
+                    notes = f"Credit applied to sale {invoice_number}"
+                else:
+                    payment_type = PaymentType.payment.value
+                    receipt_number = f"REC-{invoice_number}"
+                    notes = f"Payment for sale {invoice_number}"
+                    if payment_amount < total_amount:
+                        notes += f" (Partial: ${payment_amount} of ${total_amount})"
+
                 payment = Payment(
                     customer_id=sale_in.customer_id,
                     sale_id=sale.id,
                     amount=payment_amount,
                     payment_method=sale_in.payment_method or "cash",
-                    payment_type=PaymentType.payment.value,  # Explicitly use .value
-                    receipt_number=f"REC-{invoice_number}",
+                    payment_type=payment_type,
+                    receipt_number=receipt_number,
                     received_by_id=user_id,
-                    notes=f"Payment for sale {invoice_number}"
-                    + (
-                        f" (Partial: ${payment_amount} of ${total_amount})"
-                        if payment_amount < total_amount
-                        else ""
-                    ),
+                    notes=notes,
                 )
                 db.add(payment)
                 db.flush()  # Ensure payment is created
 
-                # Record payment in customer account (new system)
+            # Handle customer account transactions
+            # IMPORTANT: Order matters! Record SALE first, then PAYMENT
+            # This ensures correct balance calculation for partial payments
+            if sale_in.customer_id:
                 from app.services.customer_account_service import (
                     customer_account_service,
                 )
 
-                try:
-                    customer_account_service.record_payment(db, payment, user_id)
-                except Exception as e:
-                    logger.warning(f"Failed to record payment in account system: {e}")
+                # Step 1: Record sale (creates debt) - UNLESS paid entirely with credit
+                should_record_sale = True
+                if (
+                    sale_in.payment_method == "account_credit"
+                    and amount_paid >= total_amount
+                ):
+                    # Sale paid entirely with credit - don't create SALE transaction
+                    # Only the credit application will be recorded
+                    should_record_sale = False
+                    logger.info(
+                        f"Sale {invoice_number} paid entirely with account credit "
+                        f"(${amount_paid} >= ${total_amount}), skipping sale transaction"
+                    )
 
-            # Handle customer account transaction for the sale
-            # Skip recording debt if payment_method is account_credit (credit will be applied separately)
-            if sale_in.customer_id and sale_in.payment_method != "account_credit":
-                # Record sale in customer account (new system)
-                from app.services.customer_account_service import (
-                    customer_account_service,
-                )
+                if should_record_sale:
+                    try:
+                        customer_account_service.record_sale(db, sale, user_id)
+                    except Exception as e:
+                        logger.warning(f"Failed to record sale in account system: {e}")
 
-                try:
-                    customer_account_service.record_sale(db, sale, user_id)
-                except Exception as e:
-                    logger.warning(f"Failed to record sale in account system: {e}")
+                # Step 2: Record payment (reduces debt)
+                if amount_paid > Decimal("0"):
+                    try:
+                        if payment_type == PaymentType.credit_application.value:
+                            # For credit applications, use apply_credit
+                            # This consumes the customer's available credit
+                            customer_account_service.apply_credit(
+                                db=db,
+                                customer_id=sale_in.customer_id,
+                                amount=payment_amount,
+                                sale_id=sale.id,
+                                created_by_id=user_id,
+                                notes=notes,
+                            )
+                            logger.info(
+                                f"Applied ${payment_amount} credit for customer {sale_in.customer_id}"
+                            )
+                        else:
+                            # For regular payments (cash, card, etc.), record as payment
+                            customer_account_service.record_payment(
+                                db, payment, user_id
+                            )
+                    except Exception as e:
+                        logger.warning(
+                            f"Failed to record payment in account system: {e}"
+                        )
 
                 # Log debt if exists
                 if amount_paid < total_amount:
                     debt_amount = total_amount - amount_paid
                     logger.info(
-                        f"Debt of ${debt_amount} generated for customer {sale_in.customer_id} "
+                        f"Debt of ${debt_amount} remaining for customer {sale_in.customer_id} "
                         f"from sale {invoice_number}"
                     )
 

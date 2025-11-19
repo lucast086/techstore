@@ -649,9 +649,12 @@ async def process_checkout(
             else Decimal("0")
         )
 
-        total_paid = safe_cash + safe_transfer + safe_card + safe_credit
-        if total_paid > 0:
-            amount_paid = total_paid
+        # IMPORTANT: For mixed payments, amount_paid should NOT include credit
+        # Credit will be applied separately after sale creation
+        # This prevents double-recording the credit amount
+        total_paid_no_credit = safe_cash + safe_transfer + safe_card
+        if total_paid_no_credit > 0:
+            amount_paid = total_paid_no_credit
 
         payment_details = []
         if safe_cash > 0:
@@ -707,41 +710,11 @@ async def process_checkout(
                 status_code=400,
             )
 
-        # Create sale
+        # Create sale (this now handles credit application internally)
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
 
-        # Process credit usage if account_credit was used as payment
-        if payment_method == "account_credit" and amount_paid and sale.customer_id:
-            credit_used = amount_paid
-            logger.info(
-                f"Processing credit usage: ${credit_used} for customer {sale.customer_id}"
-            )
-
-            # Apply customer credit using the payment service
-            from app.services.payment_service import PaymentService
-
-            payment_service = PaymentService()
-
-            try:
-                payment_service.apply_customer_credit(
-                    db=db,
-                    customer_id=sale.customer_id,
-                    credit_amount=credit_used,
-                    sale_id=sale.id,
-                    user_id=current_user.id,
-                    notes=f"Credit applied to sale {sale.invoice_number}",
-                )
-                logger.info(f"Credit usage processed successfully for sale {sale.id}")
-            except Exception as e:
-                logger.error(f"Failed to process credit usage: {e}")
-                db.rollback()
-                return HTMLResponse(
-                    f'<div class="alert alert-danger">Error processing credit payment: {str(e)}</div>',
-                    status_code=500,
-                )
-
         # Handle mixed payment with credit
-        elif (
+        if (
             payment_method == "mixed"
             and mixed_credit_amount
             and mixed_credit_amount.strip()
