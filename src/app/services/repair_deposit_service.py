@@ -42,7 +42,7 @@ class RepairDepositService:
         """
         # Verify repair exists
         from app.crud.repair import repair_crud
-        from app.models.repair import RepairStatus
+        from app.schemas.repair import RepairStatus
 
         repair = repair_crud.get_repair(db, deposit_data.repair_id)
         if not repair:

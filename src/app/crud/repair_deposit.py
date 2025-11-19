@@ -1,7 +1,7 @@
 """CRUD operations for repair deposits."""
 
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 
@@ -373,7 +373,7 @@ class CRUDRepairDeposit(CRUDBase[RepairDeposit, DepositCreate, DepositUpdate]):
 
         return deposits, total
 
-    def get_daily_deposits_total(self, db: Session, date: datetime) -> Decimal:
+    def get_daily_deposits_total(self, db: Session, date: date) -> Decimal:
         """Get total deposits received on a specific date.
 
         Args:
@@ -387,7 +387,7 @@ class CRUDRepairDeposit(CRUDBase[RepairDeposit, DepositCreate, DepositUpdate]):
             db.query(func.coalesce(func.sum(RepairDeposit.amount), 0))
             .filter(
                 and_(
-                    func.date(RepairDeposit.created_at) == date.date(),
+                    func.date(RepairDeposit.created_at) == date,
                     RepairDeposit.status.in_(
                         [DepositStatus.ACTIVE, DepositStatus.APPLIED]
                     ),
