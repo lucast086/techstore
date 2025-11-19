@@ -209,10 +209,9 @@ class CustomerTransaction(BaseModel):
     )
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    # Make transactions immutable (no update_at)
-    created_at = Column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
+    # Note: created_at and updated_at are inherited from BaseModel via TimestampMixin
+    # which already includes server_default=func.now()
+    # Since transactions are immutable, updated_at should never change from created_at
 
     # Relationships
     customer = relationship("Customer", backref="account_transactions")

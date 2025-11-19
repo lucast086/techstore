@@ -166,4 +166,6 @@ def format_local_date(
 
     # Otherwise, convert datetime to local timezone and format
     local_dt = utc_to_local(dt)
+    if local_dt is None:
+        return ""
     return local_dt.strftime(format_str)

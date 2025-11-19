@@ -240,7 +240,15 @@ class CustomerAccountService:
 
         # Create transaction
         balance_before = account.account_balance
-        balance_after = balance_before - payment.amount  # Payments reduce debt
+
+        # For credit applications, we're using existing credit (making balance less negative/more positive)
+        # For regular payments, we're reducing debt (making balance more negative/less positive)
+        if payment.payment_type == "credit_application":
+            balance_after = (
+                balance_before + payment.amount
+            )  # Using credit increases balance
+        else:
+            balance_after = balance_before - payment.amount  # Payments reduce debt
 
         transaction = CustomerTransaction(
             customer_id=payment.customer_id,
@@ -363,6 +371,78 @@ class CustomerAccountService:
         )
 
         return self._format_transaction_response(db, transaction), amount
+
+    def record_transaction(
+        self,
+        db: Session,
+        customer_id: int,
+        transaction_type: TransactionType,
+        amount: Decimal,
+        reference_id: Optional[int],
+        description: str,
+        created_by_id: int,
+        notes: Optional[str] = None,
+    ) -> CustomerTransactionResponse:
+        """Record a generic transaction.
+
+        Args:
+            db: Database session
+            customer_id: Customer ID
+            transaction_type: Type of transaction
+            amount: Transaction amount (positive for debit, negative for credit)
+            reference_id: Optional reference ID
+            description: Transaction description
+            created_by_id: User creating transaction
+            notes: Optional notes
+
+        Returns:
+            Created transaction
+        """
+        # Get or create account
+        account = self.get_or_create_account(db, customer_id, created_by_id)
+
+        # Create transaction
+        balance_before = account.account_balance
+        balance_after = balance_before + amount
+
+        transaction = CustomerTransaction(
+            customer_id=customer_id,
+            account_id=account.id,
+            transaction_type=transaction_type,
+            amount=abs(amount),  # Store absolute value
+            balance_before=balance_before,
+            balance_after=balance_after,
+            reference_type="deposit",
+            reference_id=reference_id,
+            description=description,
+            notes=notes,
+            transaction_date=get_utc_now(),
+            created_by_id=created_by_id,
+        )
+
+        db.add(transaction)
+
+        # Update account
+        account.account_balance = balance_after
+        account.last_transaction_date = transaction.transaction_date
+        account.transaction_count += 1
+        account.updated_by_id = created_by_id
+        account.updated_at = func.now()
+
+        # Update available credit if balance is negative
+        if balance_after < 0:
+            account.available_credit = abs(balance_after)
+        else:
+            account.available_credit = Decimal("0.00")
+
+        db.flush()
+
+        logger.info(
+            f"Recorded {transaction_type} transaction for customer {customer_id}: "
+            f"${amount}, new balance: ${balance_after}"
+        )
+
+        return self._format_transaction_response(db, transaction)
 
     def check_credit_availability(
         self, db: Session, customer_id: int
