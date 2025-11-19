@@ -139,10 +139,14 @@ class TestCreditPaymentFlows:
             amount_paid=Decimal("769.00"),
         )
 
-        # Create the sale
+        # Create the sale (only creates SALE transaction)
         sale = sale_crud.create_sale(
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
+
+        # NEW FLOW: Jane's existing credit is automatically consumed by SALE transaction
+        # No need to create Payment or apply credit separately
+        # Balance: -$769 + $769 (SALE) = $0
 
         # Assertions for sale
         assert sale is not None
@@ -152,13 +156,9 @@ class TestCreditPaymentFlows:
         assert sale.payment_method == "account_credit"
         assert sale.paid_amount == Decimal("769.00")
 
-        # Check payment record was created
+        # Check NO payment record was created (credit consumed automatically)
         payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
-        assert payment is not None
-        assert payment.amount == Decimal("769.00")
-        assert payment.payment_method == "account_credit"
-        assert payment.payment_type == PaymentType.credit_application
-        assert payment.receipt_number == f"CREDIT-{sale.invoice_number}"
+        assert payment is None  # No Payment for existing credit consumption
 
         # Check customer account balance
         db_session.refresh(jane_with_credit)
@@ -189,19 +189,18 @@ class TestCreditPaymentFlows:
             .all()
         )
 
-        # Should have only 1 transaction when paid entirely with credit:
-        # Sales paid entirely with credit should NOT create a SALE transaction
-        # because the credit application already adjusts the balance correctly
+        # NEW FLOW: Should have only 1 transaction - SALE
+        # Existing credit is consumed automatically, no CREDIT_APPLICATION needed
         assert len(transactions) == 1
 
-        # Only transaction: Credit application uses credit
-        credit_trans = transactions[0]
-        assert credit_trans.transaction_type == TransactionType.CREDIT_APPLICATION
-        assert credit_trans.amount == Decimal("769.00")
-        assert credit_trans.balance_before == Decimal("-769.00")
-        assert credit_trans.balance_after == Decimal("0.00")  # Credit consumed
-        assert credit_trans.reference_type == "sale"
-        assert credit_trans.reference_id == sale.id
+        # Only transaction: SALE that consumes existing credit
+        sale_trans = transactions[0]
+        assert sale_trans.transaction_type == TransactionType.SALE
+        assert sale_trans.amount == Decimal("769.00")
+        assert sale_trans.balance_before == Decimal("-769.00")
+        assert sale_trans.balance_after == Decimal("0.00")  # Credit consumed by sale
+        assert sale_trans.reference_type == "sale"
+        assert sale_trans.reference_id == sale.id
 
         # Credit payments don't affect cash register
         # In production, cash register entries would only be created for cash payments

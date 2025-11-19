@@ -200,6 +200,11 @@ class CustomerAccountService:
         account.updated_by_id = created_by_id
         account.updated_at = func.now()
 
+        # Update available credit (negative balance = credit available)
+        account.available_credit = (
+            abs(balance_after) if balance_after < 0 else Decimal("0.00")
+        )
+
         db.flush()
 
         logger.info(
