@@ -205,6 +205,9 @@ class PaymentService:
             payment.amount for payment in sale.payments if not payment.voided
         )
 
+        # Update paid_amount field
+        sale.paid_amount = total_paid
+
         if total_paid >= sale.total_amount:
             sale.payment_status = "paid"
         elif total_paid > 0:
@@ -214,7 +217,7 @@ class PaymentService:
 
         db.commit()
         logger.info(
-            f"Updated sale {sale.invoice_number} payment status to {sale.payment_status}"
+            f"Updated sale {sale.invoice_number} payment status to {sale.payment_status}, paid_amount: {sale.paid_amount}"
         )
 
     def apply_customer_credit(
