@@ -1,5 +1,6 @@
 """Sale and related models for sales management."""
 
+from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
@@ -60,7 +61,7 @@ class Sale(BaseModel):
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
-    sale_date: Mapped[DateTime] = mapped_column(
+    sale_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=func.now(), index=True
     )
     subtotal: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)

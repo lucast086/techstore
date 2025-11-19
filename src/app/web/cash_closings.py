@@ -96,7 +96,7 @@ async def cash_opening_form(
         if pending_register:
             # Redirect to closing form for the pending register
             return RedirectResponse(
-                url=f"/cash-closings/form?closing_date={pending_register.closing_date}",
+                url=f"/cash-closings/new?closing_date={pending_register.closing_date}",
                 status_code=303,
             )
 
@@ -223,8 +223,13 @@ async def cash_closing_form(
                 status_code=302,
             )
 
-        # Check if cash register is open
-        if not status_info["is_open"]:
+        # Check if this date has a closing record (even if not finalized)
+        # If there's a closing record, it means register was opened
+        has_opening = status_info["has_closing"] or status_info["is_open"]
+
+        # Check if cash register was opened for this date
+        # Allow closing if there's an unfinalized closing OR if register is currently open
+        if not has_opening:
             # Return error page instead of form
             return templates.TemplateResponse(
                 "cash_closings/error.html",
@@ -238,6 +243,11 @@ async def cash_closing_form(
                 },
                 status_code=400,
             )
+
+        # Override is_open for the template if there's a closing record
+        # This allows the form to be shown for pending closures
+        if status_info["has_closing"] and not status_info["closing"].is_finalized:
+            status_info["is_open"] = True
 
         return templates.TemplateResponse(
             "cash_closings/form.html",
