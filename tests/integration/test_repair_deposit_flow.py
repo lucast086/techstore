@@ -16,6 +16,7 @@ from app.schemas.sale import SaleCreate, SaleItemCreate
 from app.services.cash_closing_service import cash_closing_service
 from app.services.repair_deposit_service import repair_deposit_service
 from app.services.repair_service import repair_service
+from app.utils.timezone import get_local_today
 from sqlalchemy.orm import Session
 
 
@@ -53,10 +54,10 @@ def test_customer(db_session: Session) -> Customer:
 def open_cash_register(db_session: Session, test_user: User) -> CashClosing:
     """Open cash register for testing."""
     cash_register = cash_closing_service.open_cash_register(
-        db=db_session_session,
-        opening_amount=Decimal("1000.00"),
-        opened_by_id=test_user.id,
-        notes="Test opening",
+        db=db_session,
+        opening_date=get_local_today(),
+        opening_balance=Decimal("1000.00"),
+        user_id=test_user.id,
     )
     return cash_register
 
@@ -146,7 +147,7 @@ class TestRepairDepositFlow:
         )
 
         # Add first deposit
-        deposit1 = repair_deposit_service.record_deposit(
+        repair_deposit_service.record_deposit(
             db=db_session,
             deposit_data=DepositCreate(
                 repair_id=repair.id,
@@ -158,7 +159,7 @@ class TestRepairDepositFlow:
         )
 
         # Add second deposit
-        deposit2 = repair_deposit_service.record_deposit(
+        repair_deposit_service.record_deposit(
             db=db_session,
             deposit_data=DepositCreate(
                 repair_id=repair.id,
@@ -202,7 +203,7 @@ class TestRepairDepositFlow:
         )
 
         # Add deposit
-        deposit = repair_deposit_service.record_deposit(
+        repair_deposit_service.record_deposit(
             db=db_session,
             deposit_data=DepositCreate(
                 repair_id=repair.id,
@@ -391,12 +392,14 @@ class TestRepairDepositFlow:
     ):
         """Test cash closing calculations with deposits."""
         # Open cash register
+        from app.utils.timezone import get_local_today
+
         opening_amount = Decimal("500.00")
-        cash_register = cash_closing_service.open_cash_register(
+        cash_closing_service.open_cash_register(
             db=db_session,
-            opening_amount=opening_amount,
-            opened_by_id=test_user.id,
-            notes="Test with deposits",
+            opening_date=get_local_today(),
+            opening_balance=opening_amount,
+            user_id=test_user.id,
         )
 
         # Create repair and add deposits
@@ -405,8 +408,8 @@ class TestRepairDepositFlow:
             device_type="Phone",
             device_brand="Samsung",
             device_model="A52",
-            reported_issue="Water damage",
-            estimated_cost=Decimal("400.00"),
+            problem_description="Water damage",
+            estimated_completion=None,
         )
 
         repair = repair_service.create_repair(
@@ -414,7 +417,7 @@ class TestRepairDepositFlow:
         )
 
         # Add cash deposit
-        deposit1 = repair_deposit_service.record_deposit(
+        repair_deposit_service.record_deposit(
             db=db_session,
             deposit_data=DepositCreate(
                 repair_id=repair.id,
@@ -426,7 +429,7 @@ class TestRepairDepositFlow:
         )
 
         # Add card deposit
-        deposit2 = repair_deposit_service.record_deposit(
+        repair_deposit_service.record_deposit(
             db=db_session,
             deposit_data=DepositCreate(
                 repair_id=repair.id,
@@ -450,13 +453,15 @@ class TestRepairDepositFlow:
         # Close cash register
         from app.schemas.cash_closing import CashClosingCreate
 
-        closing = cash_closing_service.close_cash_register(
+        closing = cash_closing_service.create_closing(
             db=db_session,
             closing_data=CashClosingCreate(
-                actual_cash_amount=Decimal("650.00"),  # 500 + 150 cash deposit
+                closing_date=today,
+                opening_balance=opening_amount,
+                cash_count=Decimal("650.00"),  # 500 + 150 cash deposit
                 notes="Test closing with deposits",
             ),
-            closed_by_id=test_user.id,
+            user_id=test_user.id,
         )
 
         assert closing is not None
