@@ -335,6 +335,25 @@ class CustomerAccountService:
         # to get the original credit balance
         from app.models.customer_account import CustomerTransaction, TransactionType
 
+        # Check if credit was already applied to this sale
+        credit_application_exists = (
+            db.query(CustomerTransaction)
+            .filter(
+                CustomerTransaction.customer_id == customer_id,
+                CustomerTransaction.reference_type == "sale",
+                CustomerTransaction.reference_id == sale_id,
+                CustomerTransaction.transaction_type
+                == TransactionType.CREDIT_APPLICATION,
+            )
+            .first()
+        )
+
+        if credit_application_exists:
+            raise ValueError(
+                f"Sale {sale_id} already has a CREDIT_APPLICATION transaction. "
+                "Cannot apply credit twice to the same sale."
+            )
+
         sale_transaction_exists = (
             db.query(CustomerTransaction)
             .filter(

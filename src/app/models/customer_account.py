@@ -152,8 +152,16 @@ class CustomerAccount(BaseModel):
     @property
     def is_blocked(self) -> bool:
         """Check if account is currently blocked."""
-        if self.blocked_until and self.blocked_until > get_utc_now():
-            return True
+        if self.blocked_until:
+            utc_now = get_utc_now()
+            # Handle both timezone-aware and naive datetimes
+            blocked_until = self.blocked_until
+            if blocked_until.tzinfo is None:
+                # If blocked_until is naive, assume it's UTC
+                from zoneinfo import ZoneInfo
+
+                blocked_until = blocked_until.replace(tzinfo=ZoneInfo("UTC"))
+            return blocked_until > utc_now
         return False
 
 

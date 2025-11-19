@@ -506,24 +506,23 @@ class TestCreditPaymentFlows:
             .all()
         )
 
-        # Should have exactly 1 transaction (credit application only)
-        # Sales paid entirely with credit don't create SALE transactions
+        # NEW FLOW: Should have exactly 1 SALE transaction
+        # Existing credit consumed automatically, no CREDIT_APPLICATION needed
         assert len(transactions) == 1
 
-        # Transaction: Credit application
-        credit_trans = transactions[0]
-        assert credit_trans.transaction_type == TransactionType.CREDIT_APPLICATION
-        assert credit_trans.amount == Decimal("500.00")
-        assert credit_trans.reference_type == "sale"
-        assert credit_trans.reference_id == sale.id
-        assert credit_trans.is_debit is False
-        assert credit_trans.is_credit is True
+        # Transaction: SALE that consumes existing credit
+        sale_trans = transactions[0]
+        assert sale_trans.transaction_type == TransactionType.SALE
+        assert sale_trans.amount == Decimal("500.00")
+        assert sale_trans.reference_type == "sale"
+        assert sale_trans.reference_id == sale.id
+        assert sale_trans.is_debit is True
+        assert sale_trans.is_credit is False
 
         # Final balance check
         db_session.refresh(jane_with_credit)
-        expected_balance = initial_balance + Decimal(
-            "500.00"
-        )  # Less negative (used credit)
+        # Initial: -$769, Sale: +$500, Final: -$269
+        expected_balance = initial_balance + Decimal("500.00")
         assert jane_with_credit.account.account_balance == expected_balance
 
     def test_voided_sale_reverses_credit_usage(
@@ -688,7 +687,10 @@ class TestCreditPaymentFlows:
         open_cash_register,
     ):
         """Test that credit is not applied twice to the same sale."""
-        # Create a sale with credit
+        # NEW FLOW: In the new system, existing credit is consumed automatically by SALE transaction
+        # There's no manual credit application needed or allowed
+
+        # Create a sale with credit payment method
         sale_data = SaleCreate(
             customer_id=jane_with_credit.id,
             payment_method="account_credit",
@@ -710,30 +712,61 @@ class TestCreditPaymentFlows:
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
 
-        # Get initial balance after first credit application
+        # NEW FLOW: After sale creation, Jane's credit is automatically consumed
+        # Balance: -$769 (credit) + $100 (sale) = -$669 (remaining credit)
         db_session.refresh(jane_with_credit)
-        balance_after_first = jane_with_credit.account.account_balance
+        assert jane_with_credit.account.account_balance == Decimal("-669.00")
+        assert jane_with_credit.account.available_credit == Decimal("669.00")
 
-        # Try to apply credit again to the same sale
-        from app.services.payment_service import payment_service
+        # Check transactions - should only have SALE transaction
+        from app.models.customer_account import CustomerTransaction
 
-        # This should either fail or not change the balance
-        try:
-            payment_service.apply_customer_credit(
+        transactions = (
+            db_session.query(CustomerTransaction)
+            .filter(CustomerTransaction.customer_id == jane_with_credit.id)
+            .filter(CustomerTransaction.reference_type == "sale")
+            .filter(CustomerTransaction.reference_id == sale.id)
+            .all()
+        )
+
+        # Should only have 1 SALE transaction (credit consumed automatically)
+        assert len(transactions) == 1
+        assert transactions[0].transaction_type.value == "sale"
+
+        # NEW FLOW: Now we need to apply the payment to complete the sale
+        # This simulates what web/sales.py does after create_sale()
+        from app.services.customer_account_service import customer_account_service
+
+        # Apply the credit payment (this creates CREDIT_APPLICATION transaction)
+        customer_account_service.apply_credit(
+            db=db_session,
+            customer_id=jane_with_credit.id,
+            amount=Decimal("100.00"),
+            sale_id=sale.id,
+            created_by_id=test_user.id,
+            notes="Credit payment",
+        )
+
+        # After applying credit, balance should be back to original
+        # Balance: -$669 - $100 (credit applied) = -$769 (back to original)
+        db_session.refresh(jane_with_credit)
+        balance_after_credit = jane_with_credit.account.account_balance
+        assert balance_after_credit == Decimal("-769.00")
+
+        # Try to apply credit again to the same sale - should fail
+        with pytest.raises(ValueError, match="already has a CREDIT_APPLICATION"):
+            customer_account_service.apply_credit(
                 db=db_session,
                 customer_id=jane_with_credit.id,
-                credit_amount=Decimal("100.00"),
+                amount=Decimal("100.00"),
                 sale_id=sale.id,
-                user_id=test_user.id,
+                created_by_id=test_user.id,
                 notes="Duplicate credit attempt",
             )
-        except Exception:
-            # If it raises an exception, that's good - prevents double application
-            pass
 
-        # Balance should not have changed more than the original sale amount
+        # Balance should remain unchanged after failed attempt
         db_session.refresh(jane_with_credit)
-        assert jane_with_credit.account.account_balance == balance_after_first
+        assert jane_with_credit.account.account_balance == balance_after_credit
 
     def test_blocked_account_cannot_use_credit(
         self,
