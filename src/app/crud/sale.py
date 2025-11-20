@@ -42,7 +42,24 @@ class SaleCRUD:
         return f"INV-{current_year}-{new_number:05d}"
 
     def create_sale(self, db: Session, *, sale_in: SaleCreate, user_id: int) -> Sale:
-        """Create new sale with items and update inventory."""
+        """Create new sale with items and update inventory.
+
+        If amount_paid is provided, delegates to SalesService for payment processing.
+        """
+        # If amount_paid is provided and greater than 0, use the service for integrated processing
+        # This handles payment creation automatically
+        if sale_in.amount_paid and sale_in.amount_paid > 0:
+            from app.services.sales_service import sales_service
+
+            return sales_service.process_sale_with_payment(db, sale_in, user_id)
+
+        # Otherwise, use the original implementation
+        return self._create_sale_internal(db, sale_in=sale_in, user_id=user_id)
+
+    def _create_sale_internal(
+        self, db: Session, *, sale_in: SaleCreate, user_id: int
+    ) -> Sale:
+        """Internal method to create sale without payment processing."""
         # Start transaction
         try:
             # Check if sales are allowed for today (cash closing check)
@@ -144,7 +161,7 @@ class SaleCRUD:
                 invoice_number=invoice_number,
                 customer_id=sale_in.customer_id,
                 user_id=user_id,
-                subtotal=subtotal,
+                subtotal=subtotal_after_discount,  # Store subtotal after global discount
                 discount_amount=sale_in.discount_amount,
                 tax_amount=tax_amount,
                 total_amount=total_amount,
