@@ -2,21 +2,22 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "Bash(ls:*)",
-      "Bash(python -m pytest tests/integration/test_repair_delivery_credit.py -v)",
-      "Bash(poetry run alembic:*)",
-      "Bash(poetry run python:*)",
       "Bash(poetry run pytest:*)",
-      "Bash(poetry run ruff check:*)",
-      "Bash(poetry run ruff format:*)",
-      "Bash(find:*)",
-      "Bash(psql:*)",
+      "Bash(poetry run alembic revision:*)",
+      "Bash(poetry run alembic:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Unify customer balance system and improve POS credit UX\n\nThis commit consolidates all customer balance calculations to use the\ncustomer_account_service system and significantly improves the user\nexperience when handling customer credit in the Point of Sale.\n\n## Key Changes\n\n### 1. Balance System Unification\n- Replaced old balance_service calculations with customer_account_service across all endpoints\n- Updated customer detail page to use transaction-based balance\n- Updated customer statement generation to use account system\n- Updated balance reminder functionality to use correct balance\n- Fixed POS credit validation to use unified system\n- Ensures consistent balance display across customers list, detail pages, and POS\n\n### 2. POS Credit UX Improvements\n- Added automatic credit notification when customer with available credit is selected\n- Prominent green notification appears in top-right corner with credit amount\n- Quick action buttons: \"Usar Saldo\", \"Pago Mixto\", and \"Cerrar\"\n- Auto-dismisses after 15 seconds with smooth fade-out animation\n- Pre-fills credit amount in mixed payment mode with suggested amount\n- Shows available credit next to credit input fields\n\n### 3. Payment Recording Fix\n- Fixed payment recording to only record amount up to sale total\n- Prevents change from being incorrectly recorded as customer credit\n- Example: $3100 cash for $3000 sale now correctly records $3000 payment + $100 change\n\n## Technical Details\n\n**Modified Files:**\n- src/app/web/customers.py: Updated customer_detail, customer_statement, send_balance_reminder\n- src/app/web/sales.py: Updated credit validation in process_checkout\n- src/app/templates/sales/pos.html: Added credit notification, pre-fill logic, action buttons\n- src/app/crud/sale.py: Fixed payment amount recording logic\n\n**Functions Added:**\n- showCreditSuggestion(availableCredit): Display credit notification\n- useCreditPayment(): Quick action to switch to credit payment\n- dismissCreditSuggestion(): Dismiss notification with animation\n\n**Business Logic:**\n- Credit suggestion shows when customerCreditBalance > 0\n- Pre-fill amount = Math.min(customerCreditBalance, cartTotal)\n- Notification only appears once per customer selection\n- All balance checks now use customer_account_service.check_credit_availability()\n\n## Testing Notes\n- Test customer selection with credit balance in POS\n- Verify notification appears and action buttons work\n- Test mixed payment with credit pre-fill\n- Verify balance consistency across all pages\n- Test payment recording with overpayment (change scenarios)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit:*)",
+      "Bash(for line in 232 295 349 830 948)",
+      "Bash(do)",
+      "Bash(done)"
     ],
     "deny": [],
+    "ask": [],
     "defaultMode": "acceptEdits"
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["Ref", "semgrep"]
+  "enabledMcpjsonServers": [
+    "Ref",
+    "semgrep"
+  ]
 }

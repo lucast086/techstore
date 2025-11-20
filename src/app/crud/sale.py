@@ -62,6 +62,16 @@ class SaleCRUD:
         """Internal method to create sale without payment processing."""
         # Start transaction
         try:
+            # BUSINESS RULE: All sales MUST have a customer
+            # If no customer_id provided, default to walk-in customer (ID=1)
+            # This ensures ALL sales and payments are tracked in the transaction system
+            if not sale_in.customer_id:
+                logger.warning(
+                    "Sale created without customer_id, defaulting to walk-in customer (ID=1). "
+                    "Frontend should always provide a customer_id."
+                )
+                sale_in.customer_id = 1
+
             # Check if sales are allowed for today (cash closing check)
             from app.services.cash_closing_service import cash_closing_service
 

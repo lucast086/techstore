@@ -47,7 +47,7 @@ class SaleBase(BaseModel):
 
     customer_id: Optional[int] = None
     payment_method: Optional[str] = Field(
-        None, pattern="^(cash|transfer|card|mixed|account_credit)$"
+        None, pattern="^(cash|transfer|card|mixed|account_credit|account)$"
     )
     notes: Optional[str] = None
 

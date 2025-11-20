@@ -1,8 +1,8 @@
 # Plan de Cobertura de Tests - Sistema de Ventas TechStore
 
-**Versión:** 1.3
+**Versión:** 1.4
 **Fecha:** 2025-11-20
-**Estado:** ✅ FASE 1, 2, 3, 4 COMPLETADAS (48/48 tests pasando - 100%)
+**Estado:** ✅ FASE 1-5 COMPLETADAS (63/63 tests pasando - 100%)
 
 ---
 
@@ -41,12 +41,13 @@ Garantizar cobertura completa de tests para todos los escenarios posibles de ven
 
 ## 📊 Estado Actual
 
-### Tests Existentes: 48 total
-- ✅ **PASANDO: 48 tests** (100%)
+### Tests Existentes: 63 total
+- ✅ **PASANDO: 63 tests** (100%)
 - ✅ **FASE 1 COMPLETADA** (11/11 tests)
 - ✅ **FASE 2 COMPLETADA** (15/15 tests)
 - ✅ **FASE 3 COMPLETADA** (10/10 tests)
 - ✅ **FASE 4 COMPLETADA** (12/12 tests)
+- ✅ **FASE 5 COMPLETADA** (15/15 tests)
 
 ### Historial de Correcciones
 
@@ -196,44 +197,51 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 
 ---
 
-## 🎯 FASE 5: Tests de Balance y Crédito de Cliente (15 tests)
+## 🎯 FASE 5: Tests de Balance y Crédito de Cliente ✅ COMPLETADA (15/15 tests)
 
 ### Categoría: Cliente con Crédito Disponible
 
 | # | Nombre del Test | Descripción | Archivo | Prioridad |
 |---|----------------|-------------|---------|-----------|
-| 5.1 | `test_customer_credit_sufficient_exact` | Crédito = Total venta | `test_customer_balance.py` | ✅ EXISTE |
-| 5.2 | `test_customer_credit_sufficient_excess` | Crédito > Total venta | `test_customer_balance.py` | ✅ EXISTE |
-| 5.3 | `test_customer_credit_insufficient` | Crédito < Total venta (error) | `test_customer_balance.py` | ✅ EXISTE |
-| 5.4 | `test_use_partial_credit_plus_cash` | Crédito parcial + efectivo | `test_customer_balance.py` | ❌ FALLA |
-| 5.5 | `test_use_partial_credit_plus_card` | Crédito parcial + tarjeta | `test_customer_balance.py` | P1 |
+| 5.1 | `test_customer_credit_sufficient_exact` | Crédito = Total venta | `test_customer_balance.py` | ✅ PASA |
+| 5.2 | `test_customer_credit_sufficient_excess` | Crédito > Total venta | `test_customer_balance.py` | ✅ PASA |
+| 5.3 | `test_customer_credit_insufficient` | Crédito < Total venta (error) | `test_customer_balance.py` | ✅ PASA |
+| 5.4 | `test_use_partial_credit_plus_cash` | Crédito parcial + efectivo | `test_customer_balance.py` | ✅ PASA |
+| 5.5 | `test_use_partial_credit_plus_card` | Crédito parcial + tarjeta | `test_customer_balance.py` | ✅ PASA |
 
 ### Categoría: Cliente con Deuda Existente
 
 | # | Nombre del Test | Descripción | Archivo | Prioridad |
 |---|----------------|-------------|---------|-----------|
-| 5.6 | `test_customer_with_debt_buys_more` | Deuda existente + nueva compra | `test_customer_balance.py` | P1 |
-| 5.7 | `test_customer_pays_old_debt_and_new_purchase` | Pago deuda antigua + compra | `test_customer_balance.py` | P1 |
-| 5.8 | `test_customer_exceeds_credit_limit` | Deuda + compra > límite | `test_customer_balance.py` | P1 |
-| 5.9 | `test_customer_at_credit_limit_cannot_buy` | En el límite, no puede comprar | `test_customer_balance.py` | P1 |
+| 5.6 | `test_customer_with_debt_buys_more` | Deuda existente + nueva compra | `test_customer_balance.py` | ✅ PASA |
+| 5.7 | `test_customer_pays_old_debt_and_new_purchase` | Pago deuda antigua + compra | `test_customer_balance.py` | ✅ PASA |
+| 5.8 | `test_customer_exceeds_credit_limit` | Deuda + compra > límite | `test_customer_balance.py` | ✅ PASA |
+| 5.9 | `test_customer_at_credit_limit_cannot_buy` | En el límite, no puede comprar | `test_customer_balance.py` | ✅ PASA |
 
 ### Categoría: Cliente con Balance Cero
 
 | # | Nombre del Test | Descripción | Archivo | Prioridad |
 |---|----------------|-------------|---------|-----------|
-| 5.10 | `test_first_purchase_creates_account` | Primera compra crea cuenta | `test_customer_balance.py` | P1 |
-| 5.11 | `test_zero_balance_after_full_payment` | Balance = 0 después de saldar | `test_customer_balance.py` | P1 |
+| 5.10 | `test_first_purchase_creates_account` | Primera compra crea cuenta | `test_customer_balance.py` | ✅ PASA |
+| 5.11 | `test_zero_balance_after_full_payment` | Balance = 0 después de saldar | `test_customer_balance.py` | ✅ PASA |
 
 ### Categoría: Cuenta Bloqueada
 
 | # | Nombre del Test | Descripción | Archivo | Prioridad |
 |---|----------------|-------------|---------|-----------|
-| 5.12 | `test_blocked_account_cannot_use_credit` | Cuenta bloqueada rechaza crédito | `test_customer_balance.py` | ❌ FALLA |
-| 5.13 | `test_blocked_account_cash_payment_allowed` | Bloqueada acepta efectivo | `test_customer_balance.py` | P1 |
-| 5.14 | `test_blocked_account_with_block_reason` | Razón de bloqueo registrada | `test_customer_balance.py` | P2 |
-| 5.15 | `test_unblock_account_restores_credit` | Desbloquear restaura crédito | `test_customer_balance.py` | P2 |
+| 5.12 | `test_blocked_account_cannot_use_credit` | Cuenta bloqueada rechaza crédito | `test_customer_balance.py` | ✅ PASA |
+| 5.13 | `test_blocked_account_cash_payment_allowed` | Bloqueada acepta efectivo | `test_customer_balance.py` | ✅ PASA |
+| 5.14 | `test_blocked_account_with_block_reason` | Razón de bloqueo registrada | `test_customer_balance.py` | ✅ PASA |
+| 5.15 | `test_unblock_account_restores_credit` | Desbloquear restaura crédito | `test_customer_balance.py` | ✅ PASA |
 
-**Objetivo de Fase 5:** 15 tests (algunos existen, completar los faltantes)
+**✅ Objetivo Alcanzado:** 15/15 tests pasando (100%)
+
+### Cambios Principales en Código de Producción:
+1. **customer_account_service.py**: Validación de cuenta bloqueada en `apply_credit()`
+2. **sales_service.py**: Actualización de payment status considerando credit applications
+3. **sale.py**: Conversión automática `customer_id=None` → `customer_id=1` (walk-in)
+4. **web/sales.py**: Aplicación de regla walk-in en endpoint web
+5. **test_credit_payment_flows.py**: Actualización de test walk-in para nueva arquitectura
 
 ---
 
@@ -398,13 +406,13 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 | **FASE 2** | Ventas Básicas | 15 | ✅ 15/15 (100%) | ✅ 15/15 (100%) |
 | **FASE 3** | Productos y Precios | 10 | ✅ 10/10 (100%) | ✅ 10/10 (100%) |
 | **FASE 4** | Descuentos e Impuestos | 12 | ✅ 12/12 (100%) | ✅ 12/12 (100%) |
-| **FASE 5** | Balance y Crédito | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
+| **FASE 5** | Balance y Crédito | 15 | ✅ 15/15 (100%) | ✅ 15/15 (100%) |
 | **FASE 6** | Transacciones | 12 | ⚪ 0/12 (0%) | ✅ 12/12 (100%) |
 | **FASE 7** | Cash Register | 8 | ⚪ 0/8 (0%) | ✅ 8/8 (100%) |
 | **FASE 8** | Reparaciones | 10 | ⚪ 0/10 (0%) | ✅ 10/10 (100%) |
 | **FASE 9** | Anulaciones | 8 | ⚪ 0/8 (0%) | ✅ 8/8 (100%) |
 | **FASE 10** | Casos Edge | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
-| **TOTAL** | | **116 tests** | **48/116 (41.4%)** | **116/116 (100%)** |
+| **TOTAL** | | **116 tests** | **63/116 (54.3%)** | **116/116 (100%)** |
 
 ---
 

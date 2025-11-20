@@ -323,6 +323,10 @@ class CustomerAccountService:
         """
         account = self.get_or_create_account(db, customer_id, created_by_id)
 
+        # Check if account is blocked
+        if account.is_blocked:
+            raise ValueError(f"Account is blocked: {account.block_reason}")
+
         # NEW FLOW: Calculate available credit considering that sale might already be recorded
         # We need to check the credit balance BEFORE this sale was created
         # Get the sale to subtract its amount from current balance

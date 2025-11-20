@@ -75,6 +75,9 @@ class Sale(BaseModel):
     paid_amount: Mapped[Decimal] = mapped_column(
         DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
     )  # Total amount paid so far
+    change_amount: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
+    )  # Change given if overpayment
     payment_status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="pending"
     )  # pending, partial, paid
@@ -123,7 +126,12 @@ class Sale(BaseModel):
     @property
     def amount_due(self) -> Decimal:
         """Calculate remaining amount due."""
-        return self.total_amount - self.amount_paid
+        return self.total_amount - self.paid_amount
+
+    @property
+    def balance_due(self) -> Decimal:
+        """Calculate remaining balance due (alias for amount_due)."""
+        return self.total_amount - self.paid_amount
 
 
 class SaleItem(BaseModel):

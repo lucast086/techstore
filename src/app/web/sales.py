@@ -668,11 +668,15 @@ async def process_checkout(
         if payment_details:
             notes = f"Payment breakdown: {', '.join(payment_details)}\n{notes}".strip()
 
+    # BUSINESS RULE: All sales must have a customer
+    # If no customer_id provided, default to walk-in customer (ID=1)
+    customer_id = (
+        int(form_data.get("customer_id")) if form_data.get("customer_id") else 1
+    )
+
     # Create sale data
     sale_data = SaleCreate(
-        customer_id=int(form_data.get("customer_id"))
-        if form_data.get("customer_id")
-        else None,
+        customer_id=customer_id,
         payment_method=payment_method,
         discount_amount=Decimal(form_data.get("discount_amount", "0")),
         notes=notes,

@@ -646,13 +646,18 @@ class TestCreditPaymentFlows:
         test_product: Product,
         open_cash_register,
     ):
-        """Test that walk-in customers (no customer_id) cannot use credit payment."""
-        # Try to create a sale without customer_id but with credit payment
+        """Test that sales without customer_id are automatically assigned to walk-in (ID=1).
+
+        BUSINESS RULE: All sales MUST have a customer. If no customer_id provided,
+        it defaults to walk-in customer (ID=1), which ensures all sales and payments
+        are tracked in the transaction system.
+        """
+        # Try to create a sale without customer_id
         sale_data = SaleCreate(
-            customer_id=None,  # Walk-in customer
-            payment_method="account_credit",
+            customer_id=None,  # Should be auto-converted to walk-in (ID=1)
+            payment_method="cash",
             discount_amount=Decimal("0.00"),
-            notes="Walk-in credit attempt",
+            notes="Sale without customer_id",
             items=[
                 SaleItemCreate(
                     product_id=test_product.id,
@@ -665,18 +670,22 @@ class TestCreditPaymentFlows:
             amount_paid=Decimal("110.00"),  # With tax
         )
 
-        # This should work but not create any credit-related records
+        # Sale should be created and assigned to walk-in customer
         sale = sale_crud.create_sale(
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
 
-        # No payment record should be created for walk-in customers
-        payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
-        assert payment is None  # Walk-in customers don't get payment records
+        # Verify it was assigned to walk-in customer (ID=1)
+        assert sale.customer_id == 1
 
-        # No customer transactions should exist
+        # Payment record SHOULD be created (walk-in is a real customer)
+        payment = db_session.query(Payment).filter(Payment.sale_id == sale.id).first()
+        assert payment is not None
+        assert payment.customer_id == 1
+
+        # Customer transactions SHOULD exist (SALE + PAYMENT)
         transactions = db_session.query(CustomerTransaction).all()
-        assert len(transactions) == 0
+        assert len(transactions) == 2  # SALE and PAYMENT transactions
 
     def test_no_double_credit_application(
         self,
