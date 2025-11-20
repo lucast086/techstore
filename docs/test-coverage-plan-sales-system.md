@@ -1,8 +1,8 @@
 # Plan de Cobertura de Tests - Sistema de Ventas TechStore
 
-**Versión:** 1.1
+**Versión:** 1.2
 **Fecha:** 2025-11-20
-**Estado:** ✅ FASE 1 COMPLETADA | ✅ FASE 2 COMPLETADA (26/26 tests pasando - 100%)
+**Estado:** ✅ FASE 1, 2, 3 COMPLETADAS (36/36 tests pasando - 100%)
 
 ---
 
@@ -41,10 +41,11 @@ Garantizar cobertura completa de tests para todos los escenarios posibles de ven
 
 ## 📊 Estado Actual
 
-### Tests Existentes: 26 total
-- ✅ **PASANDO: 26 tests** (100%)
+### Tests Existentes: 36 total
+- ✅ **PASANDO: 36 tests** (100%)
 - ✅ **FASE 1 COMPLETADA** (11/11 tests)
 - ✅ **FASE 2 COMPLETADA** (15/15 tests)
+- ✅ **FASE 3 COMPLETADA** (10/10 tests)
 
 ### Historial de Correcciones
 
@@ -133,29 +134,29 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 
 ---
 
-## 🎯 FASE 3: Tests de Productos y Precios (10 tests)
+## 🎯 FASE 3: Tests de Productos y Precios ✅ COMPLETADA (10/10 tests)
 
-### Categoría: Modificación Manual de Precios ⭐ NUEVO
+### Categoría: Modificación Manual de Precios
 
-| # | Nombre del Test | Descripción | Archivo | Prioridad |
-|---|----------------|-------------|---------|-----------|
-| 3.1 | `test_manual_price_override_single_product` | Modificar precio de un producto en carrito | `test_product_pricing.py` | P1 |
-| 3.2 | `test_manual_price_higher_than_original` | Precio manual > precio catálogo | `test_product_pricing.py` | P1 |
-| 3.3 | `test_manual_price_lower_than_original` | Precio manual < precio catálogo (descuento) | `test_product_pricing.py` | P1 |
-| 3.4 | `test_manual_price_zero` | Precio manual = $0 (producto gratis) | `test_product_pricing.py` | P2 |
-| 3.5 | `test_manual_price_with_tax_calculation` | Precio manual + impuesto correcto | `test_product_pricing.py` | P1 |
+| # | Nombre del Test | Descripción | Archivo | Estado |
+|---|----------------|-------------|---------|--------|
+| 3.1 | `test_manual_price_override_single_product` | Modificar precio de un producto en carrito | `test_product_pricing.py` | ✅ PASA |
+| 3.2 | `test_manual_price_higher_than_original` | Precio manual > precio catálogo | `test_product_pricing.py` | ✅ PASA |
+| 3.3 | `test_manual_price_lower_than_original` | Precio manual < precio catálogo (descuento) | `test_product_pricing.py` | ✅ PASA |
+| 3.4 | `test_manual_price_zero` | Precio manual = $0 (producto gratis) | `test_product_pricing.py` | ✅ PASA |
+| 3.5 | `test_manual_price_with_tax_calculation` | Precio manual + impuesto correcto | `test_product_pricing.py` | ✅ PASA |
 
 ### Categoría: Múltiples Productos
 
-| # | Nombre del Test | Descripción | Archivo | Prioridad |
-|---|----------------|-------------|---------|-----------|
-| 3.6 | `test_multiple_products_same_item` | 5 unidades del mismo producto | `test_product_pricing.py` | P1 |
-| 3.7 | `test_multiple_different_products` | 3+ productos diferentes | `test_product_pricing.py` | P1 |
-| 3.8 | `test_mixed_physical_and_service_products` | Productos físicos + servicios | `test_product_pricing.py` | P2 |
-| 3.9 | `test_product_without_sufficient_stock` | Stock insuficiente (debe fallar) | `test_product_pricing.py` | P1 |
-| 3.10 | `test_service_product_no_stock_validation` | Servicio ignora validación de stock | `test_product_pricing.py` | P2 |
+| # | Nombre del Test | Descripción | Archivo | Estado |
+|---|----------------|-------------|---------|--------|
+| 3.6 | `test_multiple_products_same_item` | 5 unidades del mismo producto | `test_product_pricing.py` | ✅ PASA |
+| 3.7 | `test_multiple_different_products` | 3+ productos diferentes | `test_product_pricing.py` | ✅ PASA |
+| 3.8 | `test_mixed_physical_and_service_products` | Productos físicos + servicios | `test_product_pricing.py` | ✅ PASA |
+| 3.9 | `test_product_without_sufficient_stock` | Stock insuficiente (debe fallar) | `test_product_pricing.py` | ✅ PASA |
+| 3.10 | `test_service_product_no_stock_validation` | Servicio ignora validación de stock | `test_product_pricing.py` | ✅ PASA |
 
-**Objetivo de Fase 3:** 10 tests nuevos implementados y pasando
+**✅ Objetivo Alcanzado:** 10/10 tests implementados y pasando (100%)
 
 ---
 
@@ -392,7 +393,7 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 |------|-----------|-------|---------------|----------|
 | **FASE 1** | Corregir Existentes | 11 | ✅ 11/11 (100%) | ✅ 11/11 (100%) |
 | **FASE 2** | Ventas Básicas | 15 | ✅ 15/15 (100%) | ✅ 15/15 (100%) |
-| **FASE 3** | Productos y Precios | 10 | ⚪ 0/10 (0%) | ✅ 10/10 (100%) |
+| **FASE 3** | Productos y Precios | 10 | ✅ 10/10 (100%) | ✅ 10/10 (100%) |
 | **FASE 4** | Descuentos e Impuestos | 12 | ⚪ 0/12 (0%) | ✅ 12/12 (100%) |
 | **FASE 5** | Balance y Crédito | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
 | **FASE 6** | Transacciones | 12 | ⚪ 0/12 (0%) | ✅ 12/12 (100%) |
@@ -400,7 +401,7 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 | **FASE 8** | Reparaciones | 10 | ⚪ 0/10 (0%) | ✅ 10/10 (100%) |
 | **FASE 9** | Anulaciones | 8 | ⚪ 0/8 (0%) | ✅ 8/8 (100%) |
 | **FASE 10** | Casos Edge | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
-| **TOTAL** | | **116 tests** | **26/116 (22.4%)** | **116/116 (100%)** |
+| **TOTAL** | | **116 tests** | **36/116 (31.0%)** | **116/116 (100%)** |
 
 ---
 
@@ -480,7 +481,7 @@ Cuando un test falle, se generará un informe con este formato:
 ```
 FASE 1: [■■■■■■] 11/11  (100%)  - ✅ COMPLETADA
 FASE 2: [■■■■■■] 15/15  (100%)  - ✅ COMPLETADA
-FASE 3: [□□□□□□] 0/10   (0%)    - PENDIENTE
+FASE 3: [■■■■■■] 10/10  (100%)  - ✅ COMPLETADA
 FASE 4: [□□□□□□] 0/12   (0%)    - PENDIENTE
 FASE 5: [□□□□□□] 0/15   (0%)    - PENDIENTE
 FASE 6: [□□□□□□] 0/12   (0%)    - PENDIENTE
@@ -489,29 +490,29 @@ FASE 8: [□□□□□□] 0/10   (0%)    - PENDIENTE
 FASE 9: [□□□□□□] 0/8    (0%)    - PENDIENTE
 FASE 10:[□□□□□□] 0/15   (0%)    - PENDIENTE
 
-TOTAL:  [■■□□□□□□□□] 26/116 (22.4%)
+TOTAL:  [■■■□□□□□□□] 36/116 (31.0%)
 ```
 
 ### Última Actualización
 **Fecha:** 2025-11-20
-**Tests Pasando:** 26/116 (22.4%)
+**Tests Pasando:** 36/116 (31.0%)
 **Tests Fallando:** 0/116
-**Tests Pendientes:** 90/116
+**Tests Pendientes:** 80/116
 
 ---
 
 ## 🎯 Próximo Paso
 
-**✅ FASE 1 COMPLETADA - ✅ FASE 2 COMPLETADA**
+**✅ FASE 1, 2, 3 COMPLETADAS**
 
-**INICIAR FASE 3:** Tests de Productos y Precios (10 tests)
+**INICIAR FASE 4:** Tests de Descuentos e Impuestos (12 tests)
 
 **Primer Test a Abordar:**
-`test_manual_price_override_single_product` - Modificar precio de un producto en carrito
+`test_item_discount_percentage` - Descuento del 20% en un item
 
 **Comando para ejecutar:**
 ```bash
-poetry run pytest tests/test_product_pricing.py -xvs
+poetry run pytest tests/test_discounts_taxes.py -xvs
 ```
 
 ---
