@@ -1,8 +1,8 @@
 # Plan de Cobertura de Tests - Sistema de Ventas TechStore
 
-**Versión:** 1.0
-**Fecha:** 2025-11-19
-**Estado:** ✅ FASE 1 COMPLETADA (11/11 tests pasando - 100%)
+**Versión:** 1.1
+**Fecha:** 2025-11-20
+**Estado:** ✅ FASE 1 COMPLETADA | ✅ FASE 2 COMPLETADA (26/26 tests pasando - 100%)
 
 ---
 
@@ -41,8 +41,10 @@ Garantizar cobertura completa de tests para todos los escenarios posibles de ven
 
 ## 📊 Estado Actual
 
-### Tests Existentes: 11 total
-- ✅ **PASANDO: 11 tests** (100%) ✅ FASE 1 COMPLETADA
+### Tests Existentes: 26 total
+- ✅ **PASANDO: 26 tests** (100%)
+- ✅ **FASE 1 COMPLETADA** (11/11 tests)
+- ✅ **FASE 2 COMPLETADA** (15/15 tests)
 
 ### Historial de Correcciones
 
@@ -90,44 +92,44 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 
 ---
 
-## 🎯 FASE 2: Tests Básicos de Ventas (15 tests)
+## 🎯 FASE 2: Tests Básicos de Ventas ✅ COMPLETADA (15/15 tests)
 
 ### Categoría: Pagos con Efectivo
 
-| # | Nombre del Test | Descripción | Archivo | Prioridad |
-|---|----------------|-------------|---------|-----------|
-| 2.1 | `test_cash_payment_full_walk_in` | Walk-in paga completo en efectivo | `test_basic_sales.py` | P1 |
-| 2.2 | `test_cash_payment_full_registered_customer` | Cliente registrado paga completo en efectivo | `test_basic_sales.py` | P1 |
-| 2.3 | `test_cash_overpayment_with_change` | Cliente da más efectivo, recibe cambio | `test_basic_sales.py` | P1 |
-| 2.4 | `test_cash_partial_payment_creates_debt` | Cliente paga parcial en efectivo, genera deuda | `test_basic_sales.py` | P1 |
-| 2.5 | `test_cash_zero_payment_full_debt` | Cliente no paga nada, deuda completa | `test_basic_sales.py` | P2 |
+| # | Nombre del Test | Descripción | Archivo | Estado |
+|---|----------------|-------------|---------|--------|
+| 2.1 | `test_cash_payment_full_walk_in` | Walk-in paga completo en efectivo | `test_basic_sales.py` | ✅ PASA |
+| 2.2 | `test_cash_payment_full_registered_customer` | Cliente registrado paga completo en efectivo | `test_basic_sales.py` | ✅ PASA |
+| 2.3 | `test_cash_overpayment_with_change` | Cliente da más efectivo, recibe cambio | `test_basic_sales.py` | ✅ PASA |
+| 2.4 | `test_cash_partial_payment_creates_debt` | Cliente paga parcial en efectivo, genera deuda | `test_basic_sales.py` | ✅ PASA |
+| 2.5 | `test_cash_zero_payment_full_debt` | Cliente no paga nada, deuda completa | `test_basic_sales.py` | ✅ PASA |
 
 ### Categoría: Pagos con Tarjeta
 
-| # | Nombre del Test | Descripción | Archivo | Prioridad |
-|---|----------------|-------------|---------|-----------|
-| 2.6 | `test_card_payment_full` | Pago completo con tarjeta | `test_basic_sales.py` | P1 |
-| 2.7 | `test_card_payment_with_operation_number` | Tarjeta con número de operación | `test_basic_sales.py` | P2 |
-| 2.8 | `test_card_partial_payment` | Pago parcial con tarjeta | `test_basic_sales.py` | P2 |
+| # | Nombre del Test | Descripción | Archivo | Estado |
+|---|----------------|-------------|---------|--------|
+| 2.6 | `test_card_payment_full` | Pago completo con tarjeta | `test_basic_sales.py` | ✅ PASA |
+| 2.7 | `test_card_payment_with_operation_number` | Tarjeta con número de operación | `test_basic_sales.py` | ✅ PASA |
+| 2.8 | `test_card_partial_payment` | Pago parcial con tarjeta | `test_basic_sales.py` | ✅ PASA |
 
 ### Categoría: Pagos con Transferencia
 
-| # | Nombre del Test | Descripción | Archivo | Prioridad |
-|---|----------------|-------------|---------|-----------|
-| 2.9 | `test_transfer_payment_full` | Pago completo con transferencia | `test_basic_sales.py` | P1 |
-| 2.10 | `test_transfer_with_reference_number` | Transferencia con número de referencia | `test_basic_sales.py` | P2 |
-| 2.11 | `test_transfer_partial_payment` | Pago parcial con transferencia | `test_basic_sales.py` | P2 |
+| # | Nombre del Test | Descripción | Archivo | Estado |
+|---|----------------|-------------|---------|--------|
+| 2.9 | `test_transfer_payment_full` | Pago completo con transferencia | `test_basic_sales.py` | ✅ PASA |
+| 2.10 | `test_transfer_with_reference_number` | Transferencia con número de referencia | `test_basic_sales.py` | ✅ PASA |
+| 2.11 | `test_transfer_partial_payment` | Pago parcial con transferencia | `test_basic_sales.py` | ✅ PASA |
 
 ### Categoría: Pagos Mixtos Simples (sin crédito)
 
-| # | Nombre del Test | Descripción | Archivo | Prioridad |
-|---|----------------|-------------|---------|-----------|
-| 2.12 | `test_mixed_cash_and_card_full` | Efectivo + Tarjeta = Total | `test_mixed_payments.py` | P1 |
-| 2.13 | `test_mixed_cash_and_transfer_full` | Efectivo + Transferencia = Total | `test_mixed_payments.py` | P1 |
-| 2.14 | `test_mixed_card_and_transfer_full` | Tarjeta + Transferencia = Total | `test_mixed_payments.py` | P2 |
-| 2.15 | `test_mixed_three_methods_full` | Efectivo + Tarjeta + Transferencia = Total | `test_mixed_payments.py` | P2 |
+| # | Nombre del Test | Descripción | Archivo | Estado |
+|---|----------------|-------------|---------|--------|
+| 2.12 | `test_mixed_cash_and_card_full` | Efectivo + Tarjeta = Total | `test_mixed_payments.py` | ✅ PASA |
+| 2.13 | `test_mixed_cash_and_transfer_full` | Efectivo + Transferencia = Total | `test_mixed_payments.py` | ✅ PASA |
+| 2.14 | `test_mixed_card_and_transfer_full` | Tarjeta + Transferencia = Total | `test_mixed_payments.py` | ✅ PASA |
+| 2.15 | `test_mixed_three_methods_full` | Efectivo + Tarjeta + Transferencia = Total | `test_mixed_payments.py` | ✅ PASA |
 
-**Objetivo de Fase 2:** 15 tests nuevos implementados y pasando
+**✅ Objetivo Alcanzado:** 15/15 tests implementados y pasando (100%)
 
 ---
 
@@ -388,17 +390,17 @@ Estos tests ya existían pero estaban fallando. Todos han sido corregidos.
 
 | Fase | Categoría | Tests | Estado Actual | Objetivo |
 |------|-----------|-------|---------------|----------|
-| **FASE 1** | Corregir Existentes | 6 | ❌ 0/6 (0%) | ✅ 6/6 (100%) |
-| **FASE 2** | Ventas Básicas | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
+| **FASE 1** | Corregir Existentes | 11 | ✅ 11/11 (100%) | ✅ 11/11 (100%) |
+| **FASE 2** | Ventas Básicas | 15 | ✅ 15/15 (100%) | ✅ 15/15 (100%) |
 | **FASE 3** | Productos y Precios | 10 | ⚪ 0/10 (0%) | ✅ 10/10 (100%) |
 | **FASE 4** | Descuentos e Impuestos | 12 | ⚪ 0/12 (0%) | ✅ 12/12 (100%) |
-| **FASE 5** | Balance y Crédito | 15 | ✅ 3/15 (20%) | ✅ 15/15 (100%) |
-| **FASE 6** | Transacciones | 12 | ✅ 1/12 (8%) | ✅ 12/12 (100%) |
+| **FASE 5** | Balance y Crédito | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
+| **FASE 6** | Transacciones | 12 | ⚪ 0/12 (0%) | ✅ 12/12 (100%) |
 | **FASE 7** | Cash Register | 8 | ⚪ 0/8 (0%) | ✅ 8/8 (100%) |
 | **FASE 8** | Reparaciones | 10 | ⚪ 0/10 (0%) | ✅ 10/10 (100%) |
-| **FASE 9** | Anulaciones | 8 | ❌ 0/8 (0%) | ✅ 8/8 (100%) |
+| **FASE 9** | Anulaciones | 8 | ⚪ 0/8 (0%) | ✅ 8/8 (100%) |
 | **FASE 10** | Casos Edge | 15 | ⚪ 0/15 (0%) | ✅ 15/15 (100%) |
-| **TOTAL** | | **111 tests** | **5/111 (4.5%)** | **111/111 (100%)** |
+| **TOTAL** | | **116 tests** | **26/116 (22.4%)** | **116/116 (100%)** |
 
 ---
 
@@ -476,38 +478,40 @@ Cuando un test falle, se generará un informe con este formato:
 ### Completitud por Fase
 
 ```
-FASE 1: [■□□□□□] 0/6   (0%)   - PENDIENTE
-FASE 2: [□□□□□□] 0/15  (0%)   - PENDIENTE
-FASE 3: [□□□□□□] 0/10  (0%)   - PENDIENTE
-FASE 4: [□□□□□□] 0/12  (0%)   - PENDIENTE
-FASE 5: [■■□□□□] 3/15  (20%)  - EN PROGRESO
-FASE 6: [■□□□□□] 1/12  (8%)   - EN PROGRESO
-FASE 7: [□□□□□□] 0/8   (0%)   - PENDIENTE
-FASE 8: [□□□□□□] 0/10  (0%)   - PENDIENTE
-FASE 9: [□□□□□□] 0/8   (0%)   - PENDIENTE
-FASE 10:[□□□□□□] 0/15  (0%)   - PENDIENTE
+FASE 1: [■■■■■■] 11/11  (100%)  - ✅ COMPLETADA
+FASE 2: [■■■■■■] 15/15  (100%)  - ✅ COMPLETADA
+FASE 3: [□□□□□□] 0/10   (0%)    - PENDIENTE
+FASE 4: [□□□□□□] 0/12   (0%)    - PENDIENTE
+FASE 5: [□□□□□□] 0/15   (0%)    - PENDIENTE
+FASE 6: [□□□□□□] 0/12   (0%)    - PENDIENTE
+FASE 7: [□□□□□□] 0/8    (0%)    - PENDIENTE
+FASE 8: [□□□□□□] 0/10   (0%)    - PENDIENTE
+FASE 9: [□□□□□□] 0/8    (0%)    - PENDIENTE
+FASE 10:[□□□□□□] 0/15   (0%)    - PENDIENTE
 
-TOTAL:  [■□□□□□□□□□] 5/111 (4.5%)
+TOTAL:  [■■□□□□□□□□] 26/116 (22.4%)
 ```
 
 ### Última Actualización
-**Fecha:** 2025-11-19
-**Tests Pasando:** 5/111
-**Tests Fallando:** 6/111
-**Tests Pendientes:** 100/111
+**Fecha:** 2025-11-20
+**Tests Pasando:** 26/116 (22.4%)
+**Tests Fallando:** 0/116
+**Tests Pendientes:** 90/116
 
 ---
 
 ## 🎯 Próximo Paso
 
-**INICIAR FASE 1:** Corregir los 6 tests existentes que están fallando.
+**✅ FASE 1 COMPLETADA - ✅ FASE 2 COMPLETADA**
+
+**INICIAR FASE 3:** Tests de Productos y Precios (10 tests)
 
 **Primer Test a Abordar:**
-`test_mixed_payment_credit_plus_cash`
+`test_manual_price_override_single_product` - Modificar precio de un producto en carrito
 
 **Comando para ejecutar:**
 ```bash
-poetry run pytest tests/test_credit_payment_flows.py::TestCreditPaymentFlows::test_mixed_payment_credit_plus_cash -xvs
+poetry run pytest tests/test_product_pricing.py -xvs
 ```
 
 ---
