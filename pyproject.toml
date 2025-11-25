@@ -84,3 +84,6 @@ line-ending = "auto"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
+markers = [
+    "migrations: tests that verify model/migration synchronization",
+]
