@@ -268,7 +268,10 @@ def confirm_cleanup():
 
 
 if __name__ == "__main__":
-    if confirm_cleanup():
+    # Check for --yes flag to skip confirmation
+    skip_confirmation = "--yes" in sys.argv or "-y" in sys.argv
+
+    if skip_confirmation or confirm_cleanup():
         try:
             clean_database()
         except Exception as e:
