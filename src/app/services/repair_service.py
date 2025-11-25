@@ -471,7 +471,7 @@ class RepairService:
             return None
 
         # Validate repair is ready
-        if repair.status not in ["completed", "ready_for_pickup"]:
+        if repair.status != "ready":
             raise ValueError(
                 f"Repair {repair.repair_number} is not ready for delivery. "
                 f"Current status: {repair.status}"

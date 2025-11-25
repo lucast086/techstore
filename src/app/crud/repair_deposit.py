@@ -228,13 +228,39 @@ class CRUDRepairDeposit(CRUDBase[RepairDeposit, DepositCreate, DepositUpdate]):
         """
         deposits = self.get_repair_deposits(db, repair_id, DepositStatus.ACTIVE)
         applied_deposits = []
+        total_deposit_amount = Decimal("0")
 
         for deposit in deposits:
             deposit.status = DepositStatus.APPLIED
             deposit.sale_id = sale_id
             applied_deposits.append(deposit)
+            total_deposit_amount += deposit.amount
 
         if applied_deposits:
+            # Recalculate sale payment status
+            from app.models.sale import Sale
+
+            sale = db.query(Sale).filter(Sale.id == sale_id).first()
+            if sale:
+                # Calculate total amount paid (payments + deposits)
+                total_payments = sum(
+                    payment.amount for payment in sale.payments if not payment.voided
+                )
+                total_paid = total_payments + total_deposit_amount
+
+                # Update payment status
+                if total_paid >= sale.total_amount:
+                    sale.payment_status = "paid"
+                elif total_paid > Decimal("0"):
+                    sale.payment_status = "partial"
+                else:
+                    sale.payment_status = "pending"
+
+                logger.info(
+                    f"Updated sale {sale_id} payment status to '{sale.payment_status}' "
+                    f"(Total paid: ${total_paid:.2f}, Total amount: ${sale.total_amount:.2f})"
+                )
+
             db.commit()
             logger.info(
                 f"Applied {len(applied_deposits)} deposits from repair {repair_id} to sale {sale_id}"

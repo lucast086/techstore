@@ -59,17 +59,6 @@ class SaleCreate(SaleBase):
     discount_amount: Decimal = Field(default=Decimal("0"), ge=0)
     amount_paid: Optional[Decimal] = Field(default=None, ge=0)
 
-    @field_validator("items")
-    @classmethod
-    def validate_unique_products(
-        cls, items: list[SaleItemCreate]
-    ) -> list[SaleItemCreate]:
-        """Ensure no duplicate products in sale."""
-        product_ids = [item.product_id for item in items]
-        if len(product_ids) != len(set(product_ids)):
-            raise ValueError("Duplicate products not allowed in same sale")
-        return items
-
     @field_validator("amount_paid")
     @classmethod
     def validate_amount_paid(cls, amount_paid: Optional[Decimal]) -> Optional[Decimal]:

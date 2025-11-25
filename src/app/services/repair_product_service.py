@@ -63,6 +63,7 @@ class RepairProductService:
             first_sale_price=Decimal("0.00"),  # Price will be overridden by repair cost
             second_sale_price=Decimal("0.00"),
             third_sale_price=Decimal("0.00"),
+            tax_rate=Decimal("10.00"),  # Standard 10% tax for services
             current_stock=0,  # Service products don't have stock
             minimum_stock=0,
             barcode=REPAIR_SERVICE_SKU,
