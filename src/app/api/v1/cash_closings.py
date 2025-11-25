@@ -302,22 +302,22 @@ async def get_recent_closings(
         )
 
 
-@router.get("/check-sales/{sale_date}", response_model=ResponseSchema)
+@router.get("/check-sales", response_model=ResponseSchema)
 async def check_can_process_sale(
-    sale_date: date,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),  # Any authenticated user can check
 ) -> ResponseSchema:
-    """Check if sales can be processed for a given date.
+    """Check if sales can be processed for current business day.
 
-    - **sale_date**: Date to check for sale processing
+    Uses business day logic with 4 AM cutoff to determine which register should be used.
 
     Returns whether sales are allowed and reason if not.
     """
     try:
-        can_process, reason = cash_closing_service.check_can_process_sale(
-            db=db, sale_date=sale_date
-        )
+        from app.utils.timezone import get_cash_register_business_day
+
+        can_process, reason = cash_closing_service.check_can_process_sale(db=db)
+        business_day = get_cash_register_business_day()
 
         return ResponseSchema(
             success=True,
@@ -325,7 +325,7 @@ async def check_can_process_sale(
             data={
                 "can_process_sale": can_process,
                 "reason": reason if reason else "Sales can be processed for this date",
-                "date": sale_date,
+                "date": business_day,
             },
         )
     except Exception as e:

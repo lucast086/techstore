@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.schemas.sale import SaleCreate
-from app.utils.timezone import get_local_today, get_utc_now
+from app.utils.timezone import get_utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -72,12 +72,11 @@ class SaleCRUD:
                 )
                 sale_in.customer_id = 1
 
-            # Check if sales are allowed for today (cash closing check)
+            # Check if sales are allowed (cash closing check)
+            # Uses business day logic with 4 AM cutoff
             from app.services.cash_closing_service import cash_closing_service
 
-            can_process, reason = cash_closing_service.check_can_process_sale(
-                db=db, sale_date=get_local_today()
-            )
+            can_process, reason = cash_closing_service.check_can_process_sale(db=db)
             if not can_process:
                 raise ValueError(reason)
 

@@ -17,7 +17,6 @@ from app.schemas.sale import SaleCreate, SaleItemCreate
 from app.services.cash_closing_service import cash_closing_service
 from app.services.invoice_service import invoice_service
 from app.utils.templates import create_templates
-from app.utils.timezone import get_local_today
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +32,8 @@ async def pos_interface(
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Render Point of Sale interface."""
-    # Check if cash register is open for today (using local timezone)
-    can_process, reason = cash_closing_service.check_can_process_sale(
-        db=db, sale_date=get_local_today()
-    )
+    # Check if cash register is open (uses business day with 4 AM cutoff)
+    can_process, reason = cash_closing_service.check_can_process_sale(db=db)
 
     if not can_process:
         # Redirect to cash closings page with a message
@@ -685,10 +682,8 @@ async def process_checkout(
     )
 
     try:
-        # Check if cash register is open for today (using local timezone)
-        can_process, reason = cash_closing_service.check_can_process_sale(
-            db=db, sale_date=get_local_today()
-        )
+        # Check if cash register is open (uses business day with 4 AM cutoff)
+        can_process, reason = cash_closing_service.check_can_process_sale(db=db)
         if not can_process:
             return HTMLResponse(
                 f"""<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
