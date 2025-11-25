@@ -17,13 +17,23 @@ depends_on = None
 
 
 def upgrade():
-    # Create transaction type enum
+    # Create transaction type enum (only if it doesn't exist)
     transaction_type = postgresql.ENUM(
         'sale', 'payment', 'credit_note', 'debit_note',
         'credit_application', 'opening_balance', 'adjustment',
-        name='transactiontype'
+        name='transactiontype',
+        create_type=False
     )
-    transaction_type.create(op.get_bind())
+
+    # Check if enum already exists
+    conn = op.get_bind()
+    result = conn.execute(sa.text(
+        "SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transactiontype');"
+    ))
+    enum_exists = result.scalar()
+
+    if not enum_exists:
+        transaction_type.create(conn, checkfirst=True)
 
     # Create customer_accounts table
     op.create_table('customer_accounts',
