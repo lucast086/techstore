@@ -352,6 +352,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         existing.cash_difference = cash_difference
         existing.closed_by = closed_by
         existing.closed_at = func.now()
+        existing.is_finalized = True  # Mark as finalized when closing
         if notes:
             existing.notes = notes
 
