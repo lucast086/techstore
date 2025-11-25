@@ -5,15 +5,17 @@ Revises: 4447d3d7b467
 Create Date: 2025-09-28 18:44:08.724197
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
+from typing import Union
+
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
-revision: str = '94cd63111bbe'
-down_revision: Union[str, Sequence[str], None] = '4447d3d7b467'
+revision: str = "94cd63111bbe"
+down_revision: Union[str, Sequence[str], None] = "4447d3d7b467"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -28,162 +30,500 @@ def upgrade() -> None:
     existing_tables = inspector.get_table_names()
 
     # Only create customer_accounts if it doesn't exist
-    if 'customer_accounts' not in existing_tables:
-        op.create_table('customer_accounts',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('customer_id', sa.Integer(), nullable=False),
-    sa.Column('credit_limit', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('available_credit', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('account_balance', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('total_sales', sa.DECIMAL(precision=12, scale=2), nullable=False),
-    sa.Column('total_payments', sa.DECIMAL(precision=12, scale=2), nullable=False),
-    sa.Column('total_credit_notes', sa.DECIMAL(precision=12, scale=2), nullable=False),
-    sa.Column('total_debit_notes', sa.DECIMAL(precision=12, scale=2), nullable=False),
-    sa.Column('last_transaction_date', sa.DateTime(), nullable=True),
-    sa.Column('last_payment_date', sa.DateTime(), nullable=True),
-    sa.Column('transaction_count', sa.Integer(), nullable=False),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('blocked_until', sa.DateTime(), nullable=True),
-    sa.Column('block_reason', sa.Text(), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.Column('created_by_id', sa.Integer(), nullable=False),
-    sa.Column('updated_by_id', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Record creation timestamp'),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Record last update timestamp'),
-    sa.ForeignKeyConstraint(['created_by_id'], ['users.id'], ),
-    sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),
-    sa.ForeignKeyConstraint(['updated_by_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('customer_id')
-    )
-        op.create_index('idx_customer_account_activity', 'customer_accounts', ['last_transaction_date', 'is_active'], unique=False)
-        op.create_index('idx_customer_account_balance', 'customer_accounts', ['account_balance', 'is_active'], unique=False)
-        op.create_index(op.f('ix_customer_accounts_account_balance'), 'customer_accounts', ['account_balance'], unique=False)
-        op.create_index(op.f('ix_customer_accounts_id'), 'customer_accounts', ['id'], unique=False)
+    if "customer_accounts" not in existing_tables:
+        op.create_table(
+            "customer_accounts",
+            sa.Column("id", sa.Integer(), nullable=False),
+            sa.Column("customer_id", sa.Integer(), nullable=False),
+            sa.Column(
+                "credit_limit", sa.DECIMAL(precision=10, scale=2), nullable=False
+            ),
+            sa.Column(
+                "available_credit", sa.DECIMAL(precision=10, scale=2), nullable=False
+            ),
+            sa.Column(
+                "account_balance", sa.DECIMAL(precision=10, scale=2), nullable=False
+            ),
+            sa.Column("total_sales", sa.DECIMAL(precision=12, scale=2), nullable=False),
+            sa.Column(
+                "total_payments", sa.DECIMAL(precision=12, scale=2), nullable=False
+            ),
+            sa.Column(
+                "total_credit_notes", sa.DECIMAL(precision=12, scale=2), nullable=False
+            ),
+            sa.Column(
+                "total_debit_notes", sa.DECIMAL(precision=12, scale=2), nullable=False
+            ),
+            sa.Column("last_transaction_date", sa.DateTime(), nullable=True),
+            sa.Column("last_payment_date", sa.DateTime(), nullable=True),
+            sa.Column("transaction_count", sa.Integer(), nullable=False),
+            sa.Column("is_active", sa.Boolean(), nullable=False),
+            sa.Column("blocked_until", sa.DateTime(), nullable=True),
+            sa.Column("block_reason", sa.Text(), nullable=True),
+            sa.Column("notes", sa.Text(), nullable=True),
+            sa.Column("created_by_id", sa.Integer(), nullable=False),
+            sa.Column("updated_by_id", sa.Integer(), nullable=True),
+            sa.Column(
+                "created_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+                comment="Record creation timestamp",
+            ),
+            sa.Column(
+                "updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+                comment="Record last update timestamp",
+            ),
+            sa.ForeignKeyConstraint(
+                ["created_by_id"],
+                ["users.id"],
+            ),
+            sa.ForeignKeyConstraint(
+                ["customer_id"],
+                ["customers.id"],
+            ),
+            sa.ForeignKeyConstraint(
+                ["updated_by_id"],
+                ["users.id"],
+            ),
+            sa.PrimaryKeyConstraint("id"),
+            sa.UniqueConstraint("customer_id"),
+        )
+        op.create_index(
+            "idx_customer_account_activity",
+            "customer_accounts",
+            ["last_transaction_date", "is_active"],
+            unique=False,
+        )
+        op.create_index(
+            "idx_customer_account_balance",
+            "customer_accounts",
+            ["account_balance", "is_active"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_customer_accounts_account_balance"),
+            "customer_accounts",
+            ["account_balance"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_customer_accounts_id"), "customer_accounts", ["id"], unique=False
+        )
 
     # Only create customer_transactions if it doesn't exist
-    if 'customer_transactions' not in existing_tables:
-        op.create_table('customer_transactions',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('customer_id', sa.Integer(), nullable=False),
-    sa.Column('account_id', sa.Integer(), nullable=False),
-    sa.Column('transaction_type', sa.Enum('SALE', 'PAYMENT', 'CREDIT_NOTE', 'DEBIT_NOTE', 'CREDIT_APPLICATION', 'OPENING_BALANCE', 'ADJUSTMENT', 'REPAIR_DEPOSIT', name='transactiontype'), nullable=False),
-    sa.Column('amount', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('balance_before', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('balance_after', sa.DECIMAL(precision=10, scale=2), nullable=False),
-    sa.Column('reference_type', sa.String(length=50), nullable=True),
-    sa.Column('reference_id', sa.Integer(), nullable=True),
-    sa.Column('description', sa.String(length=200), nullable=False),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.Column('transaction_date', sa.DateTime(), nullable=False),
-    sa.Column('created_by_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False, comment='Record last update timestamp'),
-    sa.ForeignKeyConstraint(['account_id'], ['customer_accounts.id'], ),
-    sa.ForeignKeyConstraint(['created_by_id'], ['users.id'], ),
-    sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('id', 'created_at', name='uq_transaction_immutable')
-    )
-        op.create_index('idx_customer_trans_date', 'customer_transactions', ['customer_id', 'transaction_date'], unique=False)
-        op.create_index('idx_customer_trans_ref', 'customer_transactions', ['reference_type', 'reference_id'], unique=False)
-        op.create_index('idx_customer_trans_type', 'customer_transactions', ['customer_id', 'transaction_type'], unique=False)
-        op.create_index(op.f('ix_customer_transactions_customer_id'), 'customer_transactions', ['customer_id'], unique=False)
-        op.create_index(op.f('ix_customer_transactions_id'), 'customer_transactions', ['id'], unique=False)
-        op.create_index(op.f('ix_customer_transactions_transaction_date'), 'customer_transactions', ['transaction_date'], unique=False)
-        op.create_index(op.f('ix_customer_transactions_transaction_type'), 'customer_transactions', ['transaction_type'], unique=False)
+    if "customer_transactions" not in existing_tables:
+        op.create_table(
+            "customer_transactions",
+            sa.Column("id", sa.Integer(), nullable=False),
+            sa.Column("customer_id", sa.Integer(), nullable=False),
+            sa.Column("account_id", sa.Integer(), nullable=False),
+            sa.Column(
+                "transaction_type",
+                postgresql.ENUM(
+                    "SALE",
+                    "PAYMENT",
+                    "CREDIT_NOTE",
+                    "DEBIT_NOTE",
+                    "CREDIT_APPLICATION",
+                    "OPENING_BALANCE",
+                    "ADJUSTMENT",
+                    "REPAIR_DEPOSIT",
+                    name="transactiontype",
+                    create_type=False,
+                ),
+                nullable=False,
+            ),
+            sa.Column("amount", sa.DECIMAL(precision=10, scale=2), nullable=False),
+            sa.Column(
+                "balance_before", sa.DECIMAL(precision=10, scale=2), nullable=False
+            ),
+            sa.Column(
+                "balance_after", sa.DECIMAL(precision=10, scale=2), nullable=False
+            ),
+            sa.Column("reference_type", sa.String(length=50), nullable=True),
+            sa.Column("reference_id", sa.Integer(), nullable=True),
+            sa.Column("description", sa.String(length=200), nullable=False),
+            sa.Column("notes", sa.Text(), nullable=True),
+            sa.Column("transaction_date", sa.DateTime(), nullable=False),
+            sa.Column("created_by_id", sa.Integer(), nullable=False),
+            sa.Column("created_at", sa.DateTime(), nullable=False),
+            sa.Column(
+                "updated_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("now()"),
+                nullable=False,
+                comment="Record last update timestamp",
+            ),
+            sa.ForeignKeyConstraint(
+                ["account_id"],
+                ["customer_accounts.id"],
+            ),
+            sa.ForeignKeyConstraint(
+                ["created_by_id"],
+                ["users.id"],
+            ),
+            sa.ForeignKeyConstraint(
+                ["customer_id"],
+                ["customers.id"],
+            ),
+            sa.PrimaryKeyConstraint("id"),
+            sa.UniqueConstraint("id", "created_at", name="uq_transaction_immutable"),
+        )
+        op.create_index(
+            "idx_customer_trans_date",
+            "customer_transactions",
+            ["customer_id", "transaction_date"],
+            unique=False,
+        )
+        op.create_index(
+            "idx_customer_trans_ref",
+            "customer_transactions",
+            ["reference_type", "reference_id"],
+            unique=False,
+        )
+        op.create_index(
+            "idx_customer_trans_type",
+            "customer_transactions",
+            ["customer_id", "transaction_type"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_customer_transactions_customer_id"),
+            "customer_transactions",
+            ["customer_id"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_customer_transactions_id"),
+            "customer_transactions",
+            ["id"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_customer_transactions_transaction_date"),
+            "customer_transactions",
+            ["transaction_date"],
+            unique=False,
+        )
+        op.create_index(
+            op.f("ix_customer_transactions_transaction_type"),
+            "customer_transactions",
+            ["transaction_type"],
+            unique=False,
+        )
 
-    # Now create repair_deposits table (always)
-    op.create_table('repair_deposits',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('repair_id', sa.Integer(), nullable=False),
-    sa.Column('customer_id', sa.Integer(), nullable=False),
-    sa.Column('sale_id', sa.Integer(), nullable=True),
-    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('payment_method', sa.Enum('CASH', 'CARD', 'TRANSFER', 'CHECK', 'OTHER', name='paymentmethod'), nullable=False),
-    sa.Column('receipt_number', sa.String(length=50), nullable=False),
-    sa.Column('status', sa.Enum('ACTIVE', 'APPLIED', 'REFUNDED', 'VOIDED', name='depositstatus'), nullable=False),
-    sa.Column('refunded_amount', sa.Numeric(precision=10, scale=2), nullable=True),
-    sa.Column('refund_date', sa.DateTime(), nullable=True),
-    sa.Column('refund_reason', sa.Text(), nullable=True),
-    sa.Column('refunded_by_id', sa.Integer(), nullable=True),
-    sa.Column('transaction_id', sa.Integer(), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.Column('received_by_id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['customer_id'], ['customers.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['received_by_id'], ['users.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['refunded_by_id'], ['users.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['repair_id'], ['repairs.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['sale_id'], ['sales.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['transaction_id'], ['customer_transactions.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_repair_deposits_id'), 'repair_deposits', ['id'], unique=False)
-    op.create_index(op.f('ix_repair_deposits_receipt_number'), 'repair_deposits', ['receipt_number'], unique=True)
-    op.create_index(op.f('ix_repair_deposits_status'), 'repair_deposits', ['status'], unique=False)
-    op.drop_column('cash_closings', 'expenses_cash')
-    op.drop_column('cash_closings', 'sales_cash')
-    op.drop_column('cash_closings', 'expenses_transfer')
-    op.drop_column('cash_closings', 'sales_mixed')
-    op.drop_column('cash_closings', 'sales_credit')
-    op.drop_column('cash_closings', 'expenses_card')
-    op.drop_column('cash_closings', 'sales_transfer')
-    op.drop_column('sale_items', 'is_custom_price')
+    # Now create repair_deposits table (only if it doesn't exist)
+    if "repair_deposits" not in existing_tables:
+        # Create enums if they don't exist
+        conn.execute(
+            sa.text(
+                """
+            DO $$ BEGIN
+                CREATE TYPE paymentmethod AS ENUM ('CASH', 'CARD', 'TRANSFER', 'CHECK', 'OTHER');
+            EXCEPTION
+                WHEN duplicate_object THEN null;
+            END $$;
+        """
+            )
+        )
+        conn.execute(
+            sa.text(
+                """
+            DO $$ BEGIN
+                CREATE TYPE depositstatus AS ENUM ('ACTIVE', 'APPLIED', 'REFUNDED', 'VOIDED');
+            EXCEPTION
+                WHEN duplicate_object THEN null;
+            END $$;
+        """
+            )
+        )
 
-    # Add paid_amount column with a default value first
-    op.add_column('sales', sa.Column('paid_amount', sa.DECIMAL(precision=10, scale=2), nullable=True))
+        op.create_table(
+            "repair_deposits",
+            sa.Column("id", sa.Integer(), nullable=False),
+            sa.Column("repair_id", sa.Integer(), nullable=False),
+            sa.Column("customer_id", sa.Integer(), nullable=False),
+            sa.Column("sale_id", sa.Integer(), nullable=True),
+            sa.Column("amount", sa.Numeric(precision=10, scale=2), nullable=False),
+            sa.Column(
+                "payment_method",
+                postgresql.ENUM(
+                    "CASH",
+                    "CARD",
+                    "TRANSFER",
+                    "CHECK",
+                    "OTHER",
+                    name="paymentmethod",
+                    create_type=False,
+                ),
+                nullable=False,
+            ),
+            sa.Column("receipt_number", sa.String(length=50), nullable=False),
+            sa.Column(
+                "status",
+                postgresql.ENUM(
+                    "ACTIVE",
+                    "APPLIED",
+                    "REFUNDED",
+                    "VOIDED",
+                    name="depositstatus",
+                    create_type=False,
+                ),
+                nullable=False,
+            ),
+            sa.Column(
+                "refunded_amount", sa.Numeric(precision=10, scale=2), nullable=True
+            ),
+            sa.Column("refund_date", sa.DateTime(), nullable=True),
+            sa.Column("refund_reason", sa.Text(), nullable=True),
+            sa.Column("refunded_by_id", sa.Integer(), nullable=True),
+            sa.Column("transaction_id", sa.Integer(), nullable=True),
+            sa.Column("notes", sa.Text(), nullable=True),
+            sa.Column("received_by_id", sa.Integer(), nullable=False),
+            sa.Column("created_at", sa.DateTime(), nullable=False),
+            sa.Column("updated_at", sa.DateTime(), nullable=False),
+            sa.ForeignKeyConstraint(
+                ["customer_id"], ["customers.id"], ondelete="RESTRICT"
+            ),
+            sa.ForeignKeyConstraint(
+                ["received_by_id"], ["users.id"], ondelete="SET NULL"
+            ),
+            sa.ForeignKeyConstraint(
+                ["refunded_by_id"], ["users.id"], ondelete="SET NULL"
+            ),
+            sa.ForeignKeyConstraint(["repair_id"], ["repairs.id"], ondelete="CASCADE"),
+            sa.ForeignKeyConstraint(["sale_id"], ["sales.id"], ondelete="SET NULL"),
+            sa.ForeignKeyConstraint(
+                ["transaction_id"], ["customer_transactions.id"], ondelete="SET NULL"
+            ),
+            sa.PrimaryKeyConstraint("id"),
+        )
+        op.create_index(
+            op.f("ix_repair_deposits_id"), "repair_deposits", ["id"], unique=False
+        )
+        op.create_index(
+            op.f("ix_repair_deposits_receipt_number"),
+            "repair_deposits",
+            ["receipt_number"],
+            unique=True,
+        )
+        op.create_index(
+            op.f("ix_repair_deposits_status"),
+            "repair_deposits",
+            ["status"],
+            unique=False,
+        )
 
-    # Calculate paid_amount from existing payment columns
-    op.execute("""
-        UPDATE sales
-        SET paid_amount = COALESCE(cash_amount, 0) + COALESCE(card_amount, 0) +
-                         COALESCE(transfer_amount, 0) + COALESCE(credit_amount, 0)
-    """)
+    # Get existing columns for idempotent column operations
+    cash_closings_cols = [c["name"] for c in inspector.get_columns("cash_closings")]
+    sale_items_cols = [c["name"] for c in inspector.get_columns("sale_items")]
+    sales_cols = [c["name"] for c in inspector.get_columns("sales")]
 
-    # Now make the column NOT NULL
-    op.alter_column('sales', 'paid_amount', nullable=False)
+    # Drop columns from cash_closings if they exist
+    for col in [
+        "expenses_cash",
+        "sales_cash",
+        "expenses_transfer",
+        "sales_mixed",
+        "sales_credit",
+        "expenses_card",
+        "sales_transfer",
+    ]:
+        if col in cash_closings_cols:
+            op.drop_column("cash_closings", col)
 
-    # Drop the old payment columns
-    op.drop_column('sales', 'credit_amount')
-    op.drop_column('sales', 'card_amount')
-    op.drop_column('sales', 'transfer_amount')
-    op.drop_column('sales', 'cash_amount')
+    # Drop is_custom_price from sale_items if it exists
+    if "is_custom_price" in sale_items_cols:
+        op.drop_column("sale_items", "is_custom_price")
+
+    # Add paid_amount column if it doesn't exist
+    if "paid_amount" not in sales_cols:
+        op.add_column(
+            "sales",
+            sa.Column("paid_amount", sa.DECIMAL(precision=10, scale=2), nullable=True),
+        )
+
+        # Calculate paid_amount from existing payment columns if they exist
+        if "cash_amount" in sales_cols:
+            op.execute(
+                """
+                UPDATE sales
+                SET paid_amount = COALESCE(cash_amount, 0) + COALESCE(card_amount, 0) +
+                                 COALESCE(transfer_amount, 0) + COALESCE(credit_amount, 0)
+            """
+            )
+
+        # Now make the column NOT NULL
+        op.alter_column("sales", "paid_amount", nullable=False)
+
+    # Drop the old payment columns if they exist
+    for col in ["credit_amount", "card_amount", "transfer_amount", "cash_amount"]:
+        if col in sales_cols:
+            op.drop_column("sales", col)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.add_column('sales', sa.Column('cash_amount', sa.NUMERIC(precision=10, scale=2), autoincrement=False, nullable=True))
-    op.add_column('sales', sa.Column('transfer_amount', sa.NUMERIC(precision=10, scale=2), autoincrement=False, nullable=True))
-    op.add_column('sales', sa.Column('card_amount', sa.NUMERIC(precision=10, scale=2), autoincrement=False, nullable=True))
-    op.add_column('sales', sa.Column('credit_amount', sa.NUMERIC(precision=10, scale=2), autoincrement=False, nullable=True))
-    op.drop_column('sales', 'paid_amount')
-    op.add_column('sale_items', sa.Column('is_custom_price', sa.BOOLEAN(), server_default=sa.text('false'), autoincrement=False, nullable=False, comment='Whether custom price was used'))
-    op.add_column('cash_closings', sa.Column('sales_transfer', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Transfer sales total'))
-    op.add_column('cash_closings', sa.Column('expenses_card', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Card expenses total'))
-    op.add_column('cash_closings', sa.Column('sales_credit', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Credit sales total'))
-    op.add_column('cash_closings', sa.Column('sales_mixed', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Mixed payment sales total'))
-    op.add_column('cash_closings', sa.Column('expenses_transfer', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Transfer expenses total'))
-    op.add_column('cash_closings', sa.Column('sales_cash', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Cash sales total'))
-    op.add_column('cash_closings', sa.Column('expenses_cash', sa.NUMERIC(precision=10, scale=2), server_default=sa.text('0.00'), autoincrement=False, nullable=False, comment='Cash expenses total'))
-    op.drop_index(op.f('ix_repair_deposits_status'), table_name='repair_deposits')
-    op.drop_index(op.f('ix_repair_deposits_receipt_number'), table_name='repair_deposits')
-    op.drop_index(op.f('ix_repair_deposits_id'), table_name='repair_deposits')
-    op.drop_table('repair_deposits')
-    op.drop_index(op.f('ix_customer_transactions_transaction_type'), table_name='customer_transactions')
-    op.drop_index(op.f('ix_customer_transactions_transaction_date'), table_name='customer_transactions')
-    op.drop_index(op.f('ix_customer_transactions_id'), table_name='customer_transactions')
-    op.drop_index(op.f('ix_customer_transactions_customer_id'), table_name='customer_transactions')
-    op.drop_index('idx_customer_trans_type', table_name='customer_transactions')
-    op.drop_index('idx_customer_trans_ref', table_name='customer_transactions')
-    op.drop_index('idx_customer_trans_date', table_name='customer_transactions')
-    op.drop_table('customer_transactions')
-    op.drop_index(op.f('ix_customer_accounts_id'), table_name='customer_accounts')
-    op.drop_index(op.f('ix_customer_accounts_account_balance'), table_name='customer_accounts')
-    op.drop_index('idx_customer_account_balance', table_name='customer_accounts')
-    op.drop_index('idx_customer_account_activity', table_name='customer_accounts')
-    op.drop_table('customer_accounts')
+    op.add_column(
+        "sales",
+        sa.Column(
+            "cash_amount",
+            sa.NUMERIC(precision=10, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "sales",
+        sa.Column(
+            "transfer_amount",
+            sa.NUMERIC(precision=10, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "sales",
+        sa.Column(
+            "card_amount",
+            sa.NUMERIC(precision=10, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.add_column(
+        "sales",
+        sa.Column(
+            "credit_amount",
+            sa.NUMERIC(precision=10, scale=2),
+            autoincrement=False,
+            nullable=True,
+        ),
+    )
+    op.drop_column("sales", "paid_amount")
+    op.add_column(
+        "sale_items",
+        sa.Column(
+            "is_custom_price",
+            sa.BOOLEAN(),
+            server_default=sa.text("false"),
+            autoincrement=False,
+            nullable=False,
+            comment="Whether custom price was used",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "sales_transfer",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Transfer sales total",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "expenses_card",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Card expenses total",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "sales_credit",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Credit sales total",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "sales_mixed",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Mixed payment sales total",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "expenses_transfer",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Transfer expenses total",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "sales_cash",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Cash sales total",
+        ),
+    )
+    op.add_column(
+        "cash_closings",
+        sa.Column(
+            "expenses_cash",
+            sa.NUMERIC(precision=10, scale=2),
+            server_default=sa.text("0.00"),
+            autoincrement=False,
+            nullable=False,
+            comment="Cash expenses total",
+        ),
+    )
+    op.drop_index(op.f("ix_repair_deposits_status"), table_name="repair_deposits")
+    op.drop_index(
+        op.f("ix_repair_deposits_receipt_number"), table_name="repair_deposits"
+    )
+    op.drop_index(op.f("ix_repair_deposits_id"), table_name="repair_deposits")
+    op.drop_table("repair_deposits")
+    op.drop_index(
+        op.f("ix_customer_transactions_transaction_type"),
+        table_name="customer_transactions",
+    )
+    op.drop_index(
+        op.f("ix_customer_transactions_transaction_date"),
+        table_name="customer_transactions",
+    )
+    op.drop_index(
+        op.f("ix_customer_transactions_id"), table_name="customer_transactions"
+    )
+    op.drop_index(
+        op.f("ix_customer_transactions_customer_id"), table_name="customer_transactions"
+    )
+    op.drop_index("idx_customer_trans_type", table_name="customer_transactions")
+    op.drop_index("idx_customer_trans_ref", table_name="customer_transactions")
+    op.drop_index("idx_customer_trans_date", table_name="customer_transactions")
+    op.drop_table("customer_transactions")
+    op.drop_index(op.f("ix_customer_accounts_id"), table_name="customer_accounts")
+    op.drop_index(
+        op.f("ix_customer_accounts_account_balance"), table_name="customer_accounts"
+    )
+    op.drop_index("idx_customer_account_balance", table_name="customer_accounts")
+    op.drop_index("idx_customer_account_activity", table_name="customer_accounts")
+    op.drop_table("customer_accounts")
     # ### end Alembic commands ###
