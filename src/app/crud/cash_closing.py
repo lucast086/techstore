@@ -4,7 +4,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import and_, func, or_
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.crud.base import CRUDBase
@@ -176,9 +176,11 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         expenses_count = expenses_result.expenses_count or 0
 
         # Calculate debt payments separately (pagos de cuentas corrientes)
+        # TODO: Implement account payments query when feature is ready
         debt_payments_cash = Decimal("0.00")
         debt_payments_transfer = Decimal("0.00")
         debt_payments_card = Decimal("0.00")
+        account_payments: list = []
 
         for row in account_payments:
             if row.payment_method == "cash":
@@ -203,13 +205,24 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             sales_count=sales_result.sales_count or 0,
             expenses_count=expenses_count,
             has_closing=has_closing,
-            # Repair info tracked separately for reporting
             repairs_delivered_count=repairs_delivered_result.repairs_count
             if repairs_delivered_result
             else 0,
             repairs_total=repairs_delivered_result.repairs_total
             if repairs_delivered_result
             else Decimal("0.00"),
+            # Payment method breakdowns
+            sales_cash=Decimal("0.00"),
+            sales_credit=Decimal("0.00"),
+            sales_transfer=Decimal("0.00"),
+            sales_mixed=Decimal("0.00"),
+            expenses_cash=expenses_cash,
+            expenses_transfer=expenses_transfer,
+            expenses_card=expenses_card,
+            debt_payments_cash=debt_payments_cash,
+            debt_payments_transfer=debt_payments_transfer,
+            debt_payments_card=debt_payments_card,
+            debt_payments_total=debt_payments_total,
         )
 
     def get_finalized_closings(
