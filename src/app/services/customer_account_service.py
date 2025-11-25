@@ -231,7 +231,28 @@ class CustomerAccountService:
 
         Returns:
             Created transaction
+
+        Raises:
+            ValueError: If payment has already been recorded
         """
+        # Check if this payment has already been recorded
+        from app.models.customer_account import CustomerTransaction, TransactionType
+
+        existing_payment_transaction = (
+            db.query(CustomerTransaction)
+            .filter(
+                CustomerTransaction.reference_type == "payment",
+                CustomerTransaction.reference_id == payment.id,
+            )
+            .first()
+        )
+
+        if existing_payment_transaction:
+            raise ValueError(
+                f"Payment {payment.id} (receipt {payment.receipt_number}) has already been recorded. "
+                "Cannot record the same payment twice."
+            )
+
         # Get or create account
         account = self.get_or_create_account(db, payment.customer_id, created_by_id)
 
