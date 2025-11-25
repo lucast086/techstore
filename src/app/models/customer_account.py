@@ -38,6 +38,7 @@ class TransactionType(str, enum.Enum):
     OPENING_BALANCE = "opening_balance"  # Initial balance setup
     ADJUSTMENT = "adjustment"  # Manual adjustments
     REPAIR_DEPOSIT = "repair_deposit"  # Deposit for repair (credit to customer)
+    VOID_SALE = "void_sale"  # Reverses a voided sale (reduces debt)
 
 
 class CustomerAccount(BaseModel):

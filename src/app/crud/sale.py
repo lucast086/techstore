@@ -373,6 +373,17 @@ class SaleCRUD:
                 payment.voided_at = get_utc_now()
                 db.add(payment)
 
+            # Reverse customer account balance if sale had a customer
+            if sale.customer_id:
+                from app.services.customer_account_service import (
+                    customer_account_service,
+                )
+
+                # Create VOID_SALE transaction to reverse the debt
+                customer_account_service.record_void_sale(
+                    db=db, sale=sale, voided_by_id=user_id
+                )
+
             # Update payment status
             sale.payment_status = "voided"
 

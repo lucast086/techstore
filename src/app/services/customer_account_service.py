@@ -317,6 +317,92 @@ class CustomerAccountService:
 
         return self._format_transaction_response(db, transaction)
 
+    def record_void_sale(
+        self, db: Session, sale, voided_by_id: int
+    ) -> CustomerTransactionResponse:
+        """Record a VOID_SALE transaction to reverse customer account balance.
+
+        Args:
+            db: Database session
+            sale: The sale being voided
+            voided_by_id: ID of user voiding the sale
+
+        Returns:
+            Transaction response
+
+        Raises:
+            ValueError: If void has already been recorded
+        """
+        # Check if this sale has already been voided
+        existing_void = (
+            db.query(CustomerTransaction)
+            .filter(
+                CustomerTransaction.reference_type == "sale",
+                CustomerTransaction.reference_id == sale.id,
+                CustomerTransaction.transaction_type == TransactionType.VOID_SALE,
+            )
+            .first()
+        )
+
+        if existing_void:
+            raise ValueError(
+                f"Sale {sale.invoice_number} void has already been recorded. "
+                "Cannot void the same sale twice."
+            )
+
+        # Get account (SQLAlchemy model, not response)
+        account = (
+            db.query(CustomerAccount)
+            .filter(CustomerAccount.customer_id == sale.customer_id)
+            .first()
+        )
+
+        if not account:
+            raise ValueError(
+                f"Customer account not found for customer_id {sale.customer_id}"
+            )
+
+        # Create VOID_SALE transaction to reverse the debt
+        balance_before = account.account_balance
+        balance_after = balance_before - sale.total_amount  # Void reduces debt
+
+        transaction = CustomerTransaction(
+            customer_id=sale.customer_id,
+            account_id=account.id,
+            transaction_type=TransactionType.VOID_SALE,
+            amount=sale.total_amount,
+            balance_before=balance_before,
+            balance_after=balance_after,
+            reference_type="sale",
+            reference_id=sale.id,
+            description=f"Sale {sale.invoice_number} voided",
+            notes=sale.void_reason,
+            created_by_id=voided_by_id,
+        )
+
+        db.add(transaction)
+
+        # Update account
+        account.account_balance = balance_after
+        account.transaction_count += 1
+        account.updated_at = func.now()
+
+        # Update available credit if void creates credit balance
+        if balance_after < 0:
+            account.available_credit = abs(balance_after)
+        else:
+            account.available_credit = Decimal("0.00")
+
+        db.flush()
+
+        logger.info(
+            f"Recorded void sale transaction for customer {sale.customer_id}: "
+            f"Sale {sale.invoice_number} voided, ${sale.total_amount} reversed, "
+            f"new balance: ${balance_after}"
+        )
+
+        return self._format_transaction_response(db, transaction)
+
     def apply_credit(
         self,
         db: Session,
