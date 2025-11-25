@@ -171,7 +171,7 @@ block content %}
               {{ sale.invoice_number }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}
+              {{ sale.sale_date | local_datetime }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               {% if sale.customer %} {{ sale.customer.name }} {% else %}

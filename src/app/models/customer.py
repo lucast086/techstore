@@ -44,6 +44,9 @@ class Customer(BaseModel):
     # Add relationship to repairs
     repairs = relationship("Repair", back_populates="customer", lazy="select")
 
+    # Add relationship to account (one-to-one)
+    account = relationship("CustomerAccount", back_populates="customer", uselist=False)
+
     # Indexes for search performance
     __table_args__ = (
         Index("idx_customer_search", "name", "phone", "phone_secondary"),

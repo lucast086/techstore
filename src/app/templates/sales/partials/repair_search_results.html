@@ -1,0 +1,60 @@
+{% if repairs %}
+<div class="max-h-96 overflow-y-auto">
+    <div class="divide-y divide-gray-200">
+        {% for repair in repairs %}
+        <div class="p-4 hover:bg-gray-50 cursor-pointer"
+             hx-post="/pos/repairs/add"
+             hx-vals='{"repair_id": "{{ repair.repair_id }}"}'
+             hx-target="#cart-items"
+             hx-swap="beforeend"
+             hx-trigger="click">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            #{{ repair.repair_number }}
+                        </span>
+                        <span class="text-sm font-medium text-gray-900">
+                            {{ repair.device }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Cliente: {{ repair.customer_name }}
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1 truncate">
+                        {{ repair.problem }}
+                    </p>
+                    {% if repair.deposits %}
+                    <div class="mt-2">
+                        <span class="text-xs text-green-600">
+                            Señas aplicadas: ${{ repair.total_deposits|round(2) }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="text-right ml-4">
+                    <p class="text-xs text-gray-500">Total</p>
+                    <p class="text-sm font-semibold text-gray-900">
+                        ${{ repair.total_cost|round(2) }}
+                    </p>
+                    {% if repair.total_deposits > 0 %}
+                    <p class="text-xs text-gray-500 mt-1">Por cobrar</p>
+                    <p class="text-sm font-bold text-blue-600">
+                        ${{ repair.amount_due|round(2) }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="p-4 text-center text-gray-500">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+    <p class="mt-2 text-sm">No se encontraron reparaciones completadas</p>
+    <p class="text-xs mt-1">Las reparaciones deben estar completadas y sin facturar</p>
+</div>
+{% endif %}

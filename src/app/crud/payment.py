@@ -1,12 +1,11 @@
 """Payment CRUD operations for TechStore SaaS."""
 
-from datetime import datetime
-
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.payment import Payment
 from app.schemas.payment import PaymentCreate
+from app.utils.timezone import get_utc_now
 
 
 class PaymentCRUD:
@@ -50,7 +49,7 @@ class PaymentCRUD:
 
     def generate_receipt_number(self, db: Session) -> str:
         """Generate unique receipt number: PAY-YYYY-NNNNN."""
-        year = datetime.now().year
+        year = get_utc_now().year
         prefix = f"PAY-{year}"
 
         # Get count of payments this year
@@ -144,7 +143,7 @@ class PaymentCRUD:
         payment.voided = True
         payment.void_reason = void_reason
         payment.voided_by_id = voided_by_id
-        payment.voided_at = datetime.now()
+        payment.voided_at = get_utc_now()
 
         db.commit()
         return True

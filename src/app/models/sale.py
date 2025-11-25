@@ -1,5 +1,6 @@
 """Sale and related models for sales management."""
 
+from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
@@ -60,7 +61,7 @@ class Sale(BaseModel):
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("users.id"), nullable=False
     )
-    sale_date: Mapped[DateTime] = mapped_column(
+    sale_date: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=func.now(), index=True
     )
     subtotal: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
@@ -71,6 +72,12 @@ class Sale(BaseModel):
         DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
     )
     total_amount: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
+    paid_amount: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
+    )  # Total amount paid so far
+    change_amount: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2), nullable=False, default=Decimal("0.00")
+    )  # Change given if overpayment
     payment_status: Mapped[str] = mapped_column(
         String(20), nullable=False, default="pending"
     )  # pending, partial, paid
@@ -132,7 +139,12 @@ class Sale(BaseModel):
     @property
     def amount_due(self) -> Decimal:
         """Calculate remaining amount due."""
-        return self.total_amount - self.amount_paid
+        return self.total_amount - self.paid_amount
+
+    @property
+    def balance_due(self) -> Decimal:
+        """Calculate remaining balance due (alias for amount_due)."""
+        return self.total_amount - self.paid_amount
 
 
 class SaleItem(BaseModel):

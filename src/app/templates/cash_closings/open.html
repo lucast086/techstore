@@ -35,7 +35,7 @@
           Opening Date
         </label>
         <div class="text-lg font-semibold text-gray-900">
-          {{ opening_date.strftime('%B %d, %Y') }}
+          {{ opening_date | local_date('%B %d, %Y') }}
         </div>
       </div>
 

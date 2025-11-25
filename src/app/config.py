@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     )
     JWT_ALGORITHM: str = Field(default="HS256", description="JWT signing algorithm")
     JWT_EXPIRATION_HOURS: int = Field(
-        default=8, description="JWT token expiration in hours"
+        default=16, description="JWT token expiration in hours"
     )
     JWT_REFRESH_EXPIRATION_DAYS: int = Field(
         default=7, description="JWT refresh token expiration in days"
@@ -71,6 +71,12 @@ class Settings(BaseSettings):
     # Pagination
     default_page_size: int = Field(default=20, description="Default pagination size")
     max_page_size: int = Field(default=100, description="Maximum pagination size")
+
+    # Timezone
+    TIMEZONE: str = Field(
+        default="America/Argentina/Buenos_Aires",
+        description="Local timezone for display (Argentina/Buenos Aires timezone)",
+    )
 
     class Config:
         """Pydantic config."""

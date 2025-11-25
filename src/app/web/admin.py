@@ -5,17 +5,17 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie, require_web_role
 from app.database import get_async_session
 from app.models.user import User
+from app.utils.templates import create_templates
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["admin"])
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 
 @router.get(

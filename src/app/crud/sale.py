@@ -9,10 +9,10 @@ from sqlalchemy import and_, case, desc, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.models.payment import Payment
 from app.models.product import Product
 from app.models.sale import Sale, SaleItem
 from app.schemas.sale import SaleCreate
+from app.utils.timezone import get_utc_now
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class SaleCRUD:
 
     def generate_invoice_number(self, db: Session) -> str:
         """Generate unique invoice number."""
-        current_year = datetime.now().year
+        current_year = get_utc_now().year
 
         # Get the last invoice number for current year
         last_sale = (
@@ -42,16 +42,42 @@ class SaleCRUD:
         return f"INV-{current_year}-{new_number:05d}"
 
     def create_sale(self, db: Session, *, sale_in: SaleCreate, user_id: int) -> Sale:
-        """Create new sale with items and update inventory."""
+        """Create new sale with items and update inventory.
+
+        If amount_paid is provided, delegates to SalesService for payment processing.
+        """
+        # If amount_paid is provided and greater than 0, use the service for integrated processing
+        # This handles payment creation automatically
+        if sale_in.amount_paid and sale_in.amount_paid > 0:
+            from app.services.sales_service import sales_service
+
+            return sales_service.process_sale_with_payment(db, sale_in, user_id)
+
+        # Otherwise, use the original implementation
+        return self._create_sale_internal(db, sale_in=sale_in, user_id=user_id)
+
+    def _create_sale_internal(
+        self, db: Session, *, sale_in: SaleCreate, user_id: int
+    ) -> Sale:
+        """Internal method to create sale without payment processing."""
         # Start transaction
         try:
-            # Check if sales are allowed for today (cash closing check)
+            # BUSINESS RULE: All sales MUST have a customer
+            # If no customer_id provided, default to walk-in customer (ID=1)
+            # This ensures ALL sales and payments are tracked in the transaction system
+            if not sale_in.customer_id:
+                logger.warning(
+                    "Sale created without customer_id, defaulting to walk-in customer (ID=1). "
+                    "Frontend should always provide a customer_id."
+                )
+                sale_in.customer_id = 1
+
+            # Check if sales are allowed (cash closing check)
+            # Uses business day logic with 4 AM cutoff
             from app.services.cash_closing_service import cash_closing_service
             from app.utils.timezone import get_local_date
 
-            can_process, reason = cash_closing_service.check_can_process_sale(
-                db=db, sale_date=get_local_date()
-            )
+            can_process, reason = cash_closing_service.check_can_process_sale(db=db)
             if not can_process:
                 raise ValueError(reason)
 
@@ -70,7 +96,8 @@ class SaleCRUD:
                 if not product:
                     raise ValueError(f"Product {item.product_id} not found")
 
-                if product.current_stock < item.quantity:
+                # Only check stock for physical products, not services
+                if not product.is_service and product.current_stock < item.quantity:
                     raise ValueError(
                         f"Insufficient stock for {product.name}. "
                         f"Available: {product.current_stock}, Requested: {item.quantity}"
@@ -167,7 +194,7 @@ class SaleCRUD:
                 invoice_number=invoice_number,
                 customer_id=sale_in.customer_id,
                 user_id=user_id,
-                subtotal=subtotal,
+                subtotal=subtotal_after_discount,  # Store subtotal after global discount
                 discount_amount=sale_in.discount_amount,
                 tax_amount=tax_amount,
                 total_amount=total_amount,
@@ -230,99 +257,40 @@ class SaleCRUD:
                 )
                 db.add(sale_item)
 
-                # Update inventory
-                product.current_stock -= item.quantity
-                db.add(product)
+                # Update inventory (only for physical products, not services)
+                if not product.is_service:
+                    product.current_stock -= item.quantity
+                    db.add(product)
 
-            # Handle payment creation and debt generation
-            if sale_in.customer_id and amount_paid > Decimal("0"):
-                # Create payment record for any amount paid
-                from app.models.payment import PaymentType
+            # Update sale with actual paid amount
+            sale.paid_amount = amount_paid
 
-                # Handle mixed payments by creating multiple payment records
-                if sale_in.payment_method == "mixed":
-                    # Create separate payment records for each component
-                    if sale_in.cash_amount and sale_in.cash_amount > Decimal("0"):
-                        cash_payment = Payment(
-                            customer_id=sale_in.customer_id,
-                            sale_id=sale.id,
-                            amount=sale_in.cash_amount,
-                            payment_method="cash",
-                            payment_type=PaymentType.payment.value,
-                            receipt_number=f"REC-{invoice_number}-CASH",
-                            received_by_id=user_id,
-                            notes=f"Cash component of mixed payment for sale {invoice_number}",
-                        )
-                        db.add(cash_payment)
-
-                    if sale_in.transfer_amount and sale_in.transfer_amount > Decimal(
-                        "0"
-                    ):
-                        transfer_payment = Payment(
-                            customer_id=sale_in.customer_id,
-                            sale_id=sale.id,
-                            amount=sale_in.transfer_amount,
-                            payment_method="transfer",
-                            payment_type=PaymentType.payment.value,
-                            receipt_number=f"REC-{invoice_number}-TRANSFER",
-                            received_by_id=user_id,
-                            notes=f"Transfer component of mixed payment for sale {invoice_number}",
-                        )
-                        db.add(transfer_payment)
-
-                    if sale_in.card_amount and sale_in.card_amount > Decimal("0"):
-                        card_payment = Payment(
-                            customer_id=sale_in.customer_id,
-                            sale_id=sale.id,
-                            amount=sale_in.card_amount,
-                            payment_method="card",
-                            payment_type=PaymentType.payment.value,
-                            receipt_number=f"REC-{invoice_number}-CARD",
-                            received_by_id=user_id,
-                            notes=f"Card component of mixed payment for sale {invoice_number}",
-                        )
-                        db.add(card_payment)
-
-                    if sale_in.credit_amount and sale_in.credit_amount > Decimal("0"):
-                        credit_payment = Payment(
-                            customer_id=sale_in.customer_id,
-                            sale_id=sale.id,
-                            amount=sale_in.credit_amount,
-                            payment_method="account_credit",
-                            payment_type=PaymentType.payment.value,
-                            receipt_number=f"REC-{invoice_number}-CREDIT",
-                            received_by_id=user_id,
-                            notes=f"Account credit component of mixed payment for sale {invoice_number}",
-                        )
-                        db.add(credit_payment)
-                else:
-                    # Single payment method
-                    payment = Payment(
-                        customer_id=sale_in.customer_id,
-                        sale_id=sale.id,
-                        amount=amount_paid,
-                        payment_method=sale_in.payment_method or "cash",
-                        payment_type=PaymentType.payment.value,  # Explicitly use .value
-                        receipt_number=f"REC-{invoice_number}",
-                        received_by_id=user_id,
-                        notes=f"Payment for sale {invoice_number}"
-                        + (
-                            f" (Partial: ${amount_paid} of ${total_amount})"
-                            if amount_paid < total_amount
-                            else ""
-                        ),
-                    )
-                    db.add(payment)
-
-            # Handle debt generation for partial payments
-            if sale_in.customer_id and amount_paid < total_amount:
-                # Debt is automatically tracked via the balance service
-                # The unpaid portion becomes customer debt
-                debt_amount = total_amount - amount_paid
-                logger.info(
-                    f"Debt of ${debt_amount} generated for customer {sale_in.customer_id} "
-                    f"from sale {invoice_number}"
+            # SIMPLIFIED: Only record the SALE transaction (creates debt)
+            # Payment handling is now done in web/sales.py after sale creation
+            # This follows the refactor plan: separate sale creation from payment processing
+            if sale_in.customer_id:
+                from app.services.customer_account_service import (
+                    customer_account_service,
                 )
+
+                # ALWAYS record the sale as debt (SALE transaction)
+                # Payments will be applied separately by the web endpoint
+                try:
+                    customer_account_service.record_sale(db, sale, user_id)
+                    logger.info(
+                        f"Recorded SALE transaction for {invoice_number}: "
+                        f"${total_amount} debt for customer {sale_in.customer_id}"
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to record sale in account system: {e}")
+
+                # Log debt amount
+                if amount_paid < total_amount:
+                    debt_amount = total_amount - amount_paid
+                    logger.info(
+                        f"Debt of ${debt_amount} remaining for customer {sale_in.customer_id} "
+                        f"from sale {invoice_number}"
+                    )
 
             db.commit()
             db.refresh(sale)
@@ -465,8 +433,19 @@ class SaleCRUD:
                 payment.voided = True
                 payment.void_reason = f"Sale {sale.invoice_number} voided"
                 payment.voided_by_id = user_id
-                payment.voided_at = datetime.now()
+                payment.voided_at = get_utc_now()
                 db.add(payment)
+
+            # Reverse customer account balance if sale had a customer
+            if sale.customer_id:
+                from app.services.customer_account_service import (
+                    customer_account_service,
+                )
+
+                # Create VOID_SALE transaction to reverse the debt
+                customer_account_service.record_void_sale(
+                    db=db, sale=sale, voided_by_id=user_id
+                )
 
             # Update payment status
             sale.payment_status = "voided"

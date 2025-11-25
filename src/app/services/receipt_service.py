@@ -1,6 +1,6 @@
 """Receipt service for generating payment receipts."""
 
-from datetime import datetime
+from app.utils.timezone import get_local_now
 
 
 class ReceiptService:
@@ -26,7 +26,7 @@ class ReceiptService:
         """
         # Add company info and timestamp
         data["company"] = self.company_info
-        data["generated_at"] = datetime.now()
+        data["generated_at"] = get_local_now()
 
         # Format the receipt HTML
         payment = data["payment"]
@@ -188,7 +188,7 @@ class ReceiptService:
                 <div class="footer">
                     <p>Thank you for your payment!</p>
                     <p>This is a computer-generated receipt. No signature required.</p>
-                    <p>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
+                    <p>Generated on {get_local_now().strftime('%B %d, %Y at %I:%M %p')}</p>
                 </div>
             </div>
         </body>

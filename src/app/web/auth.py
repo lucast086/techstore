@@ -3,16 +3,16 @@ from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.core.auth import AuthService
 from app.core.web_auth import get_current_user_from_cookie
 from app.database import get_async_session
+from app.utils.templates import create_templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -94,12 +94,36 @@ async def dashboard(
     try:
         # Get current user
         current_user = await get_current_user_from_cookie(request, access_token, db)
+
+        # Check for pending cash register
+        from app.services.cash_closing_service import cash_closing_service
+
+        pending_register = cash_closing_service.check_pending_cash_register(db)
+
         return templates.TemplateResponse(
-            "dashboard.html", {"request": request, "current_user": current_user}
+            "dashboard.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "pending_register": pending_register,
+            },
         )
     except HTTPException:
         # If token is invalid, redirect to login
         return RedirectResponse(url="/login", status_code=302)
+
+
+@router.post("/dismiss-pending-register", response_class=HTMLResponse)
+async def dismiss_pending_register(
+    request: Request,
+):
+    """Dismiss the pending cash register alert (HTMX endpoint).
+
+    Returns empty HTML to replace the alert div.
+    User acknowledges they will continue working with old register.
+    """
+    # Return empty content to hide the alert
+    return ""
 
 
 @router.post("/refresh-session")

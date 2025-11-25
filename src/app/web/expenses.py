@@ -7,7 +7,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie, require_web_role
@@ -21,11 +20,12 @@ from app.schemas.expense import (
     ExpenseUpdate,
 )
 from app.services.expense_service import expense_service
+from app.utils.templates import create_templates
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 # Dependency for admin-only routes
 require_admin = require_web_role(["admin"])

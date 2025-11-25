@@ -73,7 +73,7 @@ class SaleBase(BaseModel):
 
     customer_id: Optional[int] = None
     payment_method: Optional[str] = Field(
-        None, pattern="^(cash|transfer|card|mixed|account_credit)$"
+        None, pattern="^(cash|transfer|card|mixed|account_credit|account)$"
     )
     notes: Optional[str] = None
 
@@ -89,17 +89,6 @@ class SaleCreate(SaleBase):
     transfer_amount: Optional[Decimal] = Field(default=None, ge=0)
     card_amount: Optional[Decimal] = Field(default=None, ge=0)
     credit_amount: Optional[Decimal] = Field(default=None, ge=0)
-
-    @field_validator("items")
-    @classmethod
-    def validate_unique_products(
-        cls, items: list[SaleItemCreate]
-    ) -> list[SaleItemCreate]:
-        """Ensure no duplicate products in sale."""
-        product_ids = [item.product_id for item in items]
-        if len(product_ids) != len(set(product_ids)):
-            raise ValueError("No se permiten productos duplicados en la misma venta")
-        return items
 
     @field_validator("amount_paid")
     @classmethod

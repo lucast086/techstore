@@ -16,7 +16,7 @@
         <div class="ml-3">
           <h1 class="text-lg font-medium text-blue-800">Cierre de Caja Finalizado</h1>
           <p class="mt-1 text-sm text-blue-700">
-            El cierre de caja para {{ closing.closing_date.strftime('%B %d, %Y') }} ha sido finalizado y es ahora inmutable.
+            The cash closing for {{ closing.closing_date | local_date('%B %d, %Y') }} has been finalized and is now immutable.
           </p>
         </div>
       </div>
@@ -37,7 +37,7 @@
             Este registro de cierre de caja está ahora bloqueado y no puede ser modificado.
           </p>
           <p class="text-xs text-blue-600 mt-1">
-            Las ventas para {{ closing.closing_date.strftime('%Y-%m-%d') }} están ahora prohibidas hasta que se abra un nuevo día.
+            Sales for {{ closing.closing_date | local_date('%Y-%m-%d') }} are now prevented until a new day is opened.
           </p>
         </div>
       </div>
@@ -101,8 +101,8 @@
             <span class="font-medium">{{ closing.user.name if closing.user else 'Unknown' }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-600">Finalizado En:</span>
-            <span class="font-medium">{{ closing.closed_at.strftime('%I:%M %p') }}</span>
+            <span class="text-gray-600">Finalized At:</span>
+            <span class="font-medium">{{ closing.closed_at | local_time('%I:%M %p') }}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-600">ID de Cierre:</span>

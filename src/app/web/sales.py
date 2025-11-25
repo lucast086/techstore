@@ -7,7 +7,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
@@ -17,12 +16,12 @@ from app.models.user import User
 from app.schemas.sale import SaleCreate, SaleItemCreate
 from app.services.cash_closing_service import cash_closing_service
 from app.services.invoice_service import invoice_service
-from app.utils.timezone import get_local_date
+from app.utils.templates import create_templates
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 
 
 @router.get("/pos", response_class=HTMLResponse)
@@ -33,10 +32,8 @@ async def pos_interface(
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Render Point of Sale interface."""
-    # Check if cash register is open for today
-    can_process, reason = cash_closing_service.check_can_process_sale(
-        db=db, sale_date=get_local_date()
-    )
+    # Check if cash register is open (uses business day with 4 AM cutoff)
+    can_process, reason = cash_closing_service.check_can_process_sale(db=db)
 
     if not can_process:
         # Redirect to cash closings page with a message
@@ -99,6 +96,109 @@ async def search_products_htmx(
     return templates.TemplateResponse(
         "sales/partials/product_search_results.html", context
     )
+
+
+@router.get("/pos/repairs/search", response_class=HTMLResponse)
+async def search_repairs_htmx(
+    request: Request,
+    q: str = Query(default=""),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Search repairs for POS and return HTMX partial."""
+    from app.services.repair_service import repair_service
+
+    repairs = []
+    if len(q.strip()) >= 1:
+        # Search by repair number or customer name
+        from app.models.customer import Customer
+        from app.models.repair import Repair
+
+        query = db.query(Repair).join(Customer)
+
+        # Filter by repair number or customer name
+        search_term = f"%{q}%"
+        query = query.filter(
+            (Repair.repair_number.ilike(search_term))
+            | (Customer.name.ilike(search_term))
+        )
+
+        # Only show completed repairs that haven't been invoiced
+        query = query.filter(
+            Repair.status.in_(["completed", "ready_for_pickup"]),
+            Repair.sale_id.is_(None),
+        )
+
+        # Limit results
+        repairs_list = query.limit(10).all()
+
+        # Format repairs for display
+        repairs = []
+        for repair in repairs_list:
+            try:
+                repair_data = repair_service.prepare_for_sale(db, repair.id)
+                if repair_data:
+                    repairs.append(repair_data)
+            except ValueError as e:
+                logger.debug(f"Skipping repair {repair.id}: {e}")
+                continue
+
+    context = {
+        "request": request,
+        "repairs": repairs,
+    }
+
+    return templates.TemplateResponse(
+        "sales/partials/repair_search_results.html", context
+    )
+
+
+@router.post("/pos/repairs/add", response_class=HTMLResponse)
+async def add_repair_to_cart(
+    request: Request,
+    repair_id: int = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Add repair to POS cart (HTMX endpoint)."""
+    from app.services.repair_product_service import repair_product_service
+    from app.services.repair_service import repair_service
+
+    # Get repair data
+    try:
+        repair_data = repair_service.prepare_for_sale(db, repair_id)
+        if not repair_data:
+            return HTMLResponse(
+                '<div class="alert alert-danger">Reparación no encontrada</div>',
+                status_code=404,
+            )
+
+        # Check if can add to cart
+        can_add, error_msg = repair_product_service.can_add_to_cart(repair_data)
+        if not can_add:
+            return HTMLResponse(
+                f'<div class="alert alert-warning">{error_msg}</div>',
+                status_code=400,
+            )
+
+        # Format as cart item
+        cart_item = repair_product_service.format_repair_as_product(repair_data)
+
+        context = {
+            "request": request,
+            "item": cart_item,
+            "is_repair": True,
+        }
+
+        return templates.TemplateResponse(
+            "sales/partials/repair_cart_item.html", context
+        )
+
+    except ValueError as e:
+        return HTMLResponse(
+            f'<div class="alert alert-danger">{str(e)}</div>',
+            status_code=400,
+        )
 
 
 @router.get("/pos/customers", response_class=HTMLResponse)
@@ -169,7 +269,8 @@ async def get_customer_balance_json(
 ):
     """Get customer balance for POS (returns JSON)."""
     from app.crud.customer import customer_crud
-    from app.services.balance_service import balance_service
+    from app.crud.customer_account import customer_account_crud
+    from app.services.customer_account_service import customer_account_service
 
     # Check customer exists
     customer = customer_crud.get(db, customer_id)
@@ -178,19 +279,42 @@ async def get_customer_balance_json(
             status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
         )
 
-    # Get balance information
-    balance_info = balance_service.get_balance_summary(db, customer_id)
+    # Get or create account
+    account = customer_account_crud.get_or_create(db, customer_id, current_user.id)
+    db.commit()
 
+    # Check credit availability
+    (
+        has_credit,
+        available_credit,
+        message,
+    ) = customer_account_service.check_credit_availability(db, customer_id)
+
+    # Format balance for display
+    if account.account_balance > 0:
+        formatted = f"Debe ${account.account_balance:,.2f}"
+        status = "debt"
+    elif account.account_balance < 0:
+        formatted = f"Crédito ${abs(account.account_balance):,.2f}"
+        status = "credit"
+    else:
+        formatted = "$0.00"
+        status = "settled"
+
+    # Get balance information
     return {
         "customer_id": customer_id,
         "customer_name": customer.name,
-        "balance": float(
-            balance_info["current_balance"]
-        ),  # Convert to float for template
-        "has_debt": balance_info["has_debt"],
-        "has_credit": balance_info["has_credit"],
-        "formatted": balance_info["formatted"],
-        "status": balance_info["status"],
+        "balance": float(account.account_balance),  # Convert to float for JSON
+        "account_balance": float(account.account_balance),
+        "available_credit": float(available_credit),
+        "has_credit": has_credit,
+        "has_debt": account.has_debt,
+        "credit_limit": float(account.credit_limit),
+        "is_settled": account.is_settled,
+        "formatted": formatted,
+        "status": status,
+        "message": message,
     }
 
 
@@ -238,6 +362,55 @@ async def add_to_cart(
     return templates.TemplateResponse("sales/partials/cart_item.html", context)
 
 
+@router.post("/pos/cart/update", response_class=HTMLResponse)
+async def update_cart_quantity(
+    request: Request,
+    product_id: int = Form(...),
+    quantity: int = Form(...),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Update cart item quantity (HTMX endpoint).
+
+    Note: This endpoint exists for HTMX compatibility but the current POS
+    implementation uses client-side JavaScript for cart management.
+    """
+    # Return empty response with 200 OK
+    # The actual cart update is handled by JavaScript in the client
+    return HTMLResponse(content="", status_code=200)
+
+
+@router.post("/pos/cart/update-price", response_class=HTMLResponse)
+async def update_cart_price(
+    request: Request,
+    product_id: int = Form(...),
+    custom_price: Decimal = Form(...),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Update cart item price (HTMX endpoint).
+
+    Note: This endpoint exists for HTMX compatibility but the current POS
+    implementation uses client-side JavaScript for cart management.
+    """
+    # Return empty response with 200 OK
+    # The actual price update is handled by JavaScript in the client
+    return HTMLResponse(content="", status_code=200)
+
+
+@router.post("/pos/cart/remove", response_class=HTMLResponse)
+async def remove_from_cart(
+    request: Request,
+    product_id: int = Form(...),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Remove item from cart (HTMX endpoint).
+
+    Note: This endpoint exists for HTMX compatibility but the current POS
+    implementation uses client-side JavaScript for cart management.
+    """
+    # Return empty HTML to replace the removed row
+    return HTMLResponse(content="", status_code=200)
+
+
 @router.post("/pos/checkout", response_class=HTMLResponse)
 async def process_checkout(
     request: Request,
@@ -251,7 +424,7 @@ async def process_checkout(
     # Extract cart items
     items = []
     item_count = 0
-    repair_id_to_invoice = None
+    repair_ids_to_invoice = []
 
     # Count how many items we have
     for key in form_data.keys():
@@ -263,46 +436,64 @@ async def process_checkout(
         product_id = form_data.get(f"product_id_{i}")
         quantity = form_data.get(f"quantity_{i}")
         unit_price = form_data.get(f"unit_price_{i}")
-        is_custom_price = (
-            form_data.get(f"is_custom_price_{i}", "false").lower() == "true"
-        )
+        is_repair = form_data.get(f"is_repair_{i}") == "true"
+        repair_id = form_data.get(f"repair_id_{i}")
 
         if product_id and quantity and unit_price:
-            # Check if this is a repair item
-            if str(product_id).startswith("repair_"):
-                # Extract repair ID
-                repair_id_to_invoice = int(str(product_id).replace("repair_", ""))
+            # Check if this is a repair item (product_id starts with 'repair_')
+            if is_repair and repair_id:
+                # Track repair for later processing
+                repair_ids_to_invoice.append(int(repair_id))
 
-                # Create a special product entry for the repair
-                # We'll handle this specially in the sale creation
-                from app.models.product import Product
+                # Get or create repair service product
+                from app.services.repair_product_service import repair_product_service
 
-                # Find a service product or create a temporary one
-                service_product = (
-                    db.query(Product)
-                    .filter(
-                        Product.name.ilike("%servicio%")
-                        | Product.name.ilike("%reparaci%")
-                    )
-                    .first()
+                service_product = repair_product_service.get_or_create_repair_product(
+                    db
                 )
 
-                if service_product:
+                items.append(
+                    SaleItemCreate(
+                        product_id=service_product.id,
+                        quantity=1,  # Repairs are always quantity 1
+                        unit_price=Decimal(unit_price)
+                        if unit_price and str(unit_price).strip()
+                        else Decimal("0"),
+                    )
+                )
+            elif str(product_id).startswith("repair_"):
+                # Legacy repair item format (product_id = 'repair_X')
+                # Extract repair ID from product_id
+                try:
+                    repair_id_from_product = int(str(product_id).split("_")[1])
+                    repair_ids_to_invoice.append(repair_id_from_product)
+
+                    # Get or create repair service product
+                    from app.services.repair_product_service import (
+                        repair_product_service,
+                    )
+
+                    service_product = (
+                        repair_product_service.get_or_create_repair_product(db)
+                    )
+
                     items.append(
                         SaleItemCreate(
                             product_id=service_product.id,
-                            quantity=int(quantity),
+                            quantity=1,  # Repairs are always quantity 1
                             unit_price=Decimal(unit_price)
                             if unit_price and str(unit_price).strip()
                             else Decimal("0"),
                             is_custom_price=is_custom_price,
                         )
                     )
-                else:
-                    # If no service product exists, we'll need to handle this differently
-                    logger.warning("No service product found for repair invoicing")
-                    # For now, skip adding to items but continue with the repair_id_to_invoice
+                except (ValueError, IndexError) as e:
+                    logger.error(
+                        f"Invalid repair product_id format: {product_id}, error: {e}"
+                    )
+                    continue
             else:
+                # Regular product
                 items.append(
                     SaleItemCreate(
                         product_id=int(product_id),
@@ -374,16 +565,15 @@ async def process_checkout(
                 status_code=400,
             )
 
-        # Import balance service to validate credit
-        from app.services.balance_service import balance_service
+        # Import customer account service to validate credit
+        from app.services.customer_account_service import customer_account_service
 
         # Check customer credit balance
-        balance_info = balance_service.get_balance_summary(db, int(customer_id))
-        available_credit = (
-            Decimal(str(balance_info["current_balance"]))
-            if balance_info["has_credit"]
-            else Decimal("0")
-        )
+        (
+            has_credit,
+            available_credit,
+            message,
+        ) = customer_account_service.check_credit_availability(db, int(customer_id))
 
         credit_to_use = (
             Decimal(credit_amount)
@@ -414,16 +604,15 @@ async def process_checkout(
                     status_code=400,
                 )
 
-            # Import balance service to validate credit
-            from app.services.balance_service import balance_service
+            # Import customer account service to validate credit
+            from app.services.customer_account_service import customer_account_service
 
             # Check customer credit balance
-            balance_info = balance_service.get_balance_summary(db, int(customer_id))
-            available_credit = (
-                Decimal(str(balance_info["current_balance"]))
-                if balance_info["has_credit"]
-                else Decimal("0")
-            )
+            (
+                has_credit,
+                available_credit,
+                message,
+            ) = customer_account_service.check_credit_availability(db, int(customer_id))
 
             credit_to_use = (
                 Decimal(mixed_credit_amount)
@@ -459,9 +648,12 @@ async def process_checkout(
             else Decimal("0")
         )
 
-        total_paid = safe_cash + safe_transfer + safe_card + safe_credit
-        if total_paid > 0:
-            amount_paid = total_paid
+        # IMPORTANT: For mixed payments, amount_paid should NOT include credit
+        # Credit will be applied separately after sale creation
+        # This prevents double-recording the credit amount
+        total_paid_no_credit = safe_cash + safe_transfer + safe_card
+        if total_paid_no_credit > 0:
+            amount_paid = total_paid_no_credit
 
         payment_details = []
         if safe_cash > 0:
@@ -475,11 +667,15 @@ async def process_checkout(
         if payment_details:
             notes = f"Payment breakdown: {', '.join(payment_details)}\n{notes}".strip()
 
+    # BUSINESS RULE: All sales must have a customer
+    # If no customer_id provided, default to walk-in customer (ID=1)
+    customer_id = (
+        int(form_data.get("customer_id")) if form_data.get("customer_id") else 1
+    )
+
     # Create sale data
     sale_data = SaleCreate(
-        customer_id=int(form_data.get("customer_id"))
-        if form_data.get("customer_id")
-        else None,
+        customer_id=customer_id,
         payment_method=payment_method,
         discount_amount=Decimal(form_data.get("discount_amount", "0")),
         notes=notes,
@@ -493,10 +689,8 @@ async def process_checkout(
     )
 
     try:
-        # Check if cash register is open for today
-        can_process, reason = cash_closing_service.check_can_process_sale(
-            db=db, sale_date=get_local_date()
-        )
+        # Check if cash register is open (uses business day with 4 AM cutoff)
+        can_process, reason = cash_closing_service.check_can_process_sale(db=db)
         if not can_process:
             return HTMLResponse(
                 f"""<div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -522,88 +716,153 @@ async def process_checkout(
                 status_code=400,
             )
 
-        # Create sale
+        # Create sale (now only creates SALE transaction - debt)
+        # Payment processing happens below, following the refactor plan
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
 
-        # Process credit usage if account_credit was used as payment
-        if payment_method == "account_credit" and amount_paid and sale.customer_id:
-            credit_used = amount_paid
-            logger.info(
-                f"Processing credit usage: ${credit_used} for customer {sale.customer_id}"
-            )
+        # PHASE 2: Apply payments after sale creation
+        # This follows the refactor plan: centralize payment logic in web endpoint
+        if sale.customer_id and amount_paid and amount_paid > 0:
+            from app.models.payment import Payment, PaymentType
+            from app.services.customer_account_service import customer_account_service
 
-            # Apply customer credit using the payment service
-            from app.services.payment_service import PaymentService
+            # Cap payment amount to total (overpayment becomes change)
+            payment_amount = min(amount_paid, sale.total_amount)
 
-            payment_service = PaymentService()
-
-            try:
-                payment_service.apply_customer_credit(
-                    db=db,
+            # Create Payment record for non-credit payments
+            if payment_method not in ["account_credit", "mixed"]:
+                # Regular payments: cash, card, transfer
+                payment = Payment(
                     customer_id=sale.customer_id,
-                    credit_amount=credit_used,
                     sale_id=sale.id,
-                    user_id=current_user.id,
-                    notes=f"Credit applied to sale {sale.invoice_number}",
+                    amount=payment_amount,
+                    payment_method=payment_method,
+                    payment_type=PaymentType.payment.value,
+                    receipt_number=f"REC-{sale.invoice_number}",
+                    received_by_id=current_user.id,
+                    notes=f"Payment for sale {sale.invoice_number}",
                 )
-                logger.info(f"Credit usage processed successfully for sale {sale.id}")
-            except Exception as e:
-                logger.error(f"Failed to process credit usage: {e}")
-                db.rollback()
-                return HTMLResponse(
-                    f'<div class="alert alert-danger">Error processing credit payment: {str(e)}</div>',
-                    status_code=500,
+                db.add(payment)
+                db.flush()
+
+                # Record PAYMENT transaction
+                try:
+                    customer_account_service.record_payment(
+                        db, payment, current_user.id
+                    )
+                    logger.info(
+                        f"Recorded PAYMENT transaction: ${payment_amount} for sale {sale.invoice_number}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to record payment transaction: {e}")
+                    db.rollback()
+                    return HTMLResponse(
+                        f'<div class="alert alert-danger">Error recording payment: {str(e)}</div>',
+                        status_code=500,
+                    )
+
+        # Handle credit payments (account_credit or mixed with credit)
+        if sale.customer_id and payment_method in ["account_credit", "mixed"]:
+            from app.services.customer_account_service import customer_account_service
+
+            credit_to_apply = Decimal("0")
+
+            if payment_method == "account_credit":
+                # Full credit payment
+                credit_to_apply = (
+                    min(amount_paid, sale.total_amount)
+                    if amount_paid
+                    else sale.total_amount
+                )
+            elif (
+                payment_method == "mixed"
+                and mixed_credit_amount
+                and mixed_credit_amount.strip()
+            ):
+                # Mixed payment with credit portion
+                credit_to_apply = Decimal(mixed_credit_amount)
+
+            if credit_to_apply > 0:
+                logger.info(
+                    f"Applying credit: ${credit_to_apply} for customer {sale.customer_id}"
                 )
 
-        # Handle mixed payment with credit
-        elif (
-            payment_method == "mixed"
-            and mixed_credit_amount
-            and mixed_credit_amount.strip()
-            and sale.customer_id
-        ):
-            credit_used = Decimal(mixed_credit_amount)
-            logger.info(
-                f"Processing mixed payment credit usage: ${credit_used} for customer {sale.customer_id}"
-            )
+                try:
+                    # Apply credit (creates CREDIT_APPLICATION transaction)
+                    customer_account_service.apply_credit(
+                        db=db,
+                        customer_id=sale.customer_id,
+                        amount=credit_to_apply,
+                        sale_id=sale.id,
+                        created_by_id=current_user.id,
+                        notes=f"Credit applied to sale {sale.invoice_number}",
+                    )
+                    logger.info(
+                        f"Credit application processed successfully for sale {sale.id}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to apply credit: {e}")
+                    db.rollback()
+                    return HTMLResponse(
+                        f'<div class="alert alert-danger">Error applying credit: {str(e)}</div>',
+                        status_code=500,
+                    )
 
-            # Apply customer credit using the payment service
-            from app.services.payment_service import PaymentService
+            # For mixed payments, also create Payment for non-credit portion
+            if payment_method == "mixed" and amount_paid and amount_paid > 0:
+                from app.models.payment import Payment, PaymentType
 
-            payment_service = PaymentService()
-
-            try:
-                payment_service.apply_customer_credit(
-                    db=db,
+                payment = Payment(
                     customer_id=sale.customer_id,
-                    credit_amount=credit_used,
                     sale_id=sale.id,
-                    user_id=current_user.id,
-                    notes=f"Credit portion applied to mixed payment for sale {sale.invoice_number}",
+                    amount=amount_paid,
+                    payment_method="mixed",
+                    payment_type=PaymentType.payment.value,
+                    receipt_number=f"REC-{sale.invoice_number}",
+                    received_by_id=current_user.id,
+                    notes=f"Mixed payment (non-credit portion) for sale {sale.invoice_number}",
                 )
-                logger.info(
-                    f"Mixed payment credit usage processed successfully for sale {sale.id}"
-                )
-            except Exception as e:
-                logger.error(f"Failed to process mixed payment credit usage: {e}")
-                db.rollback()
-                return HTMLResponse(
-                    f'<div class="alert alert-danger">Error processing credit payment: {str(e)}</div>',
-                    status_code=500,
-                )
+                db.add(payment)
+                db.flush()
 
-        # If this sale was for a repair, update the repair with the sale_id
-        if repair_id_to_invoice:
-            from app.models.repair import Repair
+                # Record PAYMENT transaction for non-credit portion
+                try:
+                    customer_account_service.record_payment(
+                        db, payment, current_user.id
+                    )
+                    logger.info(
+                        f"Recorded mixed PAYMENT transaction: ${amount_paid} for sale {sale.invoice_number}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to record mixed payment transaction: {e}")
+                    db.rollback()
+                    return HTMLResponse(
+                        f'<div class="alert alert-danger">Error recording payment: {str(e)}</div>',
+                        status_code=500,
+                    )
 
-            repair = db.query(Repair).filter(Repair.id == repair_id_to_invoice).first()
-            if repair and not repair.sale_id:
-                repair.sale_id = sale.id
-                db.add(repair)
-                db.commit()
-                logger.info(
-                    f"Updated repair {repair_id_to_invoice} with sale_id {sale.id}"
-                )
+        # Commit all payment transactions
+        db.commit()
+        db.refresh(sale)
+
+        # If this sale was for repairs, complete the delivery process
+        if repair_ids_to_invoice:
+            from app.services.repair_service import repair_service
+
+            for repair_id in repair_ids_to_invoice:
+                try:
+                    repair_service.complete_sale_delivery(
+                        db=db,
+                        repair_id=repair_id,
+                        sale_id=sale.id,
+                        user_id=current_user.id,
+                    )
+                    logger.info(
+                        f"Completed delivery of repair {repair_id} through sale {sale.id}"
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to complete repair {repair_id} delivery: {e}")
+                    # Continue with other repairs even if one fails
 
         # Redirect to receipt
         return HTMLResponse(

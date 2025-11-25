@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Account: {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <nav class="flex mb-4" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/customers" class="text-gray-700 hover:text-gray-900">
+                        Customers
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <a href="/customers/{{ customer.id }}" class="ml-1 text-gray-700 hover:text-gray-900">
+                            {{ customer.name }}
+                        </a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="ml-1 text-gray-500">Account</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+
+        <h1 class="text-3xl font-bold text-gray-900">Customer Account</h1>
+    </div>
+
+    <!-- Customer Info Card -->
+    <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Customer Information</h2>
+        </div>
+        <div class="p-6">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Name</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ customer.name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Phone</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ customer.phone }}</dd>
+                </div>
+                {% if customer.email %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Email</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ customer.email }}</dd>
+                </div>
+                {% endif %}
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Account Status</dt>
+                    <dd class="mt-1">
+                        {% if account_status == "debt" %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Has Debt
+                        </span>
+                        {% elif account_status == "credit" %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Has Credit
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Settled
+                        </span>
+                        {% endif %}
+                    </dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Account Summary Card -->
+    <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Account Summary</h2>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Current Balance -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Current Balance</dt>
+                    <dd class="mt-2 text-2xl font-bold {% if account.account_balance > 0 %}text-red-600{% elif account.account_balance < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                        ${{ "{:,.2f}".format(account.account_balance|abs) }}
+                    </dd>
+                    <dd class="mt-1 text-xs text-gray-500">
+                        {% if account.account_balance > 0 %}
+                        Customer owes
+                        {% elif account.account_balance < 0 %}
+                        Customer has credit
+                        {% else %}
+                        Account settled
+                        {% endif %}
+                    </dd>
+                </div>
+
+                <!-- Credit Limit -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Credit Limit</dt>
+                    <dd class="mt-2 text-2xl font-bold text-gray-900">
+                        ${{ "{:,.2f}".format(account.credit_limit) }}
+                    </dd>
+                    <dd class="mt-1 text-xs text-gray-500">
+                        Available: ${{ "{:,.2f}".format(account.remaining_credit_limit) }}
+                    </dd>
+                </div>
+
+                <!-- Total Sales -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Total Sales</dt>
+                    <dd class="mt-2 text-2xl font-bold text-gray-900">
+                        ${{ "{:,.2f}".format(account.total_sales) }}
+                    </dd>
+                    <dd class="mt-1 text-xs text-gray-500">
+                        Lifetime value
+                    </dd>
+                </div>
+
+                <!-- Total Payments -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <dt class="text-sm font-medium text-gray-500">Total Payments</dt>
+                    <dd class="mt-2 text-2xl font-bold text-gray-900">
+                        ${{ "{:,.2f}".format(account.total_payments) }}
+                    </dd>
+                    <dd class="mt-1 text-xs text-gray-500">
+                        {% if account.last_payment_date %}
+                        Last: {{ account.last_payment_date | local_date('%b %d, %Y') }}
+                        {% else %}
+                        No payments yet
+                        {% endif %}
+                    </dd>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white shadow rounded-lg mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Actions</h2>
+        </div>
+        <div class="p-6">
+            <div class="flex flex-wrap gap-3">
+                <a href="/customers/{{ customer.id }}/transactions"
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    View All Transactions
+                </a>
+                <a href="/customers/{{ customer.id }}/statement"
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+                    Generate Statement
+                </a>
+                {% if account.has_credit %}
+                <button type="button"
+                        onclick="showCreditApplicationModal()"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                    Apply Credit to Sale
+                </button>
+                {% endif %}
+                <button type="button"
+                        onclick="showCreditLimitModal()"
+                        class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
+                    Update Credit Limit
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900">Recent Transactions</h2>
+                <a href="/customers/{{ customer.id }}/transactions" class="text-sm text-blue-600 hover:text-blue-500">
+                    View all
+                </a>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ transaction.transaction_date | local_date('%b %d, %Y') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            {% if transaction.transaction_type.value == "sale" %}
+                            <span class="text-red-600">Sale</span>
+                            {% elif transaction.transaction_type.value == "payment" %}
+                            <span class="text-green-600">Payment</span>
+                            {% elif transaction.transaction_type.value == "credit_application" %}
+                            <span class="text-blue-600">Credit Applied</span>
+                            {% else %}
+                            <span class="text-gray-600">{{ transaction.transaction_type.value|title|replace("_", " ") }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ transaction.description }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right {% if transaction.is_debit %}text-red-600{% else %}text-green-600{% endif %}">
+                            {% if transaction.is_debit %}+{% else %}-{% endif %}${{ "{:,.2f}".format(transaction.amount) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium {% if transaction.balance_after > 0 %}text-red-600{% elif transaction.balance_after < 0 %}text-green-600{% else %}text-gray-900{% endif %}">
+                            ${{ "{:,.2f}".format(transaction.balance_after|abs) }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            No transactions found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Credit Limit Modal -->
+<div id="creditLimitModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Update Credit Limit</h3>
+        <form hx-put="/accounts/{{ account.id }}/credit-limit"
+              hx-target="#creditLimitResult"
+              hx-swap="innerHTML">
+            <div class="mb-4">
+                <label for="credit_limit" class="block text-sm font-medium text-gray-700">New Credit Limit</label>
+                <input type="number"
+                       name="credit_limit"
+                       id="credit_limit"
+                       step="0.01"
+                       value="{{ account.credit_limit }}"
+                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       required>
+            </div>
+            <div id="creditLimitResult" class="mb-4"></div>
+            <div class="flex justify-end space-x-3">
+                <button type="button"
+                        onclick="hideCreditLimitModal()"
+                        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                    Update
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showCreditLimitModal() {
+    document.getElementById('creditLimitModal').classList.remove('hidden');
+}
+
+function hideCreditLimitModal() {
+    document.getElementById('creditLimitModal').classList.add('hidden');
+}
+
+// Close modal on success
+document.body.addEventListener('htmx:afterSwap', function(evt) {
+    if (evt.detail.target.id === 'creditLimitResult' && evt.detail.xhr.status === 200) {
+        setTimeout(() => {
+            hideCreditLimitModal();
+            location.reload();
+        }, 1500);
+    }
+});
+</script>
+
+{% endblock %}

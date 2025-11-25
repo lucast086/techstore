@@ -1,6 +1,6 @@
 """CRUD operations for repair management."""
 
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from typing import Optional
 
@@ -21,6 +21,7 @@ from app.schemas.repair import (
     RepairStatusUpdate,
     RepairUpdate,
 )
+from app.utils.timezone import get_local_today, get_utc_now
 
 
 class RepairCRUD:
@@ -28,7 +29,7 @@ class RepairCRUD:
 
     def generate_repair_number(self, db: Session) -> str:
         """Generate unique repair number."""
-        current_year = datetime.now().year
+        current_year = get_utc_now().year
 
         # Get the last repair number for current year
         last_repair = (
@@ -214,10 +215,26 @@ class RepairCRUD:
         diagnosis: RepairDiagnosis,
         user_id: int,
     ) -> Optional[Repair]:
-        """Add diagnosis to repair."""
+        """Add or update diagnosis for repair.
+
+        If diagnosis is edited after customer approval, the repair will be
+        reverted to 'diagnosing' status and customer approval will be removed.
+        This allows technicians to update diagnosis at any time (except when
+        repair is in 'ready' or 'delivered' status).
+        """
         repair = self.get_repair(db, repair_id)
         if not repair:
             return None
+
+        # Check if diagnosis was already set (this is an edit)
+        is_edit = repair.diagnosis_notes is not None
+
+        # Check if repair was previously approved
+        was_approved = repair.customer_approved and repair.status in [
+            RepairStatus.APPROVED.value,
+            RepairStatus.REPAIRING.value,
+            RepairStatus.TESTING.value,
+        ]
 
         # Update repair with diagnosis
         repair.diagnosis_notes = diagnosis.diagnosis_notes
@@ -237,13 +254,26 @@ class RepairCRUD:
                 )
                 db.add(part)
 
-        # Update status to diagnosing
+        # Handle status updates based on current state
         if repair.status == RepairStatus.RECEIVED.value:
+            # First diagnosis - move to diagnosing
             repair.status = RepairStatus.DIAGNOSING.value
             status_history = RepairStatusHistory(
                 repair_id=repair_id,
                 status=RepairStatus.DIAGNOSING.value,
                 notes="Diagnosis added",
+                changed_by=user_id,
+            )
+            db.add(status_history)
+        elif is_edit and was_approved:
+            # Diagnosis edited after approval - revert to diagnosing and remove approval
+            repair.status = RepairStatus.DIAGNOSING.value
+            repair.customer_approved = False
+            repair.approval_date = None
+            status_history = RepairStatusHistory(
+                repair_id=repair_id,
+                status=RepairStatus.DIAGNOSING.value,
+                notes="Diagnosis updated - customer approval reset",
                 changed_by=user_id,
             )
             db.add(status_history)
@@ -286,7 +316,7 @@ class RepairCRUD:
         # Handle specific status changes
         if status_update.status == RepairStatus.APPROVED:
             repair.customer_approved = True
-            repair.approval_date = datetime.utcnow()
+            repair.approval_date = get_utc_now()
 
         db.commit()
         db.refresh(repair)
@@ -314,11 +344,11 @@ class RepairCRUD:
         repair.final_cost = completion.final_cost
         repair.repair_notes = completion.repair_notes
         repair.warranty_days = completion.warranty_days
-        repair.completed_date = datetime.utcnow()
+        repair.completed_date = get_utc_now()
         repair.status = RepairStatus.READY
 
         # Calculate warranty expiration
-        repair.warranty_expires = date.today() + timedelta(
+        repair.warranty_expires = get_local_today() + timedelta(
             days=completion.warranty_days
         )
 
@@ -342,7 +372,7 @@ class RepairCRUD:
         repair_id: int,
         delivery: RepairDeliver,
     ) -> Optional[Repair]:
-        """Mark repair as delivered."""
+        """Mark repair as delivered and create associated sale."""
         repair = self.get_repair(db, repair_id)
         if not repair:
             return None
@@ -350,8 +380,93 @@ class RepairCRUD:
         if repair.status != RepairStatus.READY:
             raise ValueError("Repair must be ready for delivery")
 
-        # Update repair
-        repair.delivered_date = datetime.utcnow()
+        # Ensure repair has a final cost
+        if not repair.final_cost or repair.final_cost <= 0:
+            raise ValueError("Repair must have a final cost before delivery")
+
+        # Get or create repair service product
+        from app.models.product import Product
+
+        repair_product = (
+            db.query(Product)
+            .filter(Product.sku == "REPAIR-SERVICE", Product.is_service == True)
+            .first()
+        )
+
+        if not repair_product:
+            raise ValueError(
+                "Repair service product (SKU: REPAIR-SERVICE) not found. "
+                "Please create a service product for repairs."
+            )
+
+        # Check customer credit
+        from app.services.customer_account_service import customer_account_service
+
+        has_credit = False
+        available_credit = Decimal("0.00")
+        if repair.customer_id:
+            (
+                has_credit,
+                available_credit,
+                _,
+            ) = customer_account_service.check_credit_availability(
+                db, repair.customer_id
+            )
+
+        # Calculate how much credit to apply
+        credit_to_apply = (
+            min(available_credit, repair.final_cost) if has_credit else Decimal("0.00")
+        )
+
+        # Create sale with amount_paid=0 initially
+        # We'll apply credit separately to properly track it
+        from app.crud.sale import sale_crud
+        from app.schemas.sale import SaleCreate, SaleItemCreate
+
+        sale_data = SaleCreate(
+            customer_id=repair.customer_id,
+            # Use account_credit if there's any credit to apply, not just if it covers full amount
+            payment_method="account_credit" if credit_to_apply > 0 else "cash",
+            items=[
+                SaleItemCreate(
+                    product_id=repair_product.id,
+                    quantity=1,
+                    unit_price=repair.final_cost,
+                    discount_percentage=Decimal("0.00"),
+                    discount_amount=Decimal("0.00"),
+                )
+            ],
+            discount_amount=Decimal("0.00"),
+            notes=f"Repair delivery: {repair.repair_number} - {repair.device_brand} {repair.device_model or ''}",
+            amount_paid=Decimal("0.00"),  # Start with 0, apply credit after
+        )
+
+        sale = sale_crud.create_sale(
+            db=db, sale_in=sale_data, user_id=delivery.delivered_by
+        )
+
+        # Apply credit if available
+        if credit_to_apply > 0:
+            customer_account_service.apply_credit(
+                db=db,
+                customer_id=repair.customer_id,
+                amount=credit_to_apply,
+                sale_id=sale.id,
+                created_by_id=delivery.delivered_by,
+                notes=f"Credit applied to repair {repair.repair_number}",
+            )
+
+            # Update sale with credit applied
+            sale.paid_amount = credit_to_apply
+            if credit_to_apply >= sale.total_amount:
+                sale.payment_status = "paid"
+            else:
+                sale.payment_status = "partial"
+            db.add(sale)
+
+        # Update repair with sale reference
+        repair.sale_id = sale.id
+        repair.delivered_date = get_utc_now()
         repair.delivered_by = delivery.delivered_by
         repair.status = RepairStatus.DELIVERED
 

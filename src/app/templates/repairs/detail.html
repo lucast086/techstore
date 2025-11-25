@@ -87,11 +87,14 @@
             <div class="bg-white rounded-lg shadow-md p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-900">Diagnóstico</h2>
-                    {% if repair.status == 'received' or repair.status == 'diagnosing' %}
+                    {% if repair.status not in ['ready', 'delivered', 'cancelled'] %}
                     <button onclick="showDiagnosisForm()"
                             class="text-primary-600 hover:text-primary-700 text-sm font-medium">
                         {% if repair.diagnosis_notes %}Editar{% else %}Agregar{% endif %} Diagnóstico
                     </button>
+                    {% if repair.customer_approved and repair.diagnosis_notes %}
+                    <p class="text-xs text-amber-600 mt-1">⚠️ Editar revertirá la aprobación del cliente</p>
+                    {% endif %}
                     {% endif %}
                 </div>
 
@@ -197,7 +200,7 @@
                             <p class="text-sm text-gray-600 mt-1">{{ history.notes }}</p>
                             {% endif %}
                             <p class="text-xs text-gray-500 mt-1">
-                                {{ history.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {{ history.created_at | local_datetime }}
                                 {% if history.user_name %}
                                 por {{ history.user_name }}
                                 {% endif %}
@@ -217,6 +220,18 @@
 
                 <!-- Error message area -->
                 <div id="status-error-message"></div>
+
+                <!-- Sale Invoice Info -->
+                {% if repair.sale_id %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-green-800">
+                        <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Facturado en venta #{{ repair.sale_id }}
+                    </p>
+                </div>
+                {% endif %}
 
                 <!-- Actualizar Estado -->
                 {% if repair.status not in ['delivered', 'cancelled'] %}
@@ -275,24 +290,24 @@
                 <dl class="space-y-3">
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Fecha de Recepción</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ repair.received_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.received_date | local_datetime }}</dd>
                     </div>
                     {% if repair.estimated_completion %}
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Finalización Estimada</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ repair.estimated_completion.strftime('%Y-%m-%d') }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.estimated_completion | local_date }}</dd>
                     </div>
                     {% endif %}
                     {% if repair.completed_date %}
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Fecha de Finalización</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ repair.completed_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.completed_date | local_datetime }}</dd>
                     </div>
                     {% endif %}
                     {% if repair.delivered_date %}
                     <div>
                         <dt class="text-sm font-medium text-gray-500">Fecha de Entrega</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ repair.delivered_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ repair.delivered_date | local_datetime }}</dd>
                     </div>
                     {% endif %}
                     <div>
@@ -300,7 +315,7 @@
                         <dd class="mt-1 text-sm text-gray-900">
                             {{ repair.warranty_days }} días
                             {% if repair.warranty_expires %}
-                            <span class="text-xs text-gray-500">(vence {{ repair.warranty_expires.strftime('%Y-%m-%d') }})</span>
+                            <span class="text-xs text-gray-500">(vence {{ repair.warranty_expires | local_date }})</span>
                             {% endif %}
                         </dd>
                     </div>

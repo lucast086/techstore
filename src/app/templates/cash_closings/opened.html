@@ -17,7 +17,7 @@
           Registro de Caja Apertura Exitosamente
         </h3>
         <div class="mt-2 text-sm text-green-700">
-          <p>El registro de caja ha sido abierto para {{ opening.closing_date.strftime('%B %d, %Y') }}</p>
+          <p>The cash register has been opened for {{ opening.closing_date | local_date('%B %d, %Y') }}</p>
         </div>
       </div>
     </div>
@@ -29,8 +29,8 @@
 
     <div class="space-y-3">
       <div class="flex justify-between items-center py-2 border-b border-gray-100">
-        <span class="text-sm font-medium text-gray-600">Hora de Apertura:</span>
-        <span class="text-sm text-gray-900">{{ opening.opened_at.strftime('%I:%M %p') if opening.opened_at else 'Now' }}</span>
+        <span class="text-sm font-medium text-gray-600">Opening Time:</span>
+        <span class="text-sm text-gray-900">{{ opening.opened_at | local_time('%I:%M %p') if opening.opened_at else 'Now' }}</span>
       </div>
 
       <div class="flex justify-between items-center py-2 border-b border-gray-100">

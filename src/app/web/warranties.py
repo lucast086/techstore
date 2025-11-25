@@ -5,7 +5,6 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
@@ -17,9 +16,10 @@ from app.schemas.warranty import (
     WarrantyVoid,
 )
 from app.services.warranty_service import warranty_service
+from app.utils.templates import create_templates
 
 router = APIRouter(prefix="/warranties", tags=["warranties"])
-templates = Jinja2Templates(directory="src/app/templates")
+templates = create_templates()
 logger = logging.getLogger(__name__)
 
 

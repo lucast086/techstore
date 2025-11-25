@@ -157,7 +157,7 @@ Profile{% endblock %} {% block content %}
             <div>
               <dt class="text-sm font-medium text-gray-500">Customer Since</dt>
               <dd class="mt-1 text-sm text-gray-900">
-                {{ customer.created_at.strftime('%B %d, %Y') }}
+                {{ customer.created_at | local_date('%B %d, %Y') }}
               </dd>
             </div>
             <div>
@@ -200,7 +200,7 @@ Profile{% endblock %} {% block content %}
             {% if balance_info.has_debt %}
             <p class="text-sm text-gray-500 mb-2">Cliente debe</p>
             <p class="text-4xl font-bold text-red-600">
-              ${{ "{:,.2f}".format(-balance_info.current_balance) }}
+              ${{ "{:,.2f}".format(balance_info.current_balance) }}
             </p>
             <div class="mt-4">
               <a
@@ -214,7 +214,7 @@ Profile{% endblock %} {% block content %}
             {% elif balance_info.has_credit %}
             <p class="text-sm text-gray-500 mb-2">Cliente tiene credito</p>
             <p class="text-4xl font-bold text-green-600">
-              ${{ "{:,.2f}".format(balance_info.current_balance) }}
+              ${{ "{:,.2f}".format(-balance_info.current_balance) }}
             </p>
             {% else %}
             <p class="text-sm text-gray-500 mb-2">Balance Actual</p>
@@ -279,7 +279,7 @@ Profile{% endblock %} {% block content %}
                       }} {% endif %}
                     </div>
                     <div class="text-sm text-gray-500">
-                      {{ transaction.date.strftime('%B %d, %Y at %I:%M %p') }}
+                      {{ transaction.date | local_datetime('%B %d, %Y at %I:%M %p') }}
                     </div>
                     {% if transaction.reference_number %}
                     <div class="text-xs text-gray-400">
@@ -300,10 +300,12 @@ Profile{% endblock %} {% block content %}
                   {% endif %} {% if transaction.get('running_balance') is not
                   none %}
                   <p class="text-xs text-gray-500">
-                    Balance: ${{
-                    "{:,.2f}".format(-transaction.running_balance) if
-                    transaction.running_balance < 0 else
-                    "{:,.2f}".format(transaction.running_balance) }}
+                    Balance: ${{ "{:,.2f}".format(transaction.running_balance|abs) }}
+                    {% if transaction.running_balance > 0 %}
+                    (deuda)
+                    {% elif transaction.running_balance < 0 %}
+                    (crédito)
+                    {% endif %}
                   </p>
                   {% endif %}
                 </div>

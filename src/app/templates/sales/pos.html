@@ -74,6 +74,62 @@ block content %}
         </div>
       </div>
 
+      <!-- Búsqueda de Reparaciones -->
+      <div class="bg-white rounded-lg shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h5 class="text-lg font-semibold text-gray-900">Agregar Reparación</h5>
+        </div>
+        <div class="p-6">
+          <div class="relative">
+            <input
+              type="text"
+              name="repair_q"
+              class="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              id="repair-search"
+              placeholder="Buscar por número de reparación o cliente..."
+              hx-get="/sales/pos/repairs/search"
+              hx-trigger="keyup changed delay:300ms"
+              hx-target="#repair-search-results"
+              hx-indicator="#repair-search-spinner"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <svg
+                class="w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              <span id="repair-search-spinner" class="htmx-indicator ml-2">
+                <svg
+                  class="animate-spin h-4 w-4 text-blue-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div id="repair-search-results" class="mt-4"></div>
+        </div>
+      </div>
+
       <!-- Carrito de Compras -->
       <div class="bg-white rounded-lg shadow">
         <div
@@ -109,6 +165,7 @@ block content %}
             hx-swap="innerHTML"
             hx-on::after-request="if(event.detail.failed) { document.getElementById('checkout-result').scrollIntoView({behavior: 'smooth', block: 'center'}); }"
             hx-on::before-request="document.getElementById('checkout-result').innerHTML = '';"
+            onkeydown="return event.key != 'Enter';"
           >
             <div id="cart-items" class="space-y-2 mb-4 min-h-[100px]">
               <!-- Los artículos del carrito se agregarán aquí -->
@@ -189,6 +246,17 @@ block content %}
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
               </button>
+            </div>
+            <!-- Customer Account Info -->
+            <div id="customer-account-info" class="mt-2 p-3 bg-gray-50 rounded-lg" style="display: none;">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-medium text-gray-600">Estado de Cuenta:</span>
+                <span id="account-status" class="text-sm font-semibold">-</span>
+              </div>
+              <div id="credit-available-info" class="mt-1" style="display: none;">
+                <span class="text-xs text-green-600">Crédito Disponible: </span>
+                <span id="credit-amount-display" class="text-sm font-semibold text-green-600">$0.00</span>
+              </div>
             </div>
           </div>
 
@@ -554,24 +622,24 @@ block content %}
     }
   }
 
-  function updateItemPrice(productId, newPrice) {
-    // Convert productId to match the type in cart (could be string or number)
-    const item = cart.find((item) => String(item.productId) === String(productId));
+  function updatePrice(productId, newPrice) {
+    const item = cart.find((item) => item.productId === productId);
     if (item) {
       const price = parseFloat(newPrice);
-      if (!isNaN(price) && price >= 0) {
-        // Guardar el precio original si no lo hemos hecho ya
-        if (!item.originalPrice) {
-          item.originalPrice = item.price;
-        }
-        item.price = price;
-        // Marcar si es un precio personalizado (diferente al original)
-        item.isCustomPrice = (Math.abs(price - item.originalPrice) > 0.001);
-        updateCartDisplay();
-      } else {
-        alert('El precio debe ser mayor o igual a 0');
+      if (price < 0) {
+        alert('El precio no puede ser negativo');
         document.getElementById(`price-${productId}`).value = item.price.toFixed(2);
+        return;
       }
+      if (isNaN(price)) {
+        alert('Por favor ingrese un precio válido');
+        document.getElementById(`price-${productId}`).value = item.price.toFixed(2);
+        return;
+      }
+      console.log('Updating price for product', productId, 'from', item.price, 'to', price);
+      item.price = price;
+      console.log('Cart after price update:', cart);
+      updateCartDisplay();
     }
   }
 
@@ -621,22 +689,21 @@ block content %}
                         max="${item.stock}"
                         class="w-16 px-2 py-1 text-center border border-gray-300 rounded"
                         form="checkout-form"
-                        onchange="updateQuantity('${item.productId}', this.value)"
+                        onchange="updateQuantity(${item.productId}, this.value)"
                     >
                 </td>
                 <td class="text-center">
-                    <div class="relative inline-block">
+                    <div class="flex items-center justify-center gap-1">
+                        <span class="text-gray-500">$</span>
                         <input
                             type="number"
                             id="price-${item.productId}"
                             value="${item.price.toFixed(2)}"
                             min="0"
                             step="0.01"
-                            class="w-20 px-2 py-1 text-center border ${item.isCustomPrice ? 'border-yellow-500 bg-yellow-50' : 'border-gray-300'} rounded"
-                            onchange="updateItemPrice('${item.productId}', this.value)"
-                            title="${item.isCustomPrice ? 'Precio personalizado (Original: $' + item.originalPrice.toFixed(2) + ')' : 'Haz clic para editar el precio'}"
+                            class="w-20 px-2 py-1 text-center border border-gray-300 rounded"
+                            onchange="updatePrice(${item.productId}, this.value)"
                         >
-                        ${item.isCustomPrice ? '<span class="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center" title="Precio personalizado">✎</span>' : ''}
                     </div>
                 </td>
                 <td class="text-right">$${(item.price * item.quantity).toFixed(
@@ -645,7 +712,7 @@ block content %}
                 <td class="text-center">
                     <button
                         type="button"
-                        onclick="removeFromCart('${item.productId}')"
+                        onclick="removeFromCart(${item.productId})"
                         class="text-red-600 hover:text-red-700"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -766,8 +833,9 @@ block content %}
       changeElement.textContent = `$${change.toFixed(2)}`;
       changeElement.className = "text-lg font-semibold text-green-600";
     } else {
-      changeElement.textContent = `-$${Math.abs(change).toFixed(2)}`;
-      changeElement.className = "text-lg font-semibold text-red-600";
+      // When amount received is less than total, show $0.00 (can't return negative change)
+      changeElement.textContent = "$0.00";
+      changeElement.className = "text-lg font-semibold text-gray-600";
     }
   }
 
@@ -948,32 +1016,61 @@ block content %}
         })
         .then(data => {
           console.log('Balance data received:', data);
-          // Ensure balance is a number
-          customerCreditBalance = parseFloat(data.balance) || 0;
+
+          // Show customer account info
+          document.getElementById('customer-account-info').style.display = 'block';
+
+          // Update account status display
+          const accountStatus = document.getElementById('account-status');
+          if (data.has_debt) {
+            accountStatus.textContent = data.formatted;
+            accountStatus.className = 'text-sm font-semibold text-red-600';
+          } else if (data.has_credit) {
+            accountStatus.textContent = data.formatted;
+            accountStatus.className = 'text-sm font-semibold text-green-600';
+          } else {
+            accountStatus.textContent = 'Sin saldo';
+            accountStatus.className = 'text-sm font-semibold text-gray-600';
+          }
+
+          // Handle credit availability - using available_credit from the new system
+          customerCreditBalance = parseFloat(data.available_credit) || 0;
           console.log('Set customerCreditBalance to:', customerCreditBalance);
 
-          if (data.has_credit && data.balance > 0) {
+          if (data.has_credit && customerCreditBalance > 0) {
+            // Show credit info
+            document.getElementById('credit-available-info').style.display = 'block';
+            document.getElementById('credit-amount-display').textContent = `$${customerCreditBalance.toFixed(2)}`;
             // Show credit option in payment method dropdown
             document.getElementById('credit-option').style.display = 'block';
-            document.getElementById('available-credit').textContent = `$${data.balance.toFixed(2)}`;
-            document.getElementById('max-credit-text').textContent = `$${data.balance.toFixed(2)}`;
+            document.getElementById('available-credit').textContent = `$${customerCreditBalance.toFixed(2)}`;
+            document.getElementById('max-credit-text').textContent = `$${customerCreditBalance.toFixed(2)}`;
 
             // Set max value for credit input
             const creditInput = document.getElementById('credit_amount');
             if (creditInput) {
-              creditInput.max = data.balance;
-              creditInput.setAttribute('max', data.balance);
-              console.log('Set credit input max to:', data.balance);
+              creditInput.max = customerCreditBalance;
+              creditInput.setAttribute('max', customerCreditBalance);
+              console.log('Set credit input max to:', customerCreditBalance);
             }
 
             // Actualizar mixed payment credit display if needed
             if (document.getElementById('payment_method').value === 'mixed') {
               document.getElementById('mixed-credit-section').style.display = 'flex';
-              document.getElementById('mixed-available-credit').textContent = `$${data.balance.toFixed(2)}`;
-              document.getElementById('mixed_credit_amount').max = data.balance;
+              document.getElementById('mixed-available-credit').textContent = `$${customerCreditBalance.toFixed(2)}`;
+              document.getElementById('mixed_credit_amount').max = customerCreditBalance;
+              // Pre-fill credit in mixed payment up to cart total
+              const cartTotal = parseFloat(document.getElementById('cart-total').textContent.replace('$', '')) || 0;
+              const suggestedCredit = Math.min(customerCreditBalance, cartTotal);
+              document.getElementById('mixed_credit_amount').value = suggestedCredit.toFixed(2);
+              updateMixedTotal();
             }
+
+            // Show credit suggestion notification
+            showCreditSuggestion(customerCreditBalance);
           } else {
-            // Hide credit option if no credit available
+            // Hide credit options if no credit available
+            document.getElementById('credit-available-info').style.display = 'none';
             document.getElementById('credit-option').style.display = 'none';
             customerCreditBalance = 0;
 
@@ -996,6 +1093,9 @@ block content %}
     document.getElementById('selected-customer-id').value = '';
     document.getElementById('selected-customer-name').textContent = 'Cliente de Mostrador';
     document.getElementById('clear-customer-btn').style.display = 'none';
+
+    // Hide customer account info
+    document.getElementById('customer-account-info').style.display = 'none';
 
     // Reset credit information
     customerCreditBalance = 0;
@@ -1069,6 +1169,26 @@ block content %}
         amountPaid = cartTotal;
         document.getElementById('credit_amount').value = cartTotal.toFixed(2);
       }
+
+      // Confirm credit usage
+      if (!window.creditConfirmed) {
+        event.preventDefault();
+        const customerName = document.getElementById('selected-customer-name').textContent || 'Cliente';
+        const confirmed = confirm(
+          `¿Confirmar uso de crédito?\n\n` +
+          `Cliente: ${customerName}\n` +
+          `Crédito disponible: $${customerCreditBalance.toFixed(2)}\n` +
+          `Crédito a usar: $${amountPaid.toFixed(2)}\n` +
+          `Total venta: $${cartTotal.toFixed(2)}`
+        );
+
+        if (confirmed) {
+          window.creditConfirmed = true;
+          // Re-submit the form
+          document.getElementById('checkout-form').requestSubmit();
+        }
+        return false;
+      }
     } else if (paymentMethod === 'mixed') {
       const cash = parseFloat(document.querySelector('input[name="cash_amount"]').value) || 0;
       const transfer = parseFloat(document.querySelector('input[name="transfer_amount"]').value) || 0;
@@ -1086,6 +1206,26 @@ block content %}
         if (credit > customerCreditBalance) {
           event.preventDefault();
           alert(`El cliente solo tiene $${customerCreditBalance.toFixed(2)} de crédito disponible`);
+          return false;
+        }
+
+        // Confirm credit usage for mixed payment
+        if (!window.creditConfirmed) {
+          event.preventDefault();
+          const customerName = document.getElementById('selected-customer-name').textContent || 'Cliente';
+          const confirmed = confirm(
+            `¿Confirmar uso de crédito en pago mixto?\n\n` +
+            `Cliente: ${customerName}\n` +
+            `Crédito disponible: $${customerCreditBalance.toFixed(2)}\n` +
+            `Crédito a usar: $${credit.toFixed(2)}\n` +
+            `Total venta: $${cartTotal.toFixed(2)}`
+          );
+
+          if (confirmed) {
+            window.creditConfirmed = true;
+            // Re-submit the form
+            document.getElementById('checkout-form').requestSubmit();
+          }
           return false;
         }
       }
@@ -1164,5 +1304,95 @@ block content %}
     }, 3000);
     {% endif %}
   });
+
+  // Show credit suggestion notification
+  function showCreditSuggestion(availableCredit) {
+    // Remove any existing credit suggestion
+    const existingSuggestion = document.getElementById('credit-suggestion-notification');
+    if (existingSuggestion) {
+      existingSuggestion.remove();
+    }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'credit-suggestion-notification';
+    notification.className = 'fixed top-20 right-4 bg-green-50 border-2 border-green-400 rounded-lg shadow-lg p-4 z-50 max-w-sm';
+    notification.innerHTML = `
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ml-3 flex-1">
+          <h3 class="text-sm font-semibold text-green-800">
+            Crédito Disponible
+          </h3>
+          <p class="mt-1 text-sm text-green-700">
+            Este cliente tiene <span class="font-bold">$${availableCredit.toFixed(2)}</span> de saldo a favor.
+          </p>
+          <div class="mt-3 flex gap-2">
+            <button
+              onclick="useCreditPayment()"
+              class="text-xs bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded"
+            >
+              Usar Saldo
+            </button>
+            <button
+              onclick="document.getElementById('payment_method').value='mixed'; togglePaymentFields();"
+              class="text-xs bg-green-100 hover:bg-green-200 text-green-800 font-medium py-1 px-3 rounded border border-green-400"
+            >
+              Pago Mixto
+            </button>
+            <button
+              onclick="dismissCreditSuggestion()"
+              class="text-xs text-green-600 hover:text-green-800 font-medium"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto-dismiss after 15 seconds
+    setTimeout(() => {
+      dismissCreditSuggestion();
+    }, 15000);
+  }
+
+  function useCreditPayment() {
+    document.getElementById('payment_method').value = 'account_credit';
+    togglePaymentFields();
+    dismissCreditSuggestion();
+  }
+
+  function dismissCreditSuggestion() {
+    const notification = document.getElementById('credit-suggestion-notification');
+    if (notification) {
+      notification.style.transition = 'opacity 0.3s ease-out';
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 300);
+    }
+  }
+
+  // Handle credit confirmation
+  window.creditConfirmed = false;
+
+  window.addEventListener('credit-confirmed', function(event) {
+    window.creditConfirmed = true;
+    // Re-submit the form after confirmation
+    document.getElementById('checkout-form').requestSubmit();
+  });
+
+  // Reset confirmation status when payment method changes
+  document.getElementById('payment_method').addEventListener('change', function() {
+    window.creditConfirmed = false;
+  });
 </script>
+
+<!-- Include Credit Confirmation Modal -->
+{% include "components/credit_confirmation_modal.html" %}
 {% endblock %}

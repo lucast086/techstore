@@ -76,6 +76,17 @@ class PaymentService:
             if sale:
                 self.update_sale_payment_status(db, sale)
 
+        # Record payment in new customer account system
+        from app.services.customer_account_service import customer_account_service
+
+        try:
+            customer_account_service.record_payment(db, payment, user_id)
+            logger.info(
+                f"Payment recorded in customer account for customer {customer_id}"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to record payment in account system: {e}")
+
         logger.info(
             f"Payment processed: {payment.receipt_number} for customer {customer_id}"
         )
@@ -194,6 +205,9 @@ class PaymentService:
             payment.amount for payment in sale.payments if not payment.voided
         )
 
+        # Update paid_amount field
+        sale.paid_amount = total_paid
+
         if total_paid >= sale.total_amount:
             sale.payment_status = "paid"
         elif total_paid > 0:
@@ -203,7 +217,7 @@ class PaymentService:
 
         db.commit()
         logger.info(
-            f"Updated sale {sale.invoice_number} payment status to {sale.payment_status}"
+            f"Updated sale {sale.invoice_number} payment status to {sale.payment_status}, paid_amount: {sale.paid_amount}"
         )
 
     def apply_customer_credit(
@@ -231,13 +245,18 @@ class PaymentService:
         Raises:
             ValueError: If insufficient credit available.
         """
-        # Check available credit
-        balance_info = balance_service.get_balance_summary(db, customer_id)
-        available_credit = (
-            Decimal(str(balance_info["current_balance"]))
-            if balance_info["has_credit"]
-            else Decimal("0")
-        )
+        # Check available credit using customer account service
+        from app.services.customer_account_service import CustomerAccountService
+
+        account_service = CustomerAccountService()
+        (
+            has_credit,
+            available_credit,
+            message,
+        ) = account_service.check_credit_availability(db, customer_id)
+
+        if not has_credit:
+            raise ValueError(f"No credit available: {message}")
 
         if credit_amount > available_credit:
             raise ValueError(
@@ -274,9 +293,16 @@ class PaymentService:
         db.commit()
         # Note: Skip refresh to avoid SQLAlchemy enum caching issues
 
+        # Record the credit usage in the customer account system
+        try:
+            account_service.record_payment(db, payment, user_id)
+        except Exception as e:
+            logger.error(f"Failed to record credit usage in account system: {e}")
+            # Continue anyway since the payment was already created
+
         logger.info(
             f"Applied ${credit_amount} customer credit for customer {customer_id}, "
-            f"new balance calculation will be triggered by payment creation"
+            f"new balance updated in account system"
         )
 
         return payment

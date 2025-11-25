@@ -183,7 +183,8 @@ class DailySummary(BaseSchema):
 
     date: date
     total_sales: Decimal = Field(
-        default=Decimal("0.00"), description="Total sales for the day"
+        default=Decimal("0.00"),
+        description="Total sales for the day (includes repair invoices)",
     )
     total_expenses: Decimal = Field(
         default=Decimal("0.00"), description="Total expenses for the day"
@@ -191,6 +192,12 @@ class DailySummary(BaseSchema):
     sales_count: int = Field(default=0, description="Number of sales transactions")
     expenses_count: int = Field(default=0, description="Number of expense entries")
     has_closing: bool = Field(default=False, description="Whether day has been closed")
+    repairs_delivered_count: int = Field(
+        default=0, description="Number of repairs delivered today"
+    )
+    repairs_total: Decimal = Field(
+        default=Decimal("0.00"), description="Total value of repairs delivered today"
+    )
 
     # Payment method breakdown for sales
     sales_cash: Decimal = Field(default=Decimal("0.00"), description="Cash sales total")

@@ -49,6 +49,9 @@ htmlcov/
 *.swp
 *.swo
 
+# Claude Code local settings
+.claude/settings.local.json
+
 # Logs
 *.log
 logs/

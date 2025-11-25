@@ -1,7 +1,6 @@
 """Invoice service for generating and managing invoices."""
 
 import logging
-from datetime import datetime
 from decimal import Decimal
 from io import BytesIO
 from typing import Optional
@@ -20,6 +19,7 @@ from reportlab.platypus import (
 from sqlalchemy.orm import Session
 
 from app.models.sale import Sale
+from app.utils.timezone import format_local_datetime, get_local_now
 
 logger = logging.getLogger(__name__)
 
@@ -321,7 +321,7 @@ class InvoiceService:
         # Credit note info
         credit_amount = amount or sale.total_amount
         credit_info = [
-            ["Credit Note Date:", datetime.now().strftime("%Y-%m-%d %H:%M")],
+            ["Credit Note Date:", format_local_datetime(get_local_now())],
             ["Original Invoice:", sale.invoice_number],
             ["Original Date:", sale.sale_date.strftime("%Y-%m-%d")],
             ["Credit Amount:", f"${credit_amount:.2f}"],

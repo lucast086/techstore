@@ -125,10 +125,10 @@
                             {{ repair.technician_name or '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ repair.received_date.strftime('%Y-%m-%d') }}
+                            {{ repair.received_date | local_date }}
                             {% if repair.estimated_completion %}
                             <div class="text-xs text-gray-500">
-                                Vencimiento: {{ repair.estimated_completion.strftime('%Y-%m-%d') }}
+                                Due: {{ repair.estimated_completion | local_date }}
                             </div>
                             {% endif %}
                         </td>

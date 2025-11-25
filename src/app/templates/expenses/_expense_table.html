@@ -29,7 +29,7 @@
             {% for expense in expenses %}
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ expense.expense_date.strftime('%Y-%m-%d') }}
+                    {{ expense.expense_date | local_date('%Y-%m-%d') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ expense.category_name }}

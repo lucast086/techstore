@@ -1,13 +1,12 @@
 """Expense related models."""
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
     Boolean,
     Date,
-    DateTime,
     ForeignKey,
     Index,
     Integer,
@@ -17,13 +16,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base
+from app.models.base import BaseModel
 
 if TYPE_CHECKING:
     pass
 
 
-class ExpenseCategory(Base):
+class ExpenseCategory(BaseModel):
     """Model for expense categories."""
 
     __tablename__ = "expense_categories"
@@ -32,12 +31,6 @@ class ExpenseCategory(Base):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
 
     # Relationships
     expenses: Mapped[list["Expense"]] = relationship(
@@ -45,7 +38,7 @@ class ExpenseCategory(Base):
     )
 
 
-class Expense(Base):
+class Expense(BaseModel):
     """Model for business expenses."""
 
     __tablename__ = "expenses"
@@ -71,12 +64,6 @@ class Expense(Base):
         Integer, ForeignKey("users.id"), nullable=False
     )
     is_editable: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
 
     # Relationships
     category: Mapped["ExpenseCategory"] = relationship(
