@@ -17,6 +17,54 @@
     </div>
 
     <div class="px-4 py-6 sm:px-0">
+        <!-- Pending Cash Register Alert -->
+        {% if pending_register and pending_register.has_pending %}
+        <div id="pending-register-alert" class="mb-6 bg-red-50 border-2 border-red-500 rounded-lg shadow-lg">
+            <div class="p-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-bold text-red-900">
+                            🚨 CAJA PENDIENTE DE CIERRE
+                        </h3>
+                        <div class="mt-2 text-sm text-red-800">
+                            <p class="font-semibold">
+                                Caja del {{ pending_register.pending_date.strftime('%d/%m/%Y') }} sin cerrar
+                                ({{ pending_register.days_old }} día{% if pending_register.days_old > 1 %}s{% endif %} de atraso)
+                            </p>
+                            <p class="mt-2">
+                                ⚠️ Se recomienda cerrar la caja pendiente antes de continuar operando.
+                            </p>
+                            <p class="mt-1 text-xs">
+                                Las ventas que realices se registrarán en la caja del {{ pending_register.pending_date.strftime('%d/%m/%Y') }}.
+                            </p>
+                        </div>
+                        <div class="mt-4 flex gap-3">
+                            <a href="/cash-closings"
+                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Cerrar Ahora
+                            </a>
+                            <button
+                                hx-post="/dismiss-pending-register"
+                                hx-target="#pending-register-alert"
+                                hx-swap="outerHTML"
+                                class="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                Continuar de Todas Formas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
                 <h2 class="text-lg font-medium text-gray-900">Bienvenido a TechStore</h2>

@@ -79,6 +79,38 @@ def get_local_today() -> date:
     return local_now.date()
 
 
+def get_cash_register_business_day() -> date:
+    """Get current business day for cash register operations.
+
+    Business day uses a 4 AM cutoff: transactions before 4 AM are considered
+    part of the previous calendar day.
+
+    Examples:
+        - 2025-11-12 23:50 → Business day: 2025-11-12
+        - 2025-11-13 01:30 → Business day: 2025-11-12 (before 4 AM cutoff)
+        - 2025-11-13 04:30 → Business day: 2025-11-13 (after 4 AM cutoff)
+
+    This allows for:
+    - Night shifts to complete without day change issues
+    - Sales after midnight to be counted in the previous day's register
+    - Consistent cash register closing regardless of exact closing time
+
+    Returns:
+        Business day date for cash register operations.
+    """
+    from datetime import timedelta
+
+    CUTOFF_HOUR = 4  # 4 AM cutoff
+
+    local_now = get_local_now()
+
+    # If before cutoff hour, consider it previous calendar day
+    if local_now.hour < CUTOFF_HOUR:
+        return (local_now - timedelta(days=1)).date()
+
+    return local_now.date()
+
+
 def get_utc_now() -> datetime:
     """Get current time in UTC.
 

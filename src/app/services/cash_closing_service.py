@@ -13,7 +13,7 @@ from app.schemas.cash_closing import (
     CashClosingResponse,
     DailySummary,
 )
-from app.utils.timezone import get_local_today
+from app.utils.timezone import get_cash_register_business_day, get_local_today
 
 logger = logging.getLogger(__name__)
 
@@ -231,28 +231,93 @@ class CashClosingService:
         logger.info(f"Closing {closing_id} finalized successfully")
         return CashClosingResponse.model_validate(finalized_closing)
 
-    def check_can_process_sale(self, db: Session, sale_date: date) -> tuple[bool, str]:
-        """Check if sales can be processed for a given date.
+    def check_can_process_sale(self, db: Session) -> tuple[bool, str]:
+        """Check if sales can be processed.
+
+        Uses business day logic (4 AM cutoff) to determine which cash register
+        should be used. Allows operation with previous day's register but logs
+        a warning for audit purposes.
 
         Args:
             db: Database session.
-            sale_date: Date to check for sale processing.
 
         Returns:
             Tuple of (can_process, reason_if_not).
         """
-        # Check if cash register is open for the date
-        if not cash_closing.is_cash_register_open(db, target_date=sale_date):
+        # Get current business day (with 4 AM cutoff)
+        business_day = get_cash_register_business_day()
+
+        # Check if there's any open register
+        open_register = cash_closing.get_unfinalized_register(db)
+
+        if not open_register:
             return (
                 False,
-                f"Cash register must be opened before processing sales for {sale_date}",
+                f"Cash register must be opened before processing sales for {business_day}",
             )
 
-        # Check if the date has been closed and finalized
-        if cash_closing.is_day_closed(db, target_date=sale_date):
-            return False, f"Sales cannot be processed - day {sale_date} has been closed"
+        # If operating with a register from a previous day, log warning
+        if open_register.closing_date < business_day:
+            days_old = (business_day - open_register.closing_date).days
+            logger.warning(
+                f"Processing sale on business day {business_day} "
+                f"with cash register from {open_register.closing_date} "
+                f"({days_old} day(s) old). User should close previous register."
+            )
 
+        # Allow operation - sales will be counted in the open register's day
         return True, ""
+
+    def check_pending_cash_register(self, db: Session) -> dict:
+        """Check if there's a pending cash register that should be closed.
+
+        This should be called at login or when loading the dashboard to alert
+        users about unclosed registers.
+
+        Args:
+            db: Database session.
+
+        Returns:
+            Dictionary with pending register information:
+            - has_pending: bool - Whether there's a pending register
+            - severity: str - "critical" if pending (always red from day 1)
+            - blocking: bool - Always False (doesn't block operations)
+            - days_old: int - Days since register should have been closed
+            - pending_date: date - Date of the pending register
+            - current_business_day: date - Current business day
+            - message: str - User-friendly message
+        """
+        business_day = get_cash_register_business_day()
+        open_register = cash_closing.get_unfinalized_register(db)
+
+        if not open_register:
+            return {"has_pending": False}
+
+        days_old = (business_day - open_register.closing_date).days
+
+        if days_old == 0:
+            # Register is for today, all good
+            return {"has_pending": False}
+
+        # 1+ days old = CRITICAL (red alert from day 1)
+        logger.warning(
+            f"Pending cash register detected: {open_register.closing_date} "
+            f"is {days_old} day(s) old (current business day: {business_day})"
+        )
+
+        return {
+            "has_pending": True,
+            "severity": "critical",  # Red from day 1
+            "blocking": False,
+            "days_old": days_old,
+            "pending_date": open_register.closing_date,
+            "current_business_day": business_day,
+            "message": (
+                f"🚨 CAJA PENDIENTE DE CIERRE\n"
+                f"Caja del {open_register.closing_date.strftime('%d/%m/%Y')} "
+                f"sin cerrar ({days_old} día{'s' if days_old > 1 else ''} de atraso)"
+            ),
+        }
 
     def get_closing_by_date(
         self, db: Session, closing_date: date
