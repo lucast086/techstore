@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, development]
+    branches: [main]
   pull_request:
-    branches: [main, development]
+    branches: [main]
 
 jobs:
   test:
@@ -73,4 +73,4 @@ jobs:
       - name: Verify model-DB sync
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_techstore
-        run: poetry run pytest tests/test_migration_sync.py -v
+        run: poetry run pytest tests/test_migrations_sync.py -v
