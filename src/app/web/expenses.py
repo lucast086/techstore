@@ -341,7 +341,7 @@ async def edit_expense_form(
         raise HTTPException(status_code=404, detail="Expense not found")
 
     # Check if expense is editable
-    if not expense_crud.check_expense_editable(expense, current_user.id):
+    if not expense_crud.check_expense_editable(expense, int(current_user.id)):
         return HTMLResponse(
             content='<div class="text-red-600">This expense can only be edited on the same day by the creator.</div>',
             status_code=403,
@@ -462,7 +462,7 @@ async def upload_receipt(
             raise ValueError("Invalid file type. Only images and PDFs are allowed.")
 
         # Generate unique filename
-        file_extension = Path(receipt.filename).suffix
+        file_extension = Path(receipt.filename).suffix if receipt.filename else ".bin"
         unique_filename = f"{uuid.uuid4()}{file_extension}"
 
         # Create upload directory if it doesn't exist
