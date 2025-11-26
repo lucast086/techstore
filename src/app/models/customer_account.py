@@ -197,7 +197,15 @@ class CustomerTransaction(BaseModel):
     account_id = Column(Integer, ForeignKey("customer_accounts.id"), nullable=False)
 
     # Transaction details
-    transaction_type = Column(Enum(TransactionType), nullable=False, index=True)
+    transaction_type = Column(
+        Enum(
+            TransactionType,
+            values_callable=lambda x: [e.value for e in x],
+            name="transactiontype",
+        ),
+        nullable=False,
+        index=True,
+    )
     amount = Column(DECIMAL(10, 2), nullable=False)
 
     # Balance tracking (for audit trail)
