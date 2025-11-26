@@ -36,6 +36,7 @@ pre-commit = "^3.5.0"
 factory-boy = "^3.3.0"
 coverage = "^7.3.2"
 pytest-cov = "^4.1.0"
+mypy = "^1.8.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -87,3 +88,20 @@ testpaths = ["tests"]
 markers = [
     "migrations: tests that verify model/migration synchronization",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = false
+warn_unused_ignores = true
+check_untyped_defs = true
+ignore_missing_imports = true
+exclude = [
+    "alembic/",
+    "tests/",
+    ".venv/",
+]
+
+[[tool.mypy.overrides]]
+module = "app.web.*"
+check_untyped_defs = true
+warn_unreachable = true
