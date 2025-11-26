@@ -280,7 +280,7 @@ async def get_customer_balance_json(
         )
 
     # Get or create account
-    account = customer_account_crud.get_or_create(db, customer_id, current_user.id)
+    account = customer_account_crud.get_or_create(db, customer_id, int(current_user.id))
     db.commit()
 
     # Check credit availability
@@ -293,13 +293,13 @@ async def get_customer_balance_json(
     # Format balance for display
     if account.account_balance > 0:
         formatted = f"Debe ${account.account_balance:,.2f}"
-        status = "debt"
+        balance_status = "debt"
     elif account.account_balance < 0:
         formatted = f"Crédito ${abs(account.account_balance):,.2f}"
-        status = "credit"
+        balance_status = "credit"
     else:
         formatted = "$0.00"
-        status = "settled"
+        balance_status = "settled"
 
     # Get balance information
     return {
@@ -313,7 +313,7 @@ async def get_customer_balance_json(
         "credit_limit": float(account.credit_limit),
         "is_settled": account.is_settled,
         "formatted": formatted,
-        "status": status,
+        "status": balance_status,
         "message": message,
     }
 
