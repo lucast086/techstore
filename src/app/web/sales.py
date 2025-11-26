@@ -438,6 +438,7 @@ async def process_checkout(
         unit_price = form_data.get(f"unit_price_{i}")
         is_repair = form_data.get(f"is_repair_{i}") == "true"
         repair_id = form_data.get(f"repair_id_{i}")
+        is_custom_price = form_data.get(f"is_custom_price_{i}") == "true"
 
         if product_id and quantity and unit_price:
             # Check if this is a repair item (product_id starts with 'repair_')
@@ -519,6 +520,12 @@ async def process_checkout(
 
     # Track actual amount paid (for partial payments)
     amount_paid = None  # Will default to full amount if not specified
+
+    # Initialize payment component variables (used in mixed payments and SaleCreate)
+    safe_cash = Decimal("0")
+    safe_transfer = Decimal("0")
+    safe_card = Decimal("0")
+    safe_credit = Decimal("0")
 
     if payment_method == "cash":
         amount_received = form_data.get("amount_received", "0")

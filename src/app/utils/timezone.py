@@ -79,6 +79,10 @@ def get_local_today() -> date:
     return local_now.date()
 
 
+# Alias for backwards compatibility
+get_local_date = get_local_today
+
+
 def get_cash_register_business_day() -> date:
     """Get current business day for cash register operations.
 

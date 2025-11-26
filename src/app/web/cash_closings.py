@@ -16,7 +16,7 @@ from app.models.user import User
 from app.schemas.cash_closing import CashClosingCreate
 from app.services.cash_closing_service import cash_closing_service
 from app.utils.templates import create_templates
-from app.utils.timezone import get_local_today
+from app.utils.timezone import get_local_date, get_local_today
 
 logger = logging.getLogger(__name__)
 
