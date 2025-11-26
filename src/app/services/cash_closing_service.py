@@ -3,7 +3,7 @@
 import logging
 from datetime import date
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
@@ -378,7 +378,7 @@ class CashClosingService:
 
     def get_current_closing_status(
         self, db: Session, target_date: date = None
-    ) -> dict[str, any]:
+    ) -> dict[str, Any]:
         """Get current closing status for today or specified date.
 
         Args:

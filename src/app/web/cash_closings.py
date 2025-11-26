@@ -144,14 +144,15 @@ async def open_cash_register(
             db=db,
             opening_date=today,
             opening_balance=opening_balance,
-            user_id=current_user.id,
+            user_id=int(current_user.id),
         )
 
         # Update notes if provided
         if notes:
             db_opening = cash_closing.get(db, opening.id)
-            db_opening.notes = f"Opening notes: {notes}"
-            db.commit()
+            if db_opening:
+                db_opening.notes = f"Opening notes: {notes}"
+                db.commit()
 
         # Redirect to list with success message
         return templates.TemplateResponse(
@@ -308,7 +309,7 @@ async def create_cash_closing(
 
         # Create the closing
         closing = cash_closing_service.create_closing(
-            db=db, closing_data=closing_data, user_id=current_user.id
+            db=db, closing_data=closing_data, user_id=int(current_user.id)
         )
 
         # Check for cash difference warnings
@@ -435,7 +436,7 @@ async def finalize_cash_closing(
     try:
         # Finalize the closing
         finalized_closing = cash_closing_service.finalize_closing(
-            db=db, closing_id=closing_id, user_id=current_user.id
+            db=db, closing_id=closing_id, user_id=int(current_user.id)
         )
 
         # Return success response
