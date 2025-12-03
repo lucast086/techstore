@@ -429,9 +429,10 @@ class TestCashRegister:
         )
         db_session.commit()
 
-        # Make 1 sale
+        # Make 1 cash sale
         sale_data = SaleCreate(
             customer_id=customer_with_account.id,
+            payment_method="cash",
             items=[
                 SaleItemCreate(
                     product_id=test_product.id,
@@ -445,7 +446,7 @@ class TestCashRegister:
         db_session.commit()
 
         # Act: Close register with exact count
-        expected_cash = opening_balance + Decimal("110.00")  # Sale amount
+        expected_cash = opening_balance + Decimal("110.00")  # Cash sale amount
         closing = cash_closing.close_cash_register(
             db_session,
             target_date=today,
