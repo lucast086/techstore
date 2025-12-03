@@ -210,6 +210,12 @@ class DailySummary(BaseSchema):
     sales_mixed: Decimal = Field(
         default=Decimal("0.00"), description="Mixed payment sales total"
     )
+    sales_mixed_cash: Decimal = Field(
+        default=Decimal("0.00"), description="Cash portion from mixed payment sales"
+    )
+    sales_mixed_transfer: Decimal = Field(
+        default=Decimal("0.00"), description="Transfer portion from mixed payment sales"
+    )
 
     # Payment method breakdown for expenses
     expenses_cash: Decimal = Field(

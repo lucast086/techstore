@@ -393,6 +393,23 @@ class ProductService:
         self.db.refresh(product)
         return product
 
+    async def delete_product(self, product_id: int) -> bool:
+        """Soft delete a product by setting is_active=False.
+
+        Args:
+            product_id: Product ID to delete.
+
+        Returns:
+            True if product was deleted, False if not found.
+        """
+        product = await self.get_product(product_id)
+        if not product:
+            return False
+
+        product.is_active = False
+        self.db.commit()
+        return True
+
     async def update_stock(
         self, product_id: int, quantity: int, is_absolute: bool = False
     ) -> Optional[Product]:

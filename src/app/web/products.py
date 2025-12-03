@@ -484,3 +484,48 @@ async def update_product(
             },
             status_code=500,
         )
+
+
+@router.delete("/{product_id}", response_class=HTMLResponse)
+async def delete_product(
+    request: Request,
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_from_cookie),
+):
+    """Soft delete a product (set is_active=False)."""
+    service = ProductService(db)
+
+    logger.info(
+        f"[DELETE PRODUCT] Deleting product {product_id} by user {current_user.id}"
+    )
+
+    try:
+        deleted = await service.delete_product(product_id)
+
+        if not deleted:
+            return HTMLResponse(
+                """<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                    Producto no encontrado
+                </div>""",
+                status_code=404,
+            )
+
+        logger.info(f"Product {product_id} deleted successfully")
+
+        return HTMLResponse(
+            """<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                Producto eliminado exitosamente
+            </div>""",
+            status_code=200,
+            headers={"HX-Redirect": "/products"},
+        )
+
+    except Exception as e:
+        logger.error(f"Error deleting product {product_id}: {str(e)}")
+        return HTMLResponse(
+            f"""<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                Error al eliminar producto: {str(e)}
+            </div>""",
+            status_code=500,
+        )

@@ -723,50 +723,15 @@ async def process_checkout(
                 status_code=400,
             )
 
-        # Create sale (now only creates SALE transaction - debt)
-        # Payment processing happens below, following the refactor plan
+        # Create sale with payment processing
+        # NOTE: sale_crud.create_sale automatically delegates to process_sale_with_payment
+        # when amount_paid > 0, which handles:
+        #   1. Creating the sale
+        #   2. Recording SALE transaction in customer account
+        #   3. Creating Payment record
+        #   4. Recording PAYMENT transaction in customer account
+        # DO NOT create duplicate payments here!
         sale = sale_crud.create_sale(db=db, sale_in=sale_data, user_id=current_user.id)
-
-        # PHASE 2: Apply payments after sale creation
-        # This follows the refactor plan: centralize payment logic in web endpoint
-        if sale.customer_id and amount_paid and amount_paid > 0:
-            from app.models.payment import Payment, PaymentType
-            from app.services.customer_account_service import customer_account_service
-
-            # Cap payment amount to total (overpayment becomes change)
-            payment_amount = min(amount_paid, sale.total_amount)
-
-            # Create Payment record for non-credit payments
-            if payment_method not in ["account_credit", "mixed"]:
-                # Regular payments: cash, card, transfer
-                payment = Payment(
-                    customer_id=sale.customer_id,
-                    sale_id=sale.id,
-                    amount=payment_amount,
-                    payment_method=payment_method,
-                    payment_type=PaymentType.payment.value,
-                    receipt_number=f"REC-{sale.invoice_number}",
-                    received_by_id=current_user.id,
-                    notes=f"Payment for sale {sale.invoice_number}",
-                )
-                db.add(payment)
-                db.flush()
-
-                # Record PAYMENT transaction
-                try:
-                    customer_account_service.record_payment(
-                        db, payment, current_user.id
-                    )
-                    logger.info(
-                        f"Recorded PAYMENT transaction: ${payment_amount} for sale {sale.invoice_number}"
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to record payment transaction: {e}")
-                    db.rollback()
-                    return HTMLResponse(
-                        f'<div class="alert alert-danger">Error recording payment: {str(e)}</div>',
-                        status_code=500,
-                    )
 
         # Handle credit payments (account_credit or mixed with credit)
         if sale.customer_id and payment_method in ["account_credit", "mixed"]:

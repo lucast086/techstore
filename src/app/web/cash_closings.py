@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie
 from app.crud.cash_closing import cash_closing
+from app.crud.expense import expense as expense_crud
 from app.database import get_async_session as get_db
 from app.models.user import User
 from app.schemas.cash_closing import CashClosingCreate
@@ -250,6 +251,10 @@ async def cash_closing_form(
         if status_info["has_closing"] and not status_info["closing"].is_finalized:
             status_info["is_open"] = True
 
+        expenses_list = expense_crud.get_expenses_by_date_range(
+            db, date_from=target_date, date_to=target_date, limit=100
+        )
+
         return templates.TemplateResponse(
             "cash_closings/form.html",
             {
@@ -257,6 +262,7 @@ async def cash_closing_form(
                 "current_user": current_user,
                 "status_info": status_info,
                 "closing_date": target_date,
+                "expenses_list": expenses_list,
                 "page_title": f"Cierre de Caja - {target_date}",
             },
         )
@@ -371,6 +377,14 @@ async def view_cash_closing(
         if not closing:
             raise HTTPException(
                 status_code=404, detail=f"No closing found for {target_date}"
+            )
+
+        # If closing is NOT finalized, redirect to form to show CURRENT data
+        # The form page shows live sales/expenses, not stored data
+        if not closing.is_finalized:
+            return RedirectResponse(
+                url=f"/cash-closings/new?closing_date={target_date}",
+                status_code=302,
             )
 
         return templates.TemplateResponse(

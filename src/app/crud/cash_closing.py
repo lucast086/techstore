@@ -128,6 +128,67 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             .first()
         )
 
+        # Get sales breakdown - we need PAID amounts, not TOTAL amounts
+        # For cash closing:
+        # - Efectivo = sum of paid_amount where payment_method = 'cash'
+        # - Transferencia = sum of paid_amount where payment_method = 'transfer'
+        # - Cuenta Corriente (CC) = sum of (total_amount - paid_amount) = unpaid portion
+        sales_by_method = (
+            db.query(
+                Sale.payment_method,
+                func.sum(Sale.paid_amount).label(
+                    "paid"
+                ),  # Actual cash/transfer received
+                func.sum(Sale.total_amount - Sale.paid_amount).label(
+                    "credit"
+                ),  # Unpaid = CC
+                func.sum(Sale.cash_amount).label("cash_portion"),
+                func.sum(Sale.transfer_amount).label("transfer_portion"),
+            )
+            .filter(Sale.sale_date >= utc_start)
+            .filter(Sale.sale_date <= utc_end)
+            .filter(Sale.is_voided == False)  # noqa: E712
+            .group_by(Sale.payment_method)
+            .all()
+        )
+
+        # Process sales breakdown by payment method
+        # NOTE: We use PAID amount for cash/transfer, and calculate CC as unpaid portion
+        sales_cash = Decimal("0.00")
+        sales_transfer = Decimal("0.00")
+        sales_credit = Decimal("0.00")  # Total unpaid across all sales
+        sales_mixed = Decimal("0.00")
+        sales_mixed_cash = Decimal("0.00")
+        sales_mixed_transfer = Decimal("0.00")
+
+        for row in sales_by_method:
+            paid = Decimal(str(row.paid)) if row.paid else Decimal("0.00")
+            credit = Decimal(str(row.credit)) if row.credit else Decimal("0.00")
+
+            if row.payment_method == "cash":
+                sales_cash = paid  # Only count what was actually paid in cash
+                sales_credit += credit  # Add unpaid portion to CC
+            elif row.payment_method == "transfer":
+                sales_transfer = paid  # Only count what was actually paid by transfer
+                sales_credit += credit  # Add unpaid portion to CC
+            elif row.payment_method == "credit":
+                # Full credit sale - everything goes to CC
+                sales_credit += paid + credit
+            elif row.payment_method == "mixed":
+                # Mixed payments - use the specific portions
+                sales_mixed = paid
+                sales_mixed_cash = (
+                    Decimal(str(row.cash_portion))
+                    if row.cash_portion
+                    else Decimal("0.00")
+                )
+                sales_mixed_transfer = (
+                    Decimal(str(row.transfer_portion))
+                    if row.transfer_portion
+                    else Decimal("0.00")
+                )
+                sales_credit += credit  # Add unpaid portion to CC
+
         # Get repair payments summary for the date (tracked separately, not as sales)
         from app.models.repair import Repair
 
@@ -176,19 +237,36 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         expenses_count = expenses_result.expenses_count or 0
 
         # Calculate debt payments separately (pagos de cuentas corrientes)
-        # TODO: Implement account payments query when feature is ready
+        # IMPORTANT: Only count payments for PREVIOUS debts, not payments for same-day sales
+        # Payments with sale_id = NULL are standalone debt payments
+        # Payments with sale_id != NULL are payments for sales (already counted in sales)
+        from app.models.payment import Payment, PaymentType
+
+        debt_payments_by_method = (
+            db.query(Payment.payment_method, func.sum(Payment.amount).label("amount"))
+            .filter(Payment.created_at >= utc_start)
+            .filter(Payment.created_at <= utc_end)
+            .filter(Payment.payment_type == PaymentType.payment)
+            .filter(Payment.voided == False)  # noqa: E712
+            .filter(
+                Payment.sale_id.is_(None)
+            )  # Only standalone debt payments, not sale payments
+            .group_by(Payment.payment_method)
+            .all()
+        )
+
         debt_payments_cash = Decimal("0.00")
         debt_payments_transfer = Decimal("0.00")
         debt_payments_card = Decimal("0.00")
-        account_payments: list = []
 
-        for row in account_payments:
+        for row in debt_payments_by_method:
+            amount = Decimal(str(row.amount)) if row.amount else Decimal("0.00")
             if row.payment_method == "cash":
-                debt_payments_cash += row.amount or Decimal("0.00")
+                debt_payments_cash = amount
             elif row.payment_method == "transfer":
-                debt_payments_transfer += row.amount or Decimal("0.00")
+                debt_payments_transfer = amount
             elif row.payment_method == "card":
-                debt_payments_card += row.amount or Decimal("0.00")
+                debt_payments_card = amount
 
         debt_payments_total = (
             debt_payments_cash + debt_payments_transfer + debt_payments_card
@@ -212,10 +290,12 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             if repairs_delivered_result
             else Decimal("0.00"),
             # Payment method breakdowns
-            sales_cash=Decimal("0.00"),
-            sales_credit=Decimal("0.00"),
-            sales_transfer=Decimal("0.00"),
-            sales_mixed=Decimal("0.00"),
+            sales_cash=sales_cash,
+            sales_credit=sales_credit,
+            sales_transfer=sales_transfer,
+            sales_mixed=sales_mixed,
+            sales_mixed_cash=sales_mixed_cash,
+            sales_mixed_transfer=sales_mixed_transfer,
             expenses_cash=expenses_cash,
             expenses_transfer=expenses_transfer,
             expenses_card=expenses_card,
@@ -385,41 +465,34 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
                 f"Cash register for {target_date} is already closed and finalized."
             )
 
-        # Get daily totals
-        from app.models.expense import Expense
-        from app.models.sale import Sale
+        # Get daily summary with payment method breakdowns
+        summary = self.get_daily_summary(db, target_date=target_date)
 
-        # Convert local date to UTC range for querying
-        utc_start, utc_end = local_date_to_utc_range(target_date)
-
-        # Calculate sales total (sale_date is stored in UTC)
-        sales_result = (
-            db.query(func.coalesce(func.sum(Sale.total_amount), 0))
-            .filter(Sale.sale_date >= utc_start)
-            .filter(Sale.sale_date <= utc_end)
-            .filter(Sale.is_voided == False)  # noqa: E712
-            .scalar()
+        # Calculate expected cash using ONLY cash components
+        # Formula: opening_balance + cash_sales + mixed_cash + debt_payments_cash - cash_expenses
+        expected_cash = (
+            existing.opening_balance
+            + summary.sales_cash
+            + summary.sales_mixed_cash
+            + summary.debt_payments_cash
+            - summary.expenses_cash
         )
-        sales_total = sales_result or Decimal("0.00")
-
-        # Calculate expenses total
-        expenses_result = (
-            db.query(func.coalesce(func.sum(Expense.amount), 0))
-            .filter(Expense.expense_date == target_date)
-            .scalar()
-        )
-        expenses_total = expenses_result or Decimal("0.00")
-
-        # Calculate expected cash and difference
-        expected_cash = existing.opening_balance + sales_total - expenses_total
         cash_difference = cash_count - expected_cash
 
         # Update the closing record
-        existing.sales_total = sales_total
-        existing.expenses_total = expenses_total
+        existing.sales_total = summary.total_sales
+        existing.expenses_total = summary.total_expenses
         existing.cash_count = cash_count
         existing.expected_cash = expected_cash
         existing.cash_difference = cash_difference
+        # Store payment method breakdowns
+        existing.sales_cash = summary.sales_cash
+        existing.sales_credit = summary.sales_credit
+        existing.sales_transfer = summary.sales_transfer
+        existing.sales_mixed = summary.sales_mixed
+        existing.expenses_cash = summary.expenses_cash
+        existing.expenses_transfer = summary.expenses_transfer
+        existing.expenses_card = summary.expenses_card
         existing.closed_by = closed_by
         existing.closed_at = func.now()
         existing.is_finalized = True  # Mark as finalized when closing

@@ -50,3 +50,60 @@ STORY 45 AGREGAR ACA LAS COSAS PASAR POR PM Y PO Y ANALYST
 ### technical
 
  * analyze coverage to get 80% test coverage?
+
+---
+
+## DEUDA TÉCNICA PRIORITARIA: Unificar arquitectura de pagos
+
+**Fecha**: 2025-12-03
+**Prioridad**: ALTA
+**Esfuerzo estimado**: 2-3 días
+
+### Problema actual
+
+Existen dos modelos para registrar pagos que pueden desincronizarse:
+
+| Modelo | Tabla | Propósito | Tiene `payment_method` |
+|--------|-------|-----------|------------------------|
+| `Payment` | `payments` | Registro físico del pago (recibo) | ✅ Sí |
+| `CustomerTransaction` | `customer_transactions` | Libro mayor del cliente | ❌ No |
+
+**Riesgo identificado**: En `payment_service.py` si falla la creación de `CustomerTransaction`, el `Payment` se guarda igual (try/except sin rollback), causando:
+- Desincronización entre tablas
+- Balance del cliente incorrecto
+- Inconsistencias en reportes vs cuenta corriente
+
+### Solución propuesta (Opción B)
+
+1. **Agregar `payment_method` a `CustomerTransaction`**:
+   ```python
+   payment_method = Column(String(50), nullable=True)  # cash, transfer, card, mixed
+   ```
+
+2. **Usar `CustomerTransaction` como única fuente de verdad** para:
+   - Cierre de caja (consultar transacciones por método de pago)
+   - Reportes financieros
+   - Balance de clientes
+
+3. **Mantener `Payment` solo para**:
+   - Generación de recibos
+   - Datos adicionales del pago (referencia, notas)
+
+4. **Migración de datos**:
+   - Crear migración que agregue `payment_method` a `customer_transactions`
+   - Script para poblar `payment_method` desde `payments.payment_method` usando `reference_id`
+
+### Archivos a modificar
+
+- `src/app/models/customer_account.py` - Agregar campo
+- `src/app/services/customer_account_service.py` - Recibir payment_method en record_payment
+- `src/app/services/payment_service.py` - Pasar payment_method
+- `src/app/crud/cash_closing.py` - Consultar customer_transactions en lugar de payments
+- Migración Alembic
+
+### Beneficios
+
+- Una sola fuente de verdad para movimientos financieros
+- Consultas más simples para cierre de caja
+- Eliminación de riesgo de desincronización
+- Código más mantenible (menos lugares donde actualizar)
