@@ -302,7 +302,7 @@ async def update_credit_limit(
 ):
     """Update account credit limit."""
     try:
-        account = customer_account_crud.update_credit_limit(
+        customer_account_crud.update_credit_limit(
             db,
             account_id=account_id,
             credit_limit=credit_limit,

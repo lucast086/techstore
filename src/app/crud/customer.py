@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
-
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -321,7 +319,9 @@ class CustomerCRUD:
             customer_dict = customer.to_dict()
             customer_dict.update(
                 {
-                    "balance": float(account.account_balance),  # Template expects 'balance'
+                    "balance": float(
+                        account.account_balance
+                    ),  # Template expects 'balance'
                     "current_balance": float(account.account_balance),
                     "sales_total": float(account.total_sales),
                     "payments_total": float(account.total_payments),

@@ -183,7 +183,6 @@ class RepairService:
         # Validate cash register is open when marking as delivered
         if status_update.status == "delivered":
             from app.crud.cash_closing import cash_closing
-            from app.utils.timezone import get_local_date
 
             if not cash_closing.is_cash_register_open(
                 db, target_date=get_local_today()

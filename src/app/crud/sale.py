@@ -75,7 +75,6 @@ class SaleCRUD:
             # Check if sales are allowed (cash closing check)
             # Uses business day logic with 4 AM cutoff
             from app.services.cash_closing_service import cash_closing_service
-            from app.utils.timezone import get_local_date
 
             can_process, reason = cash_closing_service.check_can_process_sale(db=db)
             if not can_process:

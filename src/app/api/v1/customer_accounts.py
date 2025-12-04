@@ -73,7 +73,7 @@ def get_customer_account(
     if not account:
         # Try to create one automatically
         try:
-            account_crud.get_or_create(db, customer_id, current_user.id)
+            customer_account_crud.get_or_create(db, customer_id, current_user.id)
             db.commit()
             account = customer_account_service.get_account(db, customer_id)
         except Exception as e:

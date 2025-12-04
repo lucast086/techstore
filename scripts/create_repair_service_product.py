@@ -48,7 +48,7 @@ def create_repair_service_product():
 
         # Get first admin user to set as creator
         admin_user = (
-            db.query(User).filter(User.role == "admin", User.is_active == True).first()
+            db.query(User).filter(User.role == "admin", User.is_active is True).first()
         )
 
         if not admin_user:

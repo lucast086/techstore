@@ -389,7 +389,7 @@ class RepairCRUD:
 
         repair_product = (
             db.query(Product)
-            .filter(Product.sku == "REPAIR-SERVICE", Product.is_service == True)
+            .filter(Product.sku == "REPAIR-SERVICE", Product.is_service is True)
             .first()
         )
 

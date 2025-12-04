@@ -62,7 +62,7 @@ class TestCustomerCreditBehavior:
         db_session.refresh(customer)
 
         # Add advance payment to create credit balance
-        advance_payment = payment_crud.create_payment(
+        payment_crud.create_payment(
             db_session,
             customer_id=customer.id,
             amount=Decimal("5000.00"),
@@ -145,7 +145,7 @@ class TestCustomerCreditBehavior:
         assert initial_balance == Decimal("5000.00")
 
         # Make another payment of $2000
-        new_payment = payment_crud.create_payment(
+        payment_crud.create_payment(
             db_session,
             customer_id=customer_with_credit.id,
             amount=Decimal("2000.00"),
@@ -201,7 +201,7 @@ class TestCustomerCreditBehavior:
         db_session.commit()
 
         # Apply credit explicitly
-        credit_application = payment_crud.create_payment(
+        payment_crud.create_payment(
             db_session,
             customer_id=customer_with_credit.id,
             amount=Decimal("1000.00"),

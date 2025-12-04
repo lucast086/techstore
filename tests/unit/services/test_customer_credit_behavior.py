@@ -159,7 +159,7 @@ class TestCustomerCreditFullPayment:
         )
 
         # Create the sale
-        sale = sale_crud.create(db=db_session, sale=sale_data, user_id=test_user.id)
+        sale_crud.create(db=db_session, sale=sale_data, user_id=test_user.id)
 
         # Refresh customer
         db_session.refresh(customer_with_credit)
@@ -208,7 +208,7 @@ class TestCustomerCreditFullPayment:
         )
 
         # Create the sale
-        sale = sale_crud.create(db=db_session, sale=sale_data, user_id=test_user.id)
+        sale_crud.create(db=db_session, sale=sale_data, user_id=test_user.id)
 
         # Refresh customer
         db_session.refresh(customer_with_credit)
@@ -236,7 +236,7 @@ class TestCustomerCreditFullPayment:
         )
 
         # Process payment
-        payment = customer_service.create_payment(
+        customer_service.create_payment(
             db=db_session, payment_data=payment_data, created_by=test_user.id
         )
 
