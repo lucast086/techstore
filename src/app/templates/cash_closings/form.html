@@ -248,6 +248,8 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <span class="text-gray-500 sm:text-sm">$</span>
             </div>
+            <input type="hidden" name="expected_cash" id="expected_cash"
+                   value="{{ status_info.opening_balance + status_info.daily_summary.sales_cash + status_info.daily_summary.debt_payments_cash - status_info.daily_summary.expenses_cash }}">
             <input type="number"
                    step="0.01"
                    name="cash_count"
@@ -255,10 +257,9 @@
                    value="{{ cash_count or '' }}"
                    class="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                    hx-get="/cash-closings/htmx/cash-calculation"
-                   hx-include="[name='opening_balance'], [name='cash_count']"
+                   hx-include="[name='expected_cash'], [name='cash_count']"
                    hx-target="#cash-calculation"
                    hx-trigger="input changed delay:500ms"
-                   hx-vals='{"sales_total": {{ status_info.daily_summary.total_sales }}, "expenses_total": {{ status_info.daily_summary.total_expenses }}}'
                    required>
           </div>
           <p class="text-xs text-gray-500 mt-1">Cuenta todo el efectivo en el registro</p>
@@ -284,12 +285,10 @@
         <!-- Enviar Button -->
         <div class="pt-4">
           <button type="submit"
-                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-            Crear Cierre de Caja (Borrador)
+                  class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+                  onclick="return confirm('¿Estás seguro de cerrar la caja? Esta acción no se puede deshacer.')">
+            Cerrar Caja
           </button>
-          <p class="text-xs text-gray-500 mt-2 text-center">
-            Puede revisar y finalizar el cierre después de su creación
-          </p>
         </div>
       </form>
       {% else %}

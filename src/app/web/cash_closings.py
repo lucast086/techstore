@@ -204,6 +204,16 @@ async def cash_closing_form(
 ):
     """Render cash closing form page."""
     try:
+        # If no date provided, check for pending register first
+        if not closing_date:
+            pending_register = cash_closing_service.get_pending_cash_register(db=db)
+            if pending_register:
+                # Redirect to close the pending register instead of today
+                return RedirectResponse(
+                    url=f"/cash-closings/new?closing_date={pending_register.closing_date}",
+                    status_code=303,
+                )
+
         # Use today's date if none provided (local timezone)
         target_date = (
             date.fromisoformat(closing_date) if closing_date else get_local_today()
@@ -512,16 +522,13 @@ async def get_daily_summary_htmx(
 @router.get("/htmx/cash-calculation", response_class=HTMLResponse)
 async def calculate_cash_difference_htmx(
     request: Request,
-    opening_balance: Decimal = Query(...),
-    sales_total: Decimal = Query(...),
-    expenses_total: Decimal = Query(0),
+    expected_cash: Decimal = Query(...),
     cash_count: Decimal = Query(...),
     current_user: User = Depends(require_admin_or_manager),
 ):
     """Calculate cash difference for HTMX update."""
     try:
-        # Calculate expected cash and difference
-        expected_cash = opening_balance + sales_total - expenses_total
+        # Simply compare cash_count with the pre-calculated expected_cash
         cash_difference = cash_count - expected_cash
 
         # Validate difference

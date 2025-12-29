@@ -91,13 +91,12 @@
         </div>
 
         <div class="text-center">
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            Borrador
+            Finalizado
           </span>
-          <p class="text-xs text-gray-500 mt-1">Recuerda finalizar cuando estés listo</p>
         </div>
       </div>
     </div>
@@ -116,14 +115,6 @@
        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center font-medium py-2 px-4 rounded-lg transition-colors">
       Ver Detalles Completos
     </a>
-
-    <form action="/cash-closings/{{ closing.id }}/finalize" method="post" class="flex-1">
-      <button type="submit"
-              class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-              onclick="return confirm('¿Estás seguro de querer finalizar este cierre? Esta acción no puede ser deshacer.')">
-        Finalizar Cierre
-      </button>
-    </form>
 
     <a href="/cash-closings"
        class="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-center font-medium py-2 px-4 rounded-lg transition-colors">
