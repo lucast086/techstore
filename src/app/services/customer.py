@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
 from app.crud.customer import customer_crud
 from app.models.customer import Customer
+from app.models.customer_account import CustomerAccount
 from app.schemas.customer import CustomerCreate, CustomerUpdate
 
 logger = logging.getLogger(__name__)
@@ -51,7 +53,18 @@ class CustomerService:
             db=db, customer=customer_data, created_by_id=created_by_id
         )
 
-        logger.info(f"Customer created successfully: {customer.id}")
+        # Create CustomerAccount with zero balance
+        account = CustomerAccount(
+            customer_id=customer.id,
+            credit_limit=Decimal("0.00"),
+            account_balance=Decimal("0.00"),
+            created_by_id=created_by_id,
+        )
+        db.add(account)
+        db.commit()
+        db.refresh(customer)
+
+        logger.info(f"Customer created successfully with account: {customer.id}")
         return customer
 
     def get_customer(self, db: Session, customer_id: int) -> Customer | None:

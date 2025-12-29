@@ -129,8 +129,8 @@ class SalesService:
                     )
                 except Exception as e:
                     logger.error(f"Failed to record payment in account system: {e}")
-                    # Don't fail the sale if account system has issues
-                    # The payment and sale are still valid
+                    db.rollback()
+                    raise ValueError(f"Failed to record payment transaction: {e}")
 
             # Step 4: Update sale payment status
             self._update_sale_payment_status(db, sale)

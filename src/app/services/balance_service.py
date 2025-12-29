@@ -16,9 +16,9 @@ class BalanceService:
     def calculate_balance(self, db: Session, customer_id: int) -> Decimal:
         """Calculate current balance from all transactions.
 
-        Balance = Total Payments - Total Sales
-        Positive balance = customer has credit
-        Negative balance = customer owes money
+        Balance = Total Sales - Total Payments
+        Positive balance = customer owes money (accounts receivable)
+        Negative balance = customer has credit (we owe them)
         """
         # Get ALL sales for this customer (not just unpaid)
         total_sales = db.query(func.sum(Sale.total_amount)).filter(
@@ -29,9 +29,9 @@ class BalanceService:
         # Get total payments made by customer
         payments_total = payment_crud.get_customer_payment_total(db, customer_id)
 
-        # Balance = Payments - Sales
-        # If customer bought $200 total and paid $150 total: 150 - 200 = -50 (owes $50)
-        return Decimal(str(payments_total)) - Decimal(str(total_sales))
+        # Balance = Sales - Payments
+        # If customer bought $200 total and paid $150 total: 200 - 150 = +50 (owes $50)
+        return Decimal(str(total_sales)) - Decimal(str(payments_total))
 
     def get_balance_summary(self, db: Session, customer_id: int) -> dict:
         """Get balance with summary information."""
@@ -39,18 +39,18 @@ class BalanceService:
 
         return {
             "current_balance": balance,  # Keep as Decimal for precision
-            "has_debt": balance < 0,
-            "has_credit": balance > 0,
-            "status": "debt" if balance < 0 else "credit" if balance > 0 else "clear",
+            "has_debt": balance > 0,
+            "has_credit": balance < 0,
+            "status": "debt" if balance > 0 else "credit" if balance < 0 else "clear",
             "formatted": self.format_balance(balance),
         }
 
     def format_balance(self, balance: Decimal) -> str:
         """Format balance for display."""
-        if balance < 0:
-            return f"Owes ${abs(balance):,.2f}"
-        elif balance > 0:
-            return f"Credit ${balance:,.2f}"
+        if balance > 0:
+            return f"Owes ${balance:,.2f}"
+        elif balance < 0:
+            return f"Credit ${abs(balance):,.2f}"
         else:
             return "$0.00"
 
@@ -75,15 +75,15 @@ class BalanceService:
             from app.models.payment import PaymentType
 
             if payment.payment_type == PaymentType.credit_application.value:
-                # Credit application reduces balance
+                # Credit application uses existing credit (increases balance towards zero)
                 trans_type = "credit_usage"
                 description = f"Credit Used - {payment.receipt_number}"
-                amount = -float(payment.amount)  # Negative impact on balance
+                amount = float(payment.amount)  # Positive impact (uses credit)
             else:
-                # Regular payment or advance increases balance
+                # Regular payment reduces debt (decreases balance)
                 trans_type = "payment"
                 description = f"Payment - {payment.receipt_number}"
-                amount = float(payment.amount)  # Positive impact on balance
+                amount = -float(payment.amount)  # Negative impact (reduces debt)
 
             transactions.append(
                 {
@@ -118,7 +118,9 @@ class BalanceService:
                     "date": sale_date,
                     "type": "sale",
                     "description": f"Sale - {sale.invoice_number}",
-                    "amount": -float(sale.total_amount),  # Negative for debt
+                    "amount": float(
+                        sale.total_amount
+                    ),  # Positive for debt (increases balance)
                     "reference": f"sale_{sale.id}",
                     "payment_method": sale.payment_method,
                     "reference_number": sale.invoice_number,
@@ -176,7 +178,7 @@ class BalanceService:
 
         for customer in customers_with_sales:
             balance = self.calculate_balance(db, customer.id)
-            if balance < 0:  # Customer owes money
+            if balance > 0:  # Customer owes money (positive balance = debt)
                 customers_with_debt.append(
                     {
                         "customer": customer,
@@ -185,8 +187,8 @@ class BalanceService:
                     }
                 )
 
-        # Sort by debt amount (most debt first)
-        customers_with_debt.sort(key=lambda x: x["balance"])
+        # Sort by debt amount (most debt first - highest positive balance)
+        customers_with_debt.sort(key=lambda x: x["balance"], reverse=True)
 
         if limit:
             customers_with_debt = customers_with_debt[:limit]
@@ -213,8 +215,8 @@ class BalanceService:
             Sale.is_voided.is_(False),
         ).scalar() or Decimal("0")
 
-        # Balance before payment = Other Payments - All Sales
-        return payments_total - Decimal(str(total_sales))
+        # Balance before payment = All Sales - Other Payments
+        return Decimal(str(total_sales)) - payments_total
 
 
 balance_service = BalanceService()

@@ -16,7 +16,6 @@ from app.crud.customer import customer_crud
 from app.dependencies import get_db
 from app.models.user import User
 from app.schemas.customer import CustomerCreate
-from app.services.balance_service import balance_service
 from app.services.customer import customer_service
 from app.utils.templates import create_templates
 
@@ -53,13 +52,36 @@ async def customer_list(
 
     if search:
         # Call service for search
-        customers = customer_service.search_customers(
+        from app.crud.customer_account import customer_account_crud
+
+        customers_raw = customer_service.search_customers(
             db=db, query=search, include_inactive=False, limit=per_page
         )
-        # Add balance info to each customer
+        # Add balance info from CustomerAccount (same source as list_with_balances)
         customers_with_balance = []
-        for customer in customers:
-            balance_info = balance_service.get_balance_summary(db, customer.id)
+        for customer in customers_raw:
+            account = customer_account_crud.get_by_customer_id(db, customer.id)
+            if account:
+                balance_info = {
+                    "current_balance": float(account.account_balance),
+                    "has_debt": account.has_debt,
+                    "has_credit": account.has_credit,
+                    "status": "debt"
+                    if account.has_debt
+                    else "credit"
+                    if account.has_credit
+                    else "clear",
+                    "formatted": f"${abs(account.account_balance):,.2f}",
+                }
+            else:
+                # No account exists - show zero balance
+                balance_info = {
+                    "current_balance": 0.0,
+                    "has_debt": False,
+                    "has_credit": False,
+                    "status": "clear",
+                    "formatted": "$0.00",
+                }
             customer_dict = (
                 customer.to_dict() if hasattr(customer, "to_dict") else customer
             )

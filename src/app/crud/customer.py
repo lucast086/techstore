@@ -226,55 +226,9 @@ class CustomerCRUD:
 
         from app.crud.customer_account import customer_account_crud
 
-        # Get or create account
-        account = customer_account_crud.get_or_create(db, customer_id, 1)  # System user
-        db.commit()
+        account = customer_account_crud.get_by_customer_id(db, customer_id)
 
-        # Format balance info
-        balance_info = {
-            "current_balance": float(account.account_balance),
-            "has_debt": account.has_debt,
-            "has_credit": account.has_credit,
-            "status": "debt"
-            if account.has_debt
-            else "credit"
-            if account.has_credit
-            else "clear",
-            "formatted": f"${abs(account.account_balance):,.2f}",
-        }
-
-        return {**customer.to_dict(), **balance_info}
-
-    def list_with_balances(
-        self, db: Session, skip: int = 0, limit: int = 20
-    ) -> list[dict]:
-        """Get customers with their balances.
-
-        Args:
-            db: Database session.
-            skip: Number of records to skip.
-            limit: Maximum number of records to return.
-
-        Returns:
-            List of customer dicts with balance information.
-        """
-        from app.crud.customer_account import customer_account_crud
-
-        customers = (
-            db.query(Customer)
-            .filter(Customer.is_active.is_(True))
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-
-        result = []
-        for customer in customers:
-            # Get or create account
-            account = customer_account_crud.get_or_create(db, customer.id, 1)
-            db.commit()
-
-            # Format balance info
+        if account:
             balance_info = {
                 "current_balance": float(account.account_balance),
                 "has_debt": account.has_debt,
@@ -286,45 +240,47 @@ class CustomerCRUD:
                 else "clear",
                 "formatted": f"${abs(account.account_balance):,.2f}",
             }
+        else:
+            balance_info = {
+                "current_balance": 0.0,
+                "has_debt": False,
+                "has_credit": False,
+                "status": "clear",
+                "formatted": "$0.00",
+            }
 
-            result.append({**customer.to_dict(), **balance_info})
+        return {**customer.to_dict(), **balance_info}
 
-        return result
-
-    def get_customers_with_balance(self, db: Session) -> list[dict]:
-        """Get all customers with their balance information.
+    def list_with_balances(
+        self, db: Session, skip: int = 0, limit: int = 20
+    ) -> list[dict]:
+        """Get customers with their balances using a single JOIN query.
 
         Args:
             db: Database session.
+            skip: Number of records to skip.
+            limit: Maximum number of records to return.
 
         Returns:
             List of customer dicts with balance information.
         """
-        from app.crud.customer_account import customer_account_crud
+        from app.models.customer_account import CustomerAccount
 
-        customers = (
-            db.query(Customer)
+        # Single query with LEFT JOIN to get customers and their accounts
+        customers_with_accounts = (
+            db.query(Customer, CustomerAccount)
+            .outerjoin(CustomerAccount, Customer.id == CustomerAccount.customer_id)
             .filter(Customer.is_active.is_(True))
-            .order_by(Customer.name)
+            .offset(skip)
+            .limit(limit)
             .all()
         )
 
         result = []
-        for customer in customers:
-            # Get or create account
-            account = customer_account_crud.get_or_create(db, customer.id, 1)
-            db.commit()
-
-            # Build customer dict with all required fields for template
-            customer_dict = customer.to_dict()
-            customer_dict.update(
-                {
-                    "balance": float(
-                        account.account_balance
-                    ),  # Template expects 'balance'
+        for customer, account in customers_with_accounts:
+            if account:
+                balance_info = {
                     "current_balance": float(account.account_balance),
-                    "sales_total": float(account.total_sales),
-                    "payments_total": float(account.total_payments),
                     "has_debt": account.has_debt,
                     "has_credit": account.has_credit,
                     "status": "debt"
@@ -334,14 +290,79 @@ class CustomerCRUD:
                     else "clear",
                     "formatted": f"${abs(account.account_balance):,.2f}",
                 }
-            )
+            else:
+                # Customer without account (legacy) - show zero balance
+                balance_info = {
+                    "current_balance": 0.0,
+                    "has_debt": False,
+                    "has_credit": False,
+                    "status": "clear",
+                    "formatted": "$0.00",
+                }
+
+            result.append({**customer.to_dict(), **balance_info})
+
+        return result
+
+    def get_customers_with_balance(self, db: Session) -> list[dict]:
+        """Get all customers with their balance information using JOIN.
+
+        Args:
+            db: Database session.
+
+        Returns:
+            List of customer dicts with balance information.
+        """
+        from app.models.customer_account import CustomerAccount
+
+        customers_with_accounts = (
+            db.query(Customer, CustomerAccount)
+            .outerjoin(CustomerAccount, Customer.id == CustomerAccount.customer_id)
+            .filter(Customer.is_active.is_(True))
+            .order_by(Customer.name)
+            .all()
+        )
+
+        result = []
+        for customer, account in customers_with_accounts:
+            customer_dict = customer.to_dict()
+            if account:
+                customer_dict.update(
+                    {
+                        "balance": float(account.account_balance),
+                        "current_balance": float(account.account_balance),
+                        "sales_total": float(account.total_sales),
+                        "payments_total": float(account.total_payments),
+                        "has_debt": account.has_debt,
+                        "has_credit": account.has_credit,
+                        "status": "debt"
+                        if account.has_debt
+                        else "credit"
+                        if account.has_credit
+                        else "clear",
+                        "formatted": f"${abs(account.account_balance):,.2f}",
+                    }
+                )
+            else:
+                customer_dict.update(
+                    {
+                        "balance": 0.0,
+                        "current_balance": 0.0,
+                        "sales_total": 0.0,
+                        "payments_total": 0.0,
+                        "has_debt": False,
+                        "has_credit": False,
+                        "status": "clear",
+                        "formatted": "$0.00",
+                    }
+                )
 
             result.append(customer_dict)
 
         return result
 
     def get_customers_with_positive_balance(self, db: Session) -> list[dict]:
-        """Get customers with outstanding debt.
+        """Get customers with outstanding debt using JOIN.
 
         Returns customers who OWE money (positive balance).
 
@@ -351,31 +372,30 @@ class CustomerCRUD:
         Returns:
             List of customer dicts with outstanding debt.
         """
-        from app.crud.customer_account import customer_account_crud
+        from app.models.customer_account import CustomerAccount
 
-        customers = (
-            db.query(Customer)
-            .filter(Customer.is_active.is_(True))
+        # Single query filtering by positive balance (debt)
+        customers_with_debt = (
+            db.query(Customer, CustomerAccount)
+            .join(CustomerAccount, Customer.id == CustomerAccount.customer_id)
+            .filter(
+                Customer.is_active.is_(True),
+                CustomerAccount.account_balance > 0,
+            )
             .order_by(Customer.name)
             .all()
         )
 
         result = []
-        for customer in customers:
-            # Get or create account
-            account = customer_account_crud.get_or_create(db, customer.id, 1)
-            db.commit()
-
-            # Positive balance means customer owes money
-            if account.has_debt:
-                balance_info = {
-                    "current_balance": float(account.account_balance),
-                    "has_debt": account.has_debt,
-                    "has_credit": account.has_credit,
-                    "status": "debt",
-                    "formatted": f"${abs(account.account_balance):,.2f}",
-                }
-                result.append({**customer.to_dict(), **balance_info})
+        for customer, account in customers_with_debt:
+            balance_info = {
+                "current_balance": float(account.account_balance),
+                "has_debt": True,
+                "has_credit": False,
+                "status": "debt",
+                "formatted": f"${abs(account.account_balance):,.2f}",
+            }
+            result.append({**customer.to_dict(), **balance_info})
 
         return result
 

@@ -85,7 +85,9 @@ class PaymentService:
                 f"Payment recorded in customer account for customer {customer_id}"
             )
         except Exception as e:
-            logger.warning(f"Failed to record payment in account system: {e}")
+            logger.error(f"Failed to record payment in account system: {e}")
+            db.rollback()
+            raise ValueError(f"Failed to record payment transaction: {e}")
 
         logger.info(
             f"Payment processed: {payment.receipt_number} for customer {customer_id}"
