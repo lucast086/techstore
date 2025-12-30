@@ -77,7 +77,7 @@
           <div class="grid grid-cols-2 gap-2 text-xs">
             <div class="flex justify-between">
               <span class="text-gray-600">Efectivo:</span>
-              <span class="font-semibold">${{ "{:.2f}".format(closing.sales_cash) }}</span>
+              <span class="font-semibold">${{ "{:.2f}".format(closing.sales_cash + closing.sales_mixed_cash) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Cuenta C.:</span>
@@ -85,11 +85,11 @@
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Transferencia:</span>
-              <span class="font-semibold">${{ "{:.2f}".format(closing.sales_transfer) }}</span>
+              <span class="font-semibold">${{ "{:.2f}".format(closing.sales_transfer + closing.sales_mixed_transfer) }}</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Tarjeta:</span>
-              <span class="font-semibold">${{ "{:.2f}".format(closing.sales_mixed) }}</span>
+              <span class="font-semibold">${{ "{:.2f}".format(closing.sales_mixed_card) }}</span>
             </div>
           </div>
         </div>

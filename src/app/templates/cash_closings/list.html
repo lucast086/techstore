@@ -120,7 +120,7 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
           <div class="bg-gray-50 rounded p-2">
             <div class="text-xs text-gray-600">Efectivo</div>
-            <div class="text-sm font-semibold text-gray-900">${{ "{:.2f}".format(today_status.daily_summary.sales_cash) }}</div>
+            <div class="text-sm font-semibold text-gray-900">${{ "{:.2f}".format(today_status.daily_summary.sales_cash + today_status.daily_summary.sales_mixed_cash) }}</div>
           </div>
           <div class="bg-gray-50 rounded p-2">
             <div class="text-xs text-gray-600">Cuenta C.</div>
@@ -128,11 +128,11 @@
           </div>
           <div class="bg-gray-50 rounded p-2">
             <div class="text-xs text-gray-600">Transferencia</div>
-            <div class="text-sm font-semibold text-gray-900">${{ "{:.2f}".format(today_status.daily_summary.sales_transfer) }}</div>
+            <div class="text-sm font-semibold text-gray-900">${{ "{:.2f}".format(today_status.daily_summary.sales_transfer + today_status.daily_summary.sales_mixed_transfer) }}</div>
           </div>
           <div class="bg-gray-50 rounded p-2">
             <div class="text-xs text-gray-600">Tarjeta</div>
-            <div class="text-sm font-semibold text-gray-900">${{ "{:.2f}".format(today_status.daily_summary.sales_mixed) }}</div>
+            <div class="text-sm font-semibold text-gray-900">${{ "{:.2f}".format(today_status.daily_summary.sales_mixed_card) }}</div>
           </div>
         </div>
       </div>

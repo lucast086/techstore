@@ -322,7 +322,7 @@
                     <div class="info-label">Ventas:</div>
                     <div class="detail-row" style="padding-left: 10px;">
                         <div class="detail-label">Efectivo:</div>
-                        <div>${{ "{:,.2f}".format(closing.sales_cash) }}</div>
+                        <div>${{ "{:,.2f}".format(closing.sales_cash + closing.sales_mixed_cash) }}</div>
                     </div>
                     <div class="detail-row" style="padding-left: 10px;">
                         <div class="detail-label">Cuenta C.:</div>
@@ -330,11 +330,11 @@
                     </div>
                     <div class="detail-row" style="padding-left: 10px;">
                         <div class="detail-label">Transferencia:</div>
-                        <div>${{ "{:,.2f}".format(closing.sales_transfer) }}</div>
+                        <div>${{ "{:,.2f}".format(closing.sales_transfer + closing.sales_mixed_transfer) }}</div>
                     </div>
                     <div class="detail-row" style="padding-left: 10px;">
                         <div class="detail-label">Tarjeta:</div>
-                        <div>${{ "{:,.2f}".format(closing.sales_mixed) }}</div>
+                        <div>${{ "{:,.2f}".format(closing.sales_mixed_card) }}</div>
                     </div>
                 </div>
 

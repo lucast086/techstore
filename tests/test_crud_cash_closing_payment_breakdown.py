@@ -1030,3 +1030,152 @@ class TestDailySummarySchemaFields:
         assert hasattr(
             summary, "sales_mixed_transfer"
         ), "DailySummary should have sales_mixed_transfer field"
+        assert hasattr(
+            summary, "sales_mixed_card"
+        ), "DailySummary should have sales_mixed_card field"
+
+
+class TestMixedPaymentWithCard:
+    """Test mixed payment handling with card component in cash closing."""
+
+    @pytest.fixture
+    def test_customer(self, db_session: Session) -> Customer:
+        """Create a test customer."""
+        customer = Customer(
+            name="Test Customer",
+            phone="1234567890",
+            email="test@example.com",
+        )
+        db_session.add(customer)
+        db_session.commit()
+        db_session.refresh(customer)
+        return customer
+
+    def _create_sale(
+        self,
+        db: Session,
+        user_id: int,
+        customer_id: int,
+        total: Decimal,
+        payment_method: str,
+        sale_datetime: datetime,
+        cash_amount: Decimal = None,
+        transfer_amount: Decimal = None,
+        card_amount: Decimal = None,
+    ) -> Sale:
+        """Helper to create a sale with specific payment method."""
+        import uuid
+
+        invoice_num = f"INV-{sale_datetime.strftime('%Y%m%d')}-{str(uuid.uuid4())[:8]}"
+        sale = Sale(
+            invoice_number=invoice_num,
+            customer_id=customer_id,
+            user_id=user_id,
+            subtotal=total,
+            total_amount=total,
+            paid_amount=total if payment_method != "credit" else Decimal("0.00"),
+            payment_method=payment_method,
+            payment_status="paid" if payment_method != "credit" else "pending",
+            sale_date=sale_datetime,
+            cash_amount=cash_amount,
+            transfer_amount=transfer_amount,
+            card_amount=card_amount,
+        )
+        db.add(sale)
+        return sale
+
+    def test_mixed_payment_cash_and_card(
+        self, db_session: Session, test_user, test_customer
+    ):
+        """Test that mixed cash + card payment is correctly tracked."""
+        test_date = date.today()
+        local_datetime = datetime.combine(test_date, time(12, 0))
+        utc_datetime = local_to_utc(local_datetime)
+
+        self._create_sale(
+            db_session,
+            test_user.id,
+            test_customer.id,
+            Decimal("1000.00"),
+            "mixed",
+            utc_datetime,
+            cash_amount=Decimal("600.00"),
+            card_amount=Decimal("400.00"),
+        )
+        db_session.commit()
+
+        summary = cash_closing.get_daily_summary(db_session, target_date=test_date)
+
+        assert summary.sales_mixed == Decimal("1000.00")
+        assert summary.sales_mixed_cash == Decimal("600.00")
+        assert summary.sales_mixed_card == Decimal("400.00")
+        assert summary.sales_mixed_transfer == Decimal("0.00")
+
+    def test_mixed_payment_all_three_methods(
+        self, db_session: Session, test_user, test_customer
+    ):
+        """Test that mixed cash + card + transfer payment is correctly tracked."""
+        test_date = date.today()
+        local_datetime = datetime.combine(test_date, time(12, 0))
+        utc_datetime = local_to_utc(local_datetime)
+
+        self._create_sale(
+            db_session,
+            test_user.id,
+            test_customer.id,
+            Decimal("1000.00"),
+            "mixed",
+            utc_datetime,
+            cash_amount=Decimal("400.00"),
+            transfer_amount=Decimal("300.00"),
+            card_amount=Decimal("300.00"),
+        )
+        db_session.commit()
+
+        summary = cash_closing.get_daily_summary(db_session, target_date=test_date)
+
+        assert summary.sales_mixed == Decimal("1000.00")
+        assert summary.sales_mixed_cash == Decimal("400.00")
+        assert summary.sales_mixed_transfer == Decimal("300.00")
+        assert summary.sales_mixed_card == Decimal("300.00")
+
+    def test_expected_cash_excludes_card_portion(
+        self, db_session: Session, test_user, test_customer
+    ):
+        """Test that expected cash does NOT include card portion from mixed payments."""
+        test_date = date.today()
+        local_datetime = datetime.combine(test_date, time(12, 0))
+        utc_datetime = local_to_utc(local_datetime)
+        opening_balance = Decimal("1000.00")
+
+        cash_closing.open_cash_register(
+            db_session,
+            target_date=test_date,
+            opening_balance=opening_balance,
+            opened_by=test_user.id,
+        )
+
+        self._create_sale(
+            db_session,
+            test_user.id,
+            test_customer.id,
+            Decimal("1000.00"),
+            "mixed",
+            utc_datetime,
+            cash_amount=Decimal("600.00"),
+            card_amount=Decimal("400.00"),
+        )
+        db_session.commit()
+
+        result = cash_closing.close_cash_register(
+            db_session,
+            target_date=test_date,
+            cash_count=Decimal("1600.00"),
+            closed_by=test_user.id,
+        )
+
+        expected = opening_balance + Decimal("600.00")
+        assert result.expected_cash == expected, (
+            f"Expected cash should be {expected} (opening + cash portion only), "
+            f"got {result.expected_cash}. Card amount should NOT be included."
+        )

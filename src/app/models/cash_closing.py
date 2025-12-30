@@ -94,6 +94,24 @@ class CashClosing(BaseModel):
         default=Decimal("0.00"),
         comment="Mixed payment sales total",
     )
+    sales_mixed_cash: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Cash portion from mixed payment sales",
+    )
+    sales_mixed_transfer: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Transfer portion from mixed payment sales",
+    )
+    sales_mixed_card: Mapped[Decimal] = mapped_column(
+        DECIMAL(10, 2),
+        nullable=False,
+        default=Decimal("0.00"),
+        comment="Card portion from mixed payment sales",
+    )
 
     # Payment method breakdown for expenses
     expenses_cash: Mapped[Decimal] = mapped_column(

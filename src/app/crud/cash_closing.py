@@ -144,6 +144,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
                 ),  # Unpaid = CC
                 func.sum(Sale.cash_amount).label("cash_portion"),
                 func.sum(Sale.transfer_amount).label("transfer_portion"),
+                func.sum(Sale.card_amount).label("card_portion"),
             )
             .filter(Sale.sale_date >= utc_start)
             .filter(Sale.sale_date <= utc_end)
@@ -160,6 +161,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         sales_mixed = Decimal("0.00")
         sales_mixed_cash = Decimal("0.00")
         sales_mixed_transfer = Decimal("0.00")
+        sales_mixed_card = Decimal("0.00")
 
         for row in sales_by_method:
             paid = Decimal(str(row.paid)) if row.paid else Decimal("0.00")
@@ -185,6 +187,11 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
                 sales_mixed_transfer = (
                     Decimal(str(row.transfer_portion))
                     if row.transfer_portion
+                    else Decimal("0.00")
+                )
+                sales_mixed_card = (
+                    Decimal(str(row.card_portion))
+                    if row.card_portion
                     else Decimal("0.00")
                 )
                 sales_credit += credit  # Add unpaid portion to CC
@@ -296,6 +303,7 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
             sales_mixed=sales_mixed,
             sales_mixed_cash=sales_mixed_cash,
             sales_mixed_transfer=sales_mixed_transfer,
+            sales_mixed_card=sales_mixed_card,
             expenses_cash=expenses_cash,
             expenses_transfer=expenses_transfer,
             expenses_card=expenses_card,
@@ -490,6 +498,9 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         existing.sales_credit = summary.sales_credit
         existing.sales_transfer = summary.sales_transfer
         existing.sales_mixed = summary.sales_mixed
+        existing.sales_mixed_cash = summary.sales_mixed_cash
+        existing.sales_mixed_transfer = summary.sales_mixed_transfer
+        existing.sales_mixed_card = summary.sales_mixed_card
         existing.expenses_cash = summary.expenses_cash
         existing.expenses_transfer = summary.expenses_transfer
         existing.expenses_card = summary.expenses_card
