@@ -70,12 +70,12 @@
               <div class="text-right">
                 <p class="text-sm text-gray-500">Balance:</p>
                 <p
-                  class="text-lg font-semibold {% if customer.get('balance', 0) < 0 %}text-red-600{% elif customer.get('balance', 0) > 0 %}text-green-600{% else %}text-gray-600{% endif %}"
+                  class="text-lg font-semibold {% if customer.get('balance', 0) > 0 %}text-red-600{% elif customer.get('balance', 0) < 0 %}text-green-600{% else %}text-gray-600{% endif %}"
                 >
-                  {% if customer.get('balance', 0) < 0 %}
-                    Debe ${{ "{:,.2f}".format(-customer.get('balance', 0)) }}
-                  {% elif customer.get('balance', 0) > 0 %}
-                    Credito ${{ "{:,.2f}".format(customer.get('balance', 0)) }}
+                  {% if customer.get('balance', 0) > 0 %}
+                    Debe ${{ "{:,.2f}".format(customer.get('balance', 0)) }}
+                  {% elif customer.get('balance', 0) < 0 %}
+                    Credito ${{ "{:,.2f}".format(-customer.get('balance', 0)) }}
                   {% else %}
                     $0.00
                   {% endif %}

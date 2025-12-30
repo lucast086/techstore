@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.models.customer import Customer
 from app.models.sale import Sale
-from app.services.balance_service import balance_service
+from app.services.customer_account_service import customer_account_service
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +90,11 @@ class DebtService:
         Returns:
             Total debt amount (positive number).
         """
-        balance = balance_service.calculate_balance(db, customer_id)
-        return abs(balance) if balance < 0 else Decimal("0")
+        # Use CustomerAccount as single source of truth
+        # positive balance = debt, negative = credit
+        balance_info = customer_account_service.get_balance_summary(db, customer_id)
+        balance = balance_info["current_balance"]
+        return balance if balance > 0 else Decimal("0")
 
     def get_debt_notification_message(
         self, db: Session, customer_id: int, debt_amount: Decimal

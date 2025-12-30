@@ -110,7 +110,7 @@ async def get_customer_balance(
     Returns:
         Balance information including amount and status.
     """
-    from app.services.balance_service import balance_service
+    from app.services.customer_account_service import customer_account_service
 
     # Check customer exists
     customer = customer_service.get_customer(db, customer_id)
@@ -119,8 +119,8 @@ async def get_customer_balance(
             status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
         )
 
-    # Get balance information
-    balance_info = balance_service.get_balance_summary(db, customer_id)
+    # Get balance information from CustomerAccount (single source of truth)
+    balance_info = customer_account_service.get_balance_summary(db, customer_id)
 
     return {
         "customer_id": customer_id,

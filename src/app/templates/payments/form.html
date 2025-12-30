@@ -32,11 +32,11 @@
           <span class="text-gray-700">Balance Actual:</span>
           {% if balance_info.has_debt %}
           <span class="text-xl font-bold text-red-600">
-            Debe ${{ "{:,.2f}".format(-balance_info.current_balance) }}
+            Debe ${{ "{:,.2f}".format(balance_info.current_balance) }}
           </span>
           {% elif balance_info.has_credit %}
           <span class="text-xl font-bold text-green-600">
-            Credito ${{ "{:,.2f}".format(balance_info.current_balance) }}
+            Credito ${{ "{:,.2f}".format(-balance_info.current_balance) }}
           </span>
           {% else %}
           <span class="text-xl font-bold text-gray-900">$0.00</span>
@@ -300,7 +300,7 @@
 </div>
 
 <script>
-  // Current balance (negative means debt)
+  // Current balance: positive = debt (customer owes), negative = credit (customer has credit)
   const currentBalance = {{ balance_info.current_balance }};
 
   function togglePaymentType() {
@@ -385,20 +385,21 @@
     const amount = parseFloat(amountInput.value) || 0;
 
     if (amount > 0) {
-      // Payment increases balance (reduces debt or increases credit)
-      const resultingBalance = currentBalance + amount;
+      // Payment reduces debt (positive balance) or increases credit (negative balance)
+      // Formula: newBalance = oldBalance - payment
+      const resultingBalance = currentBalance - amount;
       const resultingDiv = document.getElementById('resulting-balance');
       const resultingAmount = document.getElementById('resulting-balance-amount');
 
       resultingDiv.style.display = 'block';
 
-      if (resultingBalance < 0) {
-        // Still has debt
-        resultingAmount.textContent = `Debe $${Math.abs(resultingBalance).toFixed(2)}`;
+      if (resultingBalance > 0) {
+        // Still has debt (positive balance = customer owes)
+        resultingAmount.textContent = `Debe $${resultingBalance.toFixed(2)}`;
         resultingAmount.className = 'text-lg font-semibold text-red-600';
-      } else if (resultingBalance > 0) {
-        // Will have credit
-        resultingAmount.textContent = `Credito $${resultingBalance.toFixed(2)}`;
+      } else if (resultingBalance < 0) {
+        // Will have credit (negative balance = customer has credit)
+        resultingAmount.textContent = `Credito $${Math.abs(resultingBalance).toFixed(2)}`;
         resultingAmount.className = 'text-lg font-semibold text-green-600';
       } else {
         // Exactly zero

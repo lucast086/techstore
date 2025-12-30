@@ -11,7 +11,6 @@ from app.crud.sale import sale_crud
 from app.models.payment import Payment
 from app.models.sale import Sale
 from app.schemas.payment import PaymentCreate, PaymentMethodDetail
-from app.services.balance_service import balance_service
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +80,7 @@ class PaymentService:
 
         try:
             customer_account_service.record_payment(db, payment, user_id)
+            db.commit()  # Commit the customer account changes
             logger.info(
                 f"Payment recorded in customer account for customer {customer_id}"
             )
@@ -178,17 +178,20 @@ class PaymentService:
             ValueError: If payment amount is invalid.
         """
         from app.models.payment import PaymentType
+        from app.services.customer_account_service import customer_account_service
 
-        # Get current balance (negative means customer owes money)
-        current_balance = balance_service.calculate_balance(db, customer_id)
+        # Get current balance from CustomerAccount (single source of truth)
+        # positive = debt (customer owes), negative = credit
+        balance_info = customer_account_service.get_balance_summary(db, customer_id)
+        current_balance = balance_info["current_balance"]
 
         # Determine payment type based on balance
-        if current_balance >= 0:
-            # Customer has no debt or has credit - this is an advance payment
+        if current_balance <= 0:
+            # Customer has no debt (zero or credit) - this is an advance payment
             return PaymentType.advance_payment
         else:
-            # Customer has debt
-            debt_amount = abs(current_balance)
+            # Customer has debt (positive balance)
+            debt_amount = current_balance  # Already positive
             if payment_amount > debt_amount and not allow_overpayment:
                 raise ValueError(
                     f"Payment amount (${payment_amount}) exceeds outstanding balance (${debt_amount})"

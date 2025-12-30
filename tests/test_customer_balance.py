@@ -243,7 +243,7 @@ class TestCustomerBalance:
             notes="Credit used for purchase",
         )
 
-        # Check credit was reduced
+        # Check credit was consumed by the sale
         account_after = (
             db_session.query(CustomerAccount)
             .filter(CustomerAccount.customer_id == customer_with_credit.id)
@@ -255,12 +255,15 @@ class TestCustomerBalance:
             else Decimal("0.00")
         )
 
-        # Initial: -$200 (credit), Sale adds +$110 (debt) = -$90, Credit applies -$110 = -$200
-        # Final: -$200 (back to original credit since credit paid for the debt)
+        # NEW FLOW: Credit is consumed automatically when SALE is recorded
+        # Initial: -$200 (credit)
+        # Sale adds +$110 (debt): -200 + 110 = -$90
+        # apply_credit() is INFORMATIONAL only - does NOT change balance
+        # Final: -$90 (customer used $110 of their $200 credit)
         assert account_after.account_balance == Decimal(
-            "-200.00"
-        )  # Back to original credit
-        assert remaining_credit == Decimal("200.00")  # Still has full credit available
+            "-90.00"
+        )  # Credit reduced by sale amount
+        assert remaining_credit == Decimal("90.00")  # Remaining credit after sale
 
     def test_customer_credit_sufficient_excess(
         self,
@@ -316,7 +319,7 @@ class TestCustomerBalance:
         # Should still have credit remaining
         assert account_after.account_balance < Decimal("0.00")  # Still has credit
 
-    def test_customer_credit_insufficient(
+    def test_customer_credit_consumed_by_sale(
         self,
         db_session: Session,
         test_user: User,
@@ -324,10 +327,20 @@ class TestCustomerBalance:
         test_product: Product,
         open_cash_register,
     ):
-        """Test 5.3: Customer credit insufficient for sale (should fail).
+        """Test 5.3: Customer credit is consumed by the SALE transaction.
 
-        Customer has $200 credit, tries to apply $250
+        Customer has $200 credit, sale of $330 creates $130 debt.
+        Credit is automatically consumed when SALE is recorded.
+        apply_credit() is informational only (for traceability).
         """
+        # Get initial balance
+        account_before = (
+            db_session.query(CustomerAccount)
+            .filter(CustomerAccount.customer_id == customer_with_credit.id)
+            .first()
+        )
+        assert account_before.account_balance == Decimal("-200.00")  # $200 credit
+
         # Create a large sale
         sale_data = SaleCreate(
             customer_id=customer_with_credit.id,
@@ -350,21 +363,24 @@ class TestCustomerBalance:
             db=db_session, sale_in=sale_data, user_id=test_user.id
         )
 
-        # Try to apply $250 credit (more than $200 available)
-        with pytest.raises(ValueError) as excinfo:
-            customer_account_service.apply_credit(
-                db=db_session,
-                customer_id=customer_with_credit.id,
-                amount=Decimal("250.00"),  # More than available
-                sale_id=sale.id,
-                created_by_id=test_user.id,
-                notes="Insufficient credit attempt",
-            )
+        # After SALE, credit is consumed: -$200 + $330 = $130 debt
+        db_session.refresh(account_before)
+        assert account_before.account_balance == Decimal("130.00")  # Now has debt
 
-        assert (
-            "Insufficient credit" in str(excinfo.value)
-            or "insufficient" in str(excinfo.value).lower()
+        # apply_credit is now INFORMATIONAL only - doesn't change balance
+        # It just records that credit was used for traceability
+        customer_account_service.apply_credit(
+            db=db_session,
+            customer_id=customer_with_credit.id,
+            amount=Decimal("200.00"),  # Record the credit that was used
+            sale_id=sale.id,
+            created_by_id=test_user.id,
+            notes="Credit usage recorded for traceability",
         )
+
+        # Balance should remain unchanged (informational transaction)
+        db_session.refresh(account_before)
+        assert account_before.account_balance == Decimal("130.00")
 
     def test_use_partial_credit_plus_cash(
         self,
@@ -961,5 +977,9 @@ class TestCustomerBalance:
 
         # Should succeed
         db_session.refresh(account)
-        # Initial: -$100, Sale: +$55, Credit: -$55 = -$100
-        assert account.account_balance == Decimal("-100.00")
+        # NEW FLOW: apply_credit is INFORMATIONAL only
+        # Initial: -$100 (credit)
+        # Sale: +$55 (debt) → balance = -$45 (credit consumed by sale)
+        # apply_credit: informational only, no balance change
+        # Final: -$45 (customer used $55 of their $100 credit)
+        assert account.account_balance == Decimal("-45.00")

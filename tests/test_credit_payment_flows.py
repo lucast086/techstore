@@ -756,11 +756,11 @@ class TestCreditPaymentFlows:
             notes="Credit payment",
         )
 
-        # After applying credit, balance should be back to original
-        # Balance: -$669 - $100 (credit applied) = -$769 (back to original)
+        # NEW FLOW: apply_credit is INFORMATIONAL only (for traceability)
+        # Balance remains unchanged: -$669 (credit already consumed by SALE)
         db_session.refresh(jane_with_credit)
         balance_after_credit = jane_with_credit.account.account_balance
-        assert balance_after_credit == Decimal("-769.00")
+        assert balance_after_credit == Decimal("-669.00")
 
         # Try to apply credit again to the same sale - should fail
         with pytest.raises(ValueError, match="already has a CREDIT_APPLICATION"):

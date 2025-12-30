@@ -149,6 +149,89 @@ class CustomerAccountService:
 
         return account
 
+    def get_balance_summary(self, db: Session, customer_id: int) -> dict:
+        """Get balance summary from CustomerAccount.
+
+        This is the SINGLE SOURCE OF TRUTH for customer balance.
+        All UI components should use this method instead of calculating
+        balance from Sales - Payments.
+
+        Args:
+            db: Database session
+            customer_id: Customer ID
+
+        Returns:
+            Dict with balance info:
+            - current_balance: Decimal (positive=debt, negative=credit)
+            - has_debt: bool
+            - has_credit: bool
+            - status: str ('debt', 'credit', 'clear')
+            - formatted: str
+        """
+        account = (
+            db.query(CustomerAccount)
+            .filter(CustomerAccount.customer_id == customer_id)
+            .first()
+        )
+
+        if not account:
+            # No account yet - balance is zero
+            return {
+                "current_balance": Decimal("0.00"),
+                "has_debt": False,
+                "has_credit": False,
+                "status": "clear",
+                "formatted": "$0.00",
+            }
+
+        balance = account.account_balance
+
+        if balance > 0:
+            status = "debt"
+            formatted = f"Debe ${balance:,.2f}"
+        elif balance < 0:
+            status = "credit"
+            formatted = f"Crédito ${abs(balance):,.2f}"
+        else:
+            status = "clear"
+            formatted = "$0.00"
+
+        return {
+            "current_balance": balance,
+            "has_debt": balance > 0,
+            "has_credit": balance < 0,
+            "status": status,
+            "formatted": formatted,
+        }
+
+    def get_payment_transaction_balances(
+        self, db: Session, payment_id: int
+    ) -> tuple[Decimal, Decimal]:
+        """Get balance_before and balance_after from the payment transaction.
+
+        Args:
+            db: Database session
+            payment_id: Payment ID
+
+        Returns:
+            Tuple of (balance_before, balance_after)
+        """
+        transaction = (
+            db.query(CustomerTransaction)
+            .filter(
+                CustomerTransaction.reference_type == "payment",
+                CustomerTransaction.reference_id == payment_id,
+            )
+            .first()
+        )
+
+        if transaction:
+            return transaction.balance_before, transaction.balance_after
+
+        # Fallback: return current balance for both if transaction not found
+        logger.warning(f"No transaction found for payment {payment_id}")
+        return Decimal("0.00"), Decimal("0.00")
+
     def record_sale(
         self, db: Session, sale: Sale, created_by_id: int
     ) -> CustomerTransactionResponse:
@@ -412,21 +495,29 @@ class CustomerAccountService:
         created_by_id: int,
         notes: Optional[str] = None,
     ) -> tuple[CustomerTransactionResponse, Decimal]:
-        """Apply customer credit to a sale.
+        """Record credit usage for a sale (informational transaction).
+
+        This function records that customer credit was used to pay for a sale.
+        It does NOT modify the account balance because the credit is automatically
+        consumed when the SALE transaction is recorded (balance goes up by sale amount,
+        consuming any negative balance/credit the customer had).
+
+        This transaction is for TRACEABILITY only - to show in the customer's
+        transaction history that their credit was used for this specific sale.
 
         Args:
             db: Database session
             customer_id: Customer ID
-            amount: Amount to apply
-            sale_id: Sale to apply credit to
-            created_by_id: User applying credit
+            amount: Amount of credit used
+            sale_id: Sale where credit was applied
+            created_by_id: User recording the credit usage
             notes: Optional notes
 
         Returns:
             Tuple of (transaction, actual_amount_applied)
 
         Raises:
-            ValueError: If insufficient credit or invalid amount
+            ValueError: If credit was already recorded for this sale
         """
         account = self.get_or_create_account(db, customer_id, created_by_id)
 
@@ -434,16 +525,11 @@ class CustomerAccountService:
         if account.is_blocked:
             raise ValueError(f"Account is blocked: {account.block_reason}")
 
-        # NEW FLOW: Calculate available credit considering that sale might already be recorded
-        # We need to check the credit balance BEFORE this sale was created
-        # Get the sale to subtract its amount from current balance
+        # Get the sale
         sale = db.query(Sale).filter(Sale.id == sale_id).first()
         if not sale:
             raise ValueError(f"Sale {sale_id} not found")
 
-        # Calculate original credit (before this sale)
-        # If sale was already recorded as SALE transaction, we need to subtract it
-        # to get the original credit balance
         from app.models.customer_account import CustomerTransaction, TransactionType
 
         # Check if credit was already applied to this sale
@@ -462,53 +548,24 @@ class CustomerAccountService:
         if credit_application_exists:
             raise ValueError(
                 f"Sale {sale_id} already has a CREDIT_APPLICATION transaction. "
-                "Cannot apply credit twice to the same sale."
+                "Cannot record credit usage twice for the same sale."
             )
 
-        sale_transaction_exists = (
-            db.query(CustomerTransaction)
-            .filter(
-                CustomerTransaction.customer_id == customer_id,
-                CustomerTransaction.reference_type == "sale",
-                CustomerTransaction.reference_id == sale_id,
-                CustomerTransaction.transaction_type == TransactionType.SALE,
-            )
-            .first()
-        )
-
-        if sale_transaction_exists:
-            # Sale was already recorded, calculate original credit
-            original_credit_balance = account.account_balance - sale.total_amount
-        else:
-            # Sale not recorded yet (old flow), use current balance
-            original_credit_balance = account.account_balance
-
-        # Check available credit based on original balance
-        if original_credit_balance >= 0:
-            raise ValueError("Customer has no credit balance to apply")
-
-        available = abs(original_credit_balance)
-        if amount > available:
-            raise ValueError(
-                f"Insufficient credit. Available: ${available}, Requested: ${amount}"
-            )
-
-        # Create transaction
+        # Create INFORMATIONAL transaction (balance does NOT change)
+        # The credit was already consumed when the SALE was recorded
         balance_before = account.account_balance
-        balance_after = (
-            balance_before - amount
-        )  # Applying credit reduces balance (debt)
+        balance_after = balance_before  # NO CHANGE - this is informational only
 
         transaction = CustomerTransaction(
             customer_id=customer_id,
             account_id=account.id,
             transaction_type=TransactionType.CREDIT_APPLICATION,
-            amount=amount,  # Amount is always positive, transaction_type determines impact
+            amount=amount,
             balance_before=balance_before,
-            balance_after=balance_after,
+            balance_after=balance_after,  # Same as before - no balance change
             reference_type="sale",
             reference_id=sale_id,
-            description=f"Credit applied to sale {sale.invoice_number}",
+            description=f"Credit used for sale {sale.invoice_number}",
             notes=notes,
             transaction_date=get_utc_now(),
             created_by_id=created_by_id,
@@ -516,11 +573,7 @@ class CustomerAccountService:
 
         db.add(transaction)
 
-        # Update account
-        account.account_balance = balance_after
-        account.available_credit = (
-            abs(balance_after) if balance_after < 0 else Decimal("0.00")
-        )
+        # Update account metadata (but NOT the balance)
         account.last_transaction_date = transaction.transaction_date
         account.transaction_count += 1
         account.updated_by_id = created_by_id
@@ -529,7 +582,8 @@ class CustomerAccountService:
         db.flush()
 
         logger.info(
-            f"Applied ${amount} credit to sale {sale_id} for customer {customer_id}"
+            f"Recorded credit usage: ${amount} for sale {sale_id}, "
+            f"customer {customer_id} (informational - balance unchanged)"
         )
 
         return self._format_transaction_response(db, transaction), amount

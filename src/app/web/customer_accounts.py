@@ -211,7 +211,13 @@ async def apply_credit_to_sale(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Apply customer credit to a sale."""
+    """Apply customer credit to a sale.
+
+    TODO: This endpoint is not currently used in the frontend.
+    Credit is now automatically consumed when a sale is created (SALE transaction).
+    This endpoint only records an informational CREDIT_APPLICATION transaction.
+    Consider deprecating or repurposing this endpoint.
+    """
     try:
         # Apply credit
         transaction, applied_amount = customer_account_service.apply_credit(

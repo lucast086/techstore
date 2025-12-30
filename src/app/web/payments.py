@@ -15,7 +15,7 @@ from app.crud.payment import payment_crud
 from app.dependencies import get_db
 from app.models.user import User
 from app.schemas.payment import PaymentCreate, PaymentMethodDetail
-from app.services.balance_service import balance_service
+from app.services.customer_account_service import customer_account_service
 from app.services.payment_service import payment_service
 from app.services.receipt_service import receipt_service
 from app.utils.templates import create_templates
@@ -154,8 +154,8 @@ async def payment_form(
         if not sale or sale.customer_id != customer_id:
             sale = None
 
-    # Get current balance
-    balance_info = balance_service.get_balance_summary(db, customer_id)
+    # Get current balance from CustomerAccount (single source of truth)
+    balance_info = customer_account_service.get_balance_summary(db, customer_id)
 
     return templates.TemplateResponse(
         "payments/form.html",
@@ -229,7 +229,7 @@ async def record_payment(
         logger.error(f"Error recording payment: {e}")
 
         # Get balance info again for form display
-        balance_info = balance_service.get_balance_summary(db, customer_id)
+        balance_info = customer_account_service.get_balance_summary(db, customer_id)
 
         return templates.TemplateResponse(
             "payments/record_payment.html",
@@ -280,11 +280,11 @@ async def view_receipt(
             status_code=404,
         )
 
-    # Calculate balances
-    balance_before = balance_service.calculate_balance_before_payment(
-        db, payment.customer_id, payment.id
-    )
-    balance_after = balance_before + payment.amount
+    # Get balances from the CustomerTransaction (single source of truth)
+    (
+        balance_before,
+        balance_after,
+    ) = customer_account_service.get_payment_transaction_balances(db, payment.id)
 
     receipt_data = {
         "request": request,
@@ -331,8 +331,9 @@ async def whatsapp_receipt(
     if not payment:
         return {"error": "Payment not found"}
 
-    # Calculate new balance
-    new_balance = balance_service.calculate_balance(db, payment.customer_id)
+    # Get balance from CustomerAccount (single source of truth)
+    balance_info = customer_account_service.get_balance_summary(db, payment.customer_id)
+    new_balance = balance_info["current_balance"]
 
     message = (
         f"*Payment Receipt - {payment.receipt_number}*\n\n"
@@ -343,10 +344,12 @@ async def whatsapp_receipt(
 
     if new_balance == 0:
         message += "✅ *ACCOUNT PAID IN FULL*\n\n"
-    elif new_balance < 0:
-        message += f"Remaining Balance: ${abs(new_balance):.2f}\n\n"
+    elif new_balance > 0:
+        # Positive = debt (customer still owes)
+        message += f"Remaining Balance: ${new_balance:.2f}\n\n"
     else:
-        message += f"Account Credit: ${new_balance:.2f}\n\n"
+        # Negative = credit (customer has credit)
+        message += f"Account Credit: ${abs(new_balance):.2f}\n\n"
 
     message += "Thank you for your payment!"
 
@@ -527,7 +530,7 @@ async def process_payment(
 
         # Get customer and balance info for error display
         customer = customer_crud.get(db, customer_id)
-        balance_info = balance_service.get_balance_summary(db, customer_id)
+        balance_info = customer_account_service.get_balance_summary(db, customer_id)
 
         # Get sale if provided
         sale = None
