@@ -335,8 +335,8 @@ class CashClosingService:
 
         days_old = (business_day - open_register.closing_date).days
 
-        if days_old == 0:
-            # Register is for today, all good
+        if days_old <= 0:
+            # Register is for today or future (e.g., opened after midnight), all good
             return {"has_pending": False}
 
         # 1+ days old = CRITICAL (red alert from day 1)
