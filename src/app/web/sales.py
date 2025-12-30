@@ -655,12 +655,12 @@ async def process_checkout(
             else Decimal("0")
         )
 
-        # IMPORTANT: For mixed payments, amount_paid should NOT include credit
-        # Credit will be applied separately after sale creation
-        # This prevents double-recording the credit amount
-        total_paid_no_credit = safe_cash + safe_transfer + safe_card
-        if total_paid_no_credit > 0:
-            amount_paid = total_paid_no_credit
+        # For mixed payments, amount_paid INCLUDES credit portion
+        # This ensures the sale is marked as "paid" when fully covered
+        # Credit application is recorded separately for traceability only
+        total_paid = safe_cash + safe_transfer + safe_card + safe_credit
+        if total_paid > 0:
+            amount_paid = total_paid
 
         payment_details = []
         if safe_cash > 0:
