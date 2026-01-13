@@ -65,19 +65,94 @@
         </div>
         {% endif %}
 
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Reparaciones Recibidas -->
+            <a href="/repairs?status=received" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow border-l-4 {% if stats.repairs_received_alert %}border-red-500{% else %}border-yellow-500{% endif %}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Reparaciones Recibidas</p>
+                        <p class="text-3xl font-bold {% if stats.repairs_received_alert %}text-red-600{% else %}text-gray-900{% endif %} mt-1">{{ stats.repairs_received }}</p>
+                        {% if stats.repairs_received_alert %}
+                        <p class="text-xs text-red-500 mt-1">Requiere atención</p>
+                        {% endif %}
+                    </div>
+                    <div class="{% if stats.repairs_received_alert %}bg-red-100{% else %}bg-yellow-100{% endif %} p-3 rounded-lg">
+                        <svg class="w-8 h-8 {% if stats.repairs_received_alert %}text-red-600{% else %}text-yellow-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Stock Bajo -->
+            <a href="/products?stock_status=low_stock" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow border-l-4 {% if stats.low_stock_alert %}border-red-500{% else %}border-orange-500{% endif %}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Productos Stock Bajo</p>
+                        <p class="text-3xl font-bold {% if stats.low_stock_alert %}text-red-600{% else %}text-gray-900{% endif %} mt-1">{{ stats.low_stock_count }}</p>
+                        {% if stats.out_of_stock_count > 0 %}
+                        <p class="text-xs text-red-500 mt-1">{{ stats.out_of_stock_count }} sin stock</p>
+                        {% endif %}
+                    </div>
+                    <div class="{% if stats.low_stock_alert %}bg-red-100{% else %}bg-orange-100{% endif %} p-3 rounded-lg">
+                        <svg class="w-8 h-8 {% if stats.low_stock_alert %}text-red-600{% else %}text-orange-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Deuda Clientes -->
+            <a href="/customers?filter=with_debt" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow border-l-4 {% if stats.debt_alert %}border-red-500{% else %}border-blue-500{% endif %}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Deuda Clientes</p>
+                        <p class="text-3xl font-bold {% if stats.debt_alert %}text-red-600{% else %}text-gray-900{% endif %} mt-1">S/ {{ "%.2f"|format(stats.customer_debt_total) }}</p>
+                        {% if stats.debt_alert %}
+                        <p class="text-xs text-red-500 mt-1">Supera el límite</p>
+                        {% endif %}
+                    </div>
+                    <div class="{% if stats.debt_alert %}bg-red-100{% else %}bg-blue-100{% endif %} p-3 rounded-lg">
+                        <svg class="w-8 h-8 {% if stats.debt_alert %}text-red-600{% else %}text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Ventas del Día -->
+            <a href="/sales" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Ventas del Día</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">S/ {{ "%.2f"|format(stats.today_sales_total) }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Total facturado hoy</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Welcome Card -->
         <div class="bg-white overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
                 <h2 class="text-lg font-medium text-gray-900">Bienvenido a TechStore</h2>
                 <p class="mt-1 text-sm text-gray-600">
-                    Has iniciado sesión exitosamente. Este es el dashboard principal.
+                    Panel de control principal. Usa las cards arriba para acceder rápidamente a las áreas que requieren atención.
                 </p>
-                {% if request.state.current_user %}
+                {% if current_user %}
                     <div class="mt-4 p-4 bg-blue-50 rounded-md">
                         <p class="text-sm text-blue-700">
-                            <strong>Usuario:</strong> {{ request.state.current_user.name or request.state.current_user.email }}
+                            <strong>Usuario:</strong> {{ current_user.full_name or current_user.email }}
                         </p>
                         <p class="text-sm text-blue-700">
-                            <strong>Rol:</strong> {{ request.state.current_user.role }}
+                            <strong>Rol:</strong> {{ current_user.role }}
                         </p>
                     </div>
                 {% endif %}

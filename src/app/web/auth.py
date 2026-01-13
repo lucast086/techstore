@@ -100,12 +100,18 @@ async def dashboard(
 
         pending_register = cash_closing_service.check_pending_cash_register(db)
 
+        # Get dashboard statistics
+        from app.services.dashboard_service import dashboard_service
+
+        stats = dashboard_service.get_dashboard_stats(db)
+
         return templates.TemplateResponse(
             "dashboard.html",
             {
                 "request": request,
                 "current_user": current_user,
                 "pending_register": pending_register,
+                "stats": stats,
             },
         )
     except HTTPException:
