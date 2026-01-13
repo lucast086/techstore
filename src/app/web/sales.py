@@ -32,7 +32,7 @@ async def pos_interface(
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Render Point of Sale interface."""
-    # Check if cash register is open (uses business day with 4 AM cutoff)
+    # Check if cash register is open (uses business day with midnight cutoff)
     can_process, reason = cash_closing_service.check_can_process_sale(db=db)
 
     if not can_process:
@@ -696,7 +696,7 @@ async def process_checkout(
     )
 
     try:
-        # Check if cash register is open (uses business day with 4 AM cutoff)
+        # Check if cash register is open (uses business day with midnight cutoff)
         can_process, reason = cash_closing_service.check_can_process_sale(db=db)
         if not can_process:
             return HTMLResponse(

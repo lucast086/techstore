@@ -1,7 +1,7 @@
 """Tests for business day cutoff logic and pending register detection.
 
 Tests cover:
-- Business day calculation with 4 AM cutoff
+- Business day calculation with midnight cutoff
 - Pending cash register detection
 - Operating with old registers (warning scenario)
 - Sales across midnight boundary
@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 
 
 class TestBusinessDayCutoff:
-    """Test business day calculation with 4 AM cutoff."""
+    """Test business day calculation with midnight cutoff."""
 
     @pytest.fixture
     def test_user(self, db_session: Session) -> User:
@@ -103,60 +103,60 @@ class TestBusinessDayCutoff:
 
         return customer
 
-    def test_business_day_before_cutoff(self):
-        """Test business day calculation before 4 AM cutoff.
+    def test_business_day_early_morning(self):
+        """Test business day calculation early morning.
 
-        Expected: Returns previous calendar day.
+        With midnight cutoff, business day always matches calendar day.
         """
-        # Mock time: 2025-11-13 02:30 AM (before 4 AM)
+        # Mock time: 2025-11-13 02:30 AM
         mock_time = datetime(2025, 11, 13, 2, 30, 0, tzinfo=ZoneInfo("America/Lima"))
 
         with patch("app.utils.timezone.get_local_now", return_value=mock_time):
             business_day = get_cash_register_business_day()
 
-            # Should return previous day (11-12) because it's before 4 AM
-            assert business_day == date(2025, 11, 12)
+            # Should return current calendar day (11-13)
+            assert business_day == date(2025, 11, 13)
 
-    def test_business_day_after_cutoff(self):
-        """Test business day calculation after 4 AM cutoff.
+    def test_business_day_morning(self):
+        """Test business day calculation in the morning.
 
-        Expected: Returns current calendar day.
+        With midnight cutoff, business day always matches calendar day.
         """
-        # Mock time: 2025-11-13 04:30 AM (after 4 AM)
+        # Mock time: 2025-11-13 04:30 AM
         mock_time = datetime(2025, 11, 13, 4, 30, 0, tzinfo=ZoneInfo("America/Lima"))
 
         with patch("app.utils.timezone.get_local_now", return_value=mock_time):
             business_day = get_cash_register_business_day()
 
-            # Should return current day (11-13) because it's after 4 AM
+            # Should return current calendar day (11-13)
             assert business_day == date(2025, 11, 13)
 
-    def test_business_day_exactly_at_cutoff(self):
-        """Test business day calculation exactly at 4 AM.
+    def test_business_day_exactly_at_midnight(self):
+        """Test business day calculation exactly at midnight.
 
-        Expected: Returns current calendar day (4 AM is after cutoff).
+        At 00:00 of the 13th, business day is the 13th.
         """
-        # Mock time: 2025-11-13 04:00 AM (exactly 4 AM)
-        mock_time = datetime(2025, 11, 13, 4, 0, 0, tzinfo=ZoneInfo("America/Lima"))
+        # Mock time: 2025-11-13 00:00 (exactly midnight)
+        mock_time = datetime(2025, 11, 13, 0, 0, 0, tzinfo=ZoneInfo("America/Lima"))
 
         with patch("app.utils.timezone.get_local_now", return_value=mock_time):
             business_day = get_cash_register_business_day()
 
-            # Should return current day because hour 4 is NOT < 4
+            # Should return current calendar day (11-13)
             assert business_day == date(2025, 11, 13)
 
-    def test_sale_after_midnight_uses_previous_day_register(
+    def test_sale_before_midnight_uses_same_day_register(
         self,
         db_session: Session,
         test_user: User,
         test_product: Product,
         customer_with_account: Customer,
     ):
-        """Test that sales after midnight go to previous day's register.
+        """Test that sales before midnight use same day's register.
 
         Scenario:
         - Open register for day 12
-        - Mock time to 13th at 01:00 AM (before 4 AM cutoff)
+        - Mock time to 12th at 23:30 (before midnight)
         - Create sale
         - Sale should be accepted (goes to day 12 register)
         """
@@ -170,11 +170,11 @@ class TestBusinessDayCutoff:
         )
         db_session.commit()
 
-        # Mock time: Next day at 01:00 AM (before 4 AM cutoff)
-        mock_time = datetime(2025, 11, 13, 1, 0, 0, tzinfo=ZoneInfo("America/Lima"))
+        # Mock time: Same day at 23:30 (before midnight)
+        mock_time = datetime(2025, 11, 12, 23, 30, 0, tzinfo=ZoneInfo("America/Lima"))
 
         with patch("app.utils.timezone.get_local_now", return_value=mock_time):
-            # Business day should still be 11-12
+            # Business day should be 11-12
             assert get_cash_register_business_day() == date(2025, 11, 12)
 
             # Sale should be allowed
@@ -310,13 +310,17 @@ class TestPendingCashRegister:
             assert result["days_old"] == 3
             assert "3 días" in result["message"]
 
-    def test_pending_register_before_cutoff(self, db_session: Session, test_user: User):
-        """Test pending register check before 4 AM cutoff.
+    def test_pending_register_after_midnight(
+        self, db_session: Session, test_user: User
+    ):
+        """Test pending register check after midnight.
+
+        With midnight cutoff, register from previous day is immediately pending.
 
         Scenario:
         - Open register for day 12
-        - Mock time to day 13 at 02:00 AM (before cutoff)
-        - Should NOT show as pending (still business day 12)
+        - Mock time to day 13 at 02:00 AM
+        - Should show as pending (business day is now 13)
         """
         # Open register for day 12
         register_date = date(2025, 11, 12)
@@ -328,14 +332,15 @@ class TestPendingCashRegister:
         )
         db_session.commit()
 
-        # Mock time: Next day at 02:00 AM (before 4 AM cutoff)
+        # Mock time: Next day at 02:00 AM
         mock_time = datetime(2025, 11, 13, 2, 0, 0, tzinfo=ZoneInfo("America/Lima"))
 
         with patch("app.utils.timezone.get_local_now", return_value=mock_time):
-            # Business day is still 11-12
-            assert get_cash_register_business_day() == date(2025, 11, 12)
+            # Business day is now 11-13
+            assert get_cash_register_business_day() == date(2025, 11, 13)
 
             result = cash_closing_service.check_pending_cash_register(db_session)
 
-            # Should NOT be pending (register is for current business day)
-            assert result["has_pending"] is False
+            # Should be pending (register is from previous day)
+            assert result["has_pending"] is True
+            assert result["days_old"] == 1

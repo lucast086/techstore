@@ -309,7 +309,7 @@ async def check_can_process_sale(
 ) -> ResponseSchema:
     """Check if sales can be processed for current business day.
 
-    Uses business day logic with 4 AM cutoff to determine which register should be used.
+    Uses business day logic with midnight cutoff to determine which register should be used.
 
     Returns whether sales are allowed and reason if not.
     """

@@ -274,7 +274,7 @@ class CashClosingService:
     def check_can_process_sale(self, db: Session) -> tuple[bool, str]:
         """Check if sales can be processed.
 
-        Uses business day logic (4 AM cutoff) to determine which cash register
+        Uses business day logic (midnight cutoff) to determine which cash register
         should be used. Allows operation with previous day's register but logs
         a warning for audit purposes.
 
@@ -284,7 +284,7 @@ class CashClosingService:
         Returns:
             Tuple of (can_process, reason_if_not).
         """
-        # Get current business day (with 4 AM cutoff)
+        # Get current business day (with midnight cutoff)
         business_day = get_cash_register_business_day()
 
         # Check if there's any open register

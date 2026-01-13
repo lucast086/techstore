@@ -73,7 +73,7 @@ class SaleCRUD:
                 sale_in.customer_id = 1
 
             # Check if sales are allowed (cash closing check)
-            # Uses business day logic with 4 AM cutoff
+            # Uses business day logic with midnight cutoff
             from app.services.cash_closing_service import cash_closing_service
 
             can_process, reason = cash_closing_service.check_can_process_sale(db=db)

@@ -75,3 +75,4 @@ notes.md
 
 #claude
 .claude/
+.claude/settings.local.json
