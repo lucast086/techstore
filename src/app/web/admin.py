@@ -791,3 +791,47 @@ async def admin_report_accounts_receivable_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get(
+    "/reports/repairs-monthly/pdf",
+    dependencies=[Depends(require_web_role(["admin"]))],
+)
+async def admin_report_repairs_monthly_pdf(
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    year: int,
+    month: int,
+    db: Session = Depends(get_async_session),
+) -> Response:
+    """Generate and download monthly repairs PDF report.
+
+    Args:
+        current_user: Currently authenticated admin user.
+        year: Year to filter (e.g., 2024).
+        month: Month to filter (1-12).
+        db: Database session.
+
+    Returns:
+        PDF file download response.
+    """
+    from app.services.report_service import report_service
+
+    if month < 1 or month > 12:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail="Mes inválido (debe ser 1-12)")
+
+    logger.info(
+        f"Monthly repairs report requested by admin: {current_user.email} "
+        f"for {year}-{month:02d}"
+    )
+
+    pdf_content = report_service.generate_monthly_repairs_report(db, year, month)
+
+    filename = f"reparaciones_{year}_{month:02d}.pdf"
+
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )

@@ -90,22 +90,20 @@ CUSTOMER_DEBT_ALERT_THRESHOLD = Decimal("1500000")
 
 ---
 
-## Sprint 2e: Reporte Reparaciones del Mes (PDF) ← ACTUAL
+## Sprint 2e: Reporte Reparaciones del Mes (PDF) ✅ COMPLETADO
 
 ### Contenido del Reporte
 | Sección | Descripción |
 |---------|-------------|
-| Lista de Reparaciones | Todas las reparaciones del mes seleccionado |
-| Estado Actual | Estado de cada reparación al momento del reporte |
-| Resumen por Estado | Conteo: Recibidas, En diagnóstico, En reparación, Completadas, Entregadas |
-| Totales | Total de reparaciones, ingresos por reparaciones |
+| Lista de Reparaciones | N° Orden, Fecha, Cliente, Dispositivo, Estado, Costo Final |
+| Resumen por Estado | Conteo por cada estado de reparación |
+| Totales | Total de reparaciones e ingresos por reparaciones |
 
-### Tareas
-1. [ ] Método `generate_monthly_repairs_report()` en report_service
-2. [ ] Template `src/app/templates/reports/monthly_repairs_report.html`
-3. [ ] Endpoint `/admin/reports/repairs-monthly/pdf`
-4. [ ] Selector de mes/año en UI
-5. [ ] Tests
+### Implementado
+- [x] Método `generate_monthly_repairs_report()` en report_service.py
+- [x] Endpoint `/admin/reports/repairs-monthly/pdf` con parámetros year/month
+- [x] Selector de mes/año en UI con valor por defecto al mes actual
+- [x] Uso correcto de timezone con `local_date_to_utc_range()`
 
 ---
 

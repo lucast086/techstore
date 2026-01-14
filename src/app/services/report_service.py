@@ -21,7 +21,9 @@ from sqlalchemy.orm import Session
 
 from app.models.customer_account import CustomerAccount
 from app.models.product import Product
+from app.models.repair import Repair
 from app.models.sale import Sale
+from app.utils.timezone import local_date_to_utc_range
 
 logger = logging.getLogger(__name__)
 
@@ -404,6 +406,168 @@ class ReportService:
         logger.info(
             f"Accounts receivable report generated with {len(accounts)} accounts"
         )
+        return self._generate_pdf(elements)
+
+    def generate_monthly_repairs_report(
+        self, db: Session, year: int, month: int
+    ) -> bytes:
+        """Generate PDF report of repairs for a specific month.
+
+        Includes all repairs received during the month, grouped by status,
+        with totals and revenue summary.
+
+        Args:
+            db: Database session.
+            year: Year to filter (e.g., 2024).
+            month: Month to filter (1-12).
+
+        Returns:
+            PDF content as bytes.
+        """
+        from calendar import monthrange
+        from datetime import date
+
+        logger.info(f"Generating monthly repairs report for {year}-{month:02d}")
+
+        start_date = date(year, month, 1)
+        _, last_day = monthrange(year, month)
+        end_date = date(year, month, last_day)
+
+        utc_start, _ = local_date_to_utc_range(start_date)
+        _, utc_end = local_date_to_utc_range(end_date)
+
+        repairs = (
+            db.query(Repair)
+            .filter(
+                Repair.received_date >= utc_start,
+                Repair.received_date <= utc_end,
+            )
+            .order_by(Repair.received_date.asc())
+            .all()
+        )
+
+        month_names = {
+            1: "Enero",
+            2: "Febrero",
+            3: "Marzo",
+            4: "Abril",
+            5: "Mayo",
+            6: "Junio",
+            7: "Julio",
+            8: "Agosto",
+            9: "Septiembre",
+            10: "Octubre",
+            11: "Noviembre",
+            12: "Diciembre",
+        }
+        month_name = month_names.get(month, str(month))
+
+        elements = self._create_header(
+            title="Reporte de Reparaciones del Mes",
+            subtitle=f"{month_name} {year} ({len(repairs)} reparaciones)",
+        )
+
+        if not repairs:
+            elements.append(
+                Paragraph(
+                    "No hay reparaciones registradas en este período.",
+                    self.styles["Normal"],
+                )
+            )
+        else:
+            table_data = [
+                [
+                    "N° Orden",
+                    "Fecha",
+                    "Cliente",
+                    "Dispositivo",
+                    "Estado",
+                    "Costo Final",
+                ]
+            ]
+
+            status_labels = {
+                "received": "Recibido",
+                "diagnosing": "En diagnóstico",
+                "waiting_approval": "Esperando aprobación",
+                "approved": "Aprobado",
+                "repairing": "En reparación",
+                "waiting_parts": "Esperando repuestos",
+                "completed": "Completado",
+                "delivered": "Entregado",
+                "cancelled": "Cancelado",
+            }
+
+            status_counts: dict[str, int] = {}
+            total_revenue = Decimal("0.00")
+
+            for repair in repairs:
+                status = repair.status
+                status_counts[status] = status_counts.get(status, 0) + 1
+
+                if repair.final_cost:
+                    total_revenue += repair.final_cost
+
+                device_info = f"{repair.device_brand}"
+                if repair.device_model:
+                    device_info += f" {repair.device_model}"
+                if len(device_info) > 20:
+                    device_info = device_info[:17] + "..."
+
+                customer_name = repair.customer.name if repair.customer else "-"
+                if len(customer_name) > 20:
+                    customer_name = customer_name[:17] + "..."
+
+                table_data.append(
+                    [
+                        repair.repair_number,
+                        repair.received_date.strftime("%d/%m/%Y"),
+                        customer_name,
+                        device_info,
+                        status_labels.get(status, status),
+                        self._format_currency(repair.final_cost)
+                        if repair.final_cost
+                        else "-",
+                    ]
+                )
+
+            col_widths = [
+                1.1 * inch,
+                0.9 * inch,
+                1.5 * inch,
+                1.5 * inch,
+                1.3 * inch,
+                1 * inch,
+            ]
+            table = self._create_table(table_data, col_widths)
+            elements.append(table)
+
+            elements.append(Spacer(1, 20))
+            elements.append(
+                Paragraph("Resumen por Estado", self.styles["SectionHeader"])
+            )
+
+            status_data = [["Estado", "Cantidad"]]
+            for status, count in sorted(status_counts.items()):
+                status_data.append([status_labels.get(status, status), str(count)])
+
+            status_table = self._create_table(
+                status_data,
+                col_widths=[3 * inch, 1.5 * inch],
+                header_bg_color=colors.HexColor("#374151"),
+            )
+            elements.append(status_table)
+
+            elements.append(Spacer(1, 20))
+
+            summary_data = {
+                "Total de reparaciones:": len(repairs),
+                "Ingresos por reparaciones:": self._format_currency(total_revenue),
+            }
+            summary_table = self._create_summary_table(summary_data)
+            elements.append(summary_table)
+
+        logger.info(f"Monthly repairs report generated with {len(repairs)} repairs")
         return self._generate_pdf(elements)
 
 
