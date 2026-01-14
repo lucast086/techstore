@@ -195,6 +195,46 @@
               </button>
             </div>
           </div>
+
+          <!-- Estado de Resultados -->
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <div class="flex items-center gap-3 mb-3">
+              <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-700">Estado de Resultados</span>
+                <p class="text-xs text-gray-500">Ingresos, costos, utilidad bruta y neta</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <select id="financial-month" class="text-sm border border-gray-300 rounded px-2 py-1 bg-white">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <select id="financial-year" class="text-sm border border-gray-300 rounded px-2 py-1 bg-white">
+                {% for y in range(2024, 2030) %}
+                <option value="{{ y }}">{{ y }}</option>
+                {% endfor %}
+              </select>
+              <button onclick="downloadFinancialReport()" class="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded hover:bg-green-200 transition-colors ml-auto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Descargar PDF
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -207,19 +247,6 @@
       </div>
       <div class="p-6">
         <div class="space-y-3">
-          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              <div>
-                <span class="font-medium text-gray-500">Informe Mensual Financiero</span>
-                <p class="text-xs text-gray-400">Ventas, gastos y ganancia del mes</p>
-              </div>
-            </div>
-            <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Futuro</span>
-          </div>
-
           <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,19 +305,29 @@ function downloadRepairsReport() {
   downloadReport(url, filename);
 }
 
+function downloadFinancialReport() {
+  const month = document.getElementById('financial-month').value;
+  const year = document.getElementById('financial-year').value;
+  const url = `/admin/reports/financial-monthly/pdf?year=${year}&month=${month}`;
+  const filename = `informe_financiero_${year}_${month.padStart(2, '0')}.pdf`;
+  downloadReport(url, filename);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
 
-  const monthSelect = document.getElementById('repairs-month');
-  const yearSelect = document.getElementById('repairs-year');
+  const selectors = [
+    { month: 'repairs-month', year: 'repairs-year' },
+    { month: 'financial-month', year: 'financial-year' }
+  ];
 
-  if (monthSelect) {
-    monthSelect.value = currentMonth.toString();
-  }
-  if (yearSelect) {
-    yearSelect.value = currentYear.toString();
-  }
+  selectors.forEach(function(sel) {
+    const monthSelect = document.getElementById(sel.month);
+    const yearSelect = document.getElementById(sel.year);
+    if (monthSelect) monthSelect.value = currentMonth.toString();
+    if (yearSelect) yearSelect.value = currentYear.toString();
+  });
 });
 </script>

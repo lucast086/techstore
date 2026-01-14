@@ -107,13 +107,28 @@ CUSTOMER_DEBT_ALERT_THRESHOLD = Decimal("1500000")
 
 ---
 
-## Sprints Futuros
+## Sprint 3: Estado de Resultados (P&L) ✅ COMPLETADO
 
-### Sprint 3: Informe Mensual Financiero
-- Total de ventas del mes
-- Total de gastos del mes
-- Desglose por método de pago
-- Ganancia bruta estimada
+### Contenido del Reporte
+| Sección | Descripción |
+|---------|-------------|
+| Ingresos | Venta productos, servicios, reparaciones |
+| Costos de Venta | COGS productos (purchase_price), costo repuestos reparaciones |
+| Utilidad Bruta | Por línea de negocio y total |
+| Gastos Operativos | Por categoría de gasto |
+| Utilidad Neta | Balance final (verde si positivo, rojo si negativo) |
+
+### Implementado
+- [x] Cálculo de COGS desde `Product.purchase_price × SaleItem.quantity`
+- [x] Cálculo de utilidad reparaciones: `final_cost - parts_cost`
+- [x] Separación de servicios (is_service=True) sin costo
+- [x] Margen de utilidad porcentual
+- [x] Endpoint `/admin/reports/financial-monthly/pdf`
+- [x] UI con selector mes/año
+
+---
+
+## Sprints Futuros
 
 ### Sprint 4: Comparativa Anual
 - Comparación mes a mes
