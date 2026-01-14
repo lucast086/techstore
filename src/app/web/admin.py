@@ -1,10 +1,11 @@
 """Admin panel routes for system administrators."""
 
 import logging
+from datetime import datetime
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy.orm import Session
 
 from app.core.web_auth import get_current_user_from_cookie, require_web_role
@@ -726,3 +727,35 @@ async def admin_statistics_partial(
     }
 
     return templates.TemplateResponse("admin/partials/statistics_content.html", context)
+
+
+@router.get(
+    "/reports/low-stock/pdf",
+    dependencies=[Depends(require_web_role(["admin"]))],
+)
+async def admin_report_low_stock_pdf(
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_async_session),
+) -> Response:
+    """Generate and download low stock inventory PDF report.
+
+    Args:
+        current_user: Currently authenticated admin user.
+        db: Database session.
+
+    Returns:
+        PDF file download response.
+    """
+    from app.services.report_service import report_service
+
+    logger.info(f"Low stock report requested by admin: {current_user.email}")
+
+    pdf_content = report_service.generate_low_stock_report(db)
+
+    filename = f"inventario_bajo_stock_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )

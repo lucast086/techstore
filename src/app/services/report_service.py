@@ -17,6 +17,9 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+from sqlalchemy.orm import Session
+
+from app.models.product import Product
 
 logger = logging.getLogger(__name__)
 
@@ -203,6 +206,98 @@ class ReportService:
         buffer.close()
 
         return pdf_content
+
+    def generate_low_stock_report(self, db: Session) -> bytes:
+        """Generate PDF report of products with low stock.
+
+        Includes only active products (not services) where current_stock <= minimum_stock.
+        Shows recommendation to buy (maximum_stock - current_stock).
+
+        Args:
+            db: Database session.
+
+        Returns:
+            PDF content as bytes.
+        """
+        logger.info("Generating low stock report")
+
+        products = (
+            db.query(Product)
+            .filter(
+                Product.is_active == True,  # noqa: E712
+                Product.is_service == False,  # noqa: E712
+                Product.current_stock <= Product.minimum_stock,
+            )
+            .order_by(Product.current_stock.asc())
+            .all()
+        )
+
+        elements = self._create_header(
+            title="Reporte de Inventario Bajo Stock",
+            subtitle=f"Productos que requieren reposición ({len(products)} items)",
+        )
+
+        if not products:
+            elements.append(
+                Paragraph(
+                    "No hay productos con stock bajo en este momento.",
+                    self.styles["Normal"],
+                )
+            )
+        else:
+            table_data = [
+                [
+                    "SKU",
+                    "Producto",
+                    "Stock Actual",
+                    "Stock Mín.",
+                    "Stock Máx.",
+                    "Rec. Compra",
+                ]
+            ]
+
+            total_to_buy = 0
+            for product in products:
+                recommendation = (product.maximum_stock or 0) - product.current_stock
+                if recommendation < 0:
+                    recommendation = 0
+                total_to_buy += recommendation
+
+                table_data.append(
+                    [
+                        product.sku,
+                        product.name[:35] + "..."
+                        if len(product.name) > 35
+                        else product.name,
+                        str(product.current_stock),
+                        str(product.minimum_stock),
+                        str(product.maximum_stock or "-"),
+                        str(recommendation) if recommendation > 0 else "-",
+                    ]
+                )
+
+            col_widths = [
+                1 * inch,
+                2.5 * inch,
+                0.9 * inch,
+                0.9 * inch,
+                0.9 * inch,
+                1 * inch,
+            ]
+            table = self._create_table(table_data, col_widths)
+            elements.append(table)
+
+            elements.append(Spacer(1, 20))
+
+            summary_data = {
+                "Total de productos con stock bajo:": len(products),
+                "Total de unidades a comprar:": total_to_buy,
+            }
+            summary_table = self._create_summary_table(summary_data)
+            elements.append(summary_table)
+
+        logger.info(f"Low stock report generated with {len(products)} products")
+        return self._generate_pdf(elements)
 
 
 report_service = ReportService()

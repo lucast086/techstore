@@ -56,7 +56,7 @@ Preparar la infraestructura para generación de reportes PDF
 
 ---
 
-## Sprint 2c: Reporte Inventario Bajo Stock (PDF)
+## Sprint 2c: Reporte Inventario Bajo Stock (PDF) ✅ COMPLETADO
 
 ### Contenido del Reporte
 | Campo | Descripción |
@@ -69,11 +69,11 @@ Preparar la infraestructura para generación de reportes PDF
 | Stock Máximo | Nivel óptimo |
 | Recomendación Compra | Stock Máximo - Stock Actual |
 
-### Tareas
-1. [ ] Método `generate_low_stock_report()` en report_service
-2. [ ] Template `src/app/templates/reports/low_stock_report.html`
-3. [ ] Endpoint `/admin/reports/low-stock/pdf`
-4. [ ] Tests
+### Implementado
+- [x] Método `generate_low_stock_report()` en report_service.py
+- [x] Endpoint `/admin/reports/low-stock/pdf`
+- [x] Botón de descarga habilitado en UI
+- [x] Filtro: solo productos activos (is_active=True), excluye servicios
 
 ---
 
