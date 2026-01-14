@@ -19,7 +19,9 @@ from reportlab.platypus import (
 )
 from sqlalchemy.orm import Session
 
+from app.models.customer_account import CustomerAccount
 from app.models.product import Product
+from app.models.sale import Sale
 
 logger = logging.getLogger(__name__)
 
@@ -297,6 +299,111 @@ class ReportService:
             elements.append(summary_table)
 
         logger.info(f"Low stock report generated with {len(products)} products")
+        return self._generate_pdf(elements)
+
+    def generate_accounts_receivable_report(self, db: Session) -> bytes:
+        """Generate PDF report of customers with outstanding debt.
+
+        Lists customers with positive account balance (debt), their contact info,
+        and associated pending invoices.
+
+        Args:
+            db: Database session.
+
+        Returns:
+            PDF content as bytes.
+        """
+        logger.info("Generating accounts receivable report")
+
+        accounts = (
+            db.query(CustomerAccount)
+            .filter(CustomerAccount.account_balance > 0)
+            .order_by(CustomerAccount.account_balance.desc())
+            .all()
+        )
+
+        elements = self._create_header(
+            title="Reporte de Cuentas por Cobrar",
+            subtitle=f"Clientes con saldo pendiente ({len(accounts)} cuentas)",
+        )
+
+        if not accounts:
+            elements.append(
+                Paragraph(
+                    "No hay clientes con saldo pendiente en este momento.",
+                    self.styles["Normal"],
+                )
+            )
+        else:
+            table_data = [
+                [
+                    "Cliente",
+                    "Teléfono",
+                    "Saldo Pendiente",
+                    "Última Actividad",
+                    "Facturas Pendientes",
+                ]
+            ]
+
+            total_debt = Decimal("0.00")
+            for account in accounts:
+                customer = account.customer
+                if not customer:
+                    continue
+
+                total_debt += account.account_balance
+
+                pending_sales = (
+                    db.query(Sale.invoice_number)
+                    .filter(
+                        Sale.customer_id == customer.id,
+                        Sale.payment_status.in_(["pending", "partial"]),
+                        Sale.is_voided == False,  # noqa: E712
+                    )
+                    .all()
+                )
+                invoice_numbers = ", ".join([s.invoice_number for s in pending_sales])
+                if len(invoice_numbers) > 25:
+                    invoice_numbers = invoice_numbers[:22] + "..."
+
+                last_activity = ""
+                if account.last_transaction_date:
+                    last_activity = account.last_transaction_date.strftime("%d/%m/%Y")
+
+                table_data.append(
+                    [
+                        customer.name[:25] + "..."
+                        if len(customer.name) > 25
+                        else customer.name,
+                        customer.phone,
+                        self._format_currency(account.account_balance),
+                        last_activity or "-",
+                        invoice_numbers or "-",
+                    ]
+                )
+
+            col_widths = [
+                1.8 * inch,
+                1.2 * inch,
+                1.2 * inch,
+                1 * inch,
+                2 * inch,
+            ]
+            table = self._create_table(table_data, col_widths)
+            elements.append(table)
+
+            elements.append(Spacer(1, 20))
+
+            summary_data = {
+                "Total de clientes con deuda:": len(accounts),
+                "Total por cobrar:": self._format_currency(total_debt),
+            }
+            summary_table = self._create_summary_table(summary_data)
+            elements.append(summary_table)
+
+        logger.info(
+            f"Accounts receivable report generated with {len(accounts)} accounts"
+        )
         return self._generate_pdf(elements)
 
 

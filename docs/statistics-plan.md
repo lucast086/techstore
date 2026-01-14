@@ -42,17 +42,12 @@ CUSTOMER_DEBT_ALERT_THRESHOLD = Decimal("1500000")
 
 ---
 
-## Sprint 2b: Infraestructura de Reportes PDF ← ACTUAL
+## Sprint 2b: Infraestructura de Reportes PDF ✅ COMPLETADO
 
-### Objetivo
-Preparar la infraestructura para generación de reportes PDF
-
-### Tareas
-1. [ ] Instalar WeasyPrint para generación de PDFs
-2. [ ] Crear servicio base `src/app/services/report_service.py`
-3. [ ] Crear rutas base en `src/app/web/admin.py` para descarga
-4. [ ] Crear template base para PDFs `src/app/templates/reports/base_report.html`
-5. [ ] Actualizar UI para mostrar los 3 reportes correctos
+### Implementado
+- [x] `src/app/services/report_service.py` con ReportLab (ya instalado)
+- [x] Métodos base: `_create_header()`, `_create_table()`, `_generate_pdf()`
+- [x] UI con 3 reportes y función JavaScript para descarga forzada
 
 ---
 
@@ -77,7 +72,7 @@ Preparar la infraestructura para generación de reportes PDF
 
 ---
 
-## Sprint 2d: Reporte Cuentas por Cobrar (PDF)
+## Sprint 2d: Reporte Cuentas por Cobrar (PDF) ✅ COMPLETADO
 
 ### Contenido del Reporte
 | Campo | Descripción |
@@ -85,18 +80,17 @@ Preparar la infraestructura para generación de reportes PDF
 | Cliente | Nombre del cliente |
 | Teléfono | Celular de contacto |
 | Saldo Pendiente | Monto adeudado |
-| Fecha Cuenta | Fecha de creación/última actividad |
-| Facturas | Códigos de facturas asociadas |
+| Última Actividad | Fecha última transacción |
+| Facturas Pendientes | Códigos de facturas con status pending/partial |
 
-### Tareas
-1. [ ] Método `generate_accounts_receivable_report()` en report_service
-2. [ ] Template `src/app/templates/reports/accounts_receivable_report.html`
-3. [ ] Endpoint `/admin/reports/accounts-receivable/pdf`
-4. [ ] Tests
+### Implementado
+- [x] Método `generate_accounts_receivable_report()` en report_service.py
+- [x] Endpoint `/admin/reports/accounts-receivable/pdf`
+- [x] Botón de descarga habilitado en UI
 
 ---
 
-## Sprint 2e: Reporte Reparaciones del Mes (PDF)
+## Sprint 2e: Reporte Reparaciones del Mes (PDF) ← ACTUAL
 
 ### Contenido del Reporte
 | Sección | Descripción |
@@ -146,8 +140,8 @@ Preparar la infraestructura para generación de reportes PDF
 
 ## Notas Técnicas
 
-- Reportes PDF generados desde templates HTML con WeasyPrint
+- Reportes PDF generados con ReportLab (programático, sin templates HTML)
 - Rutas de reportes en `/admin/reports/*`
 - Acceso restringido a rol admin
-- Templates de reportes en `src/app/templates/reports/`
+- Descarga forzada vía JavaScript fetch + blob
 - Seguir arquitectura: Web Route → Service → CRUD

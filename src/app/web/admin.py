@@ -759,3 +759,35 @@ async def admin_report_low_stock_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+
+@router.get(
+    "/reports/accounts-receivable/pdf",
+    dependencies=[Depends(require_web_role(["admin"]))],
+)
+async def admin_report_accounts_receivable_pdf(
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_async_session),
+) -> Response:
+    """Generate and download accounts receivable PDF report.
+
+    Args:
+        current_user: Currently authenticated admin user.
+        db: Database session.
+
+    Returns:
+        PDF file download response.
+    """
+    from app.services.report_service import report_service
+
+    logger.info(f"Accounts receivable report requested by admin: {current_user.email}")
+
+    pdf_content = report_service.generate_accounts_receivable_report(db)
+
+    filename = f"cuentas_por_cobrar_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+    return Response(
+        content=pdf_content,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
