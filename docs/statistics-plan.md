@@ -1,30 +1,66 @@
 # Plan: Dashboard Statistics Cards & Statistics Module
 
-## Overview
-Implementar cards de estadísticas rápidas en el dashboard principal y crear un módulo de estadísticas con reportes PDF descargables.
+## Resumen de Estado
+
+| Sprint | Descripción | Estado |
+|--------|-------------|--------|
+| 1 | Dashboard Cards (alertas) | ✅ Completado |
+| 2a | Página Admin Statistics | ✅ Completado |
+| 2b | Infraestructura PDF (ReportLab) | ✅ Completado |
+| 2c | Reporte Inventario Bajo Stock | ✅ Completado |
+| 2d | Reporte Cuentas por Cobrar | ✅ Completado |
+| 2e | Reporte Reparaciones del Mes | ✅ Completado |
+| 3 | Estado de Resultados (P&L) | ✅ Completado |
+| 4 | Comparativa Anual | ⏳ Pendiente |
 
 ---
 
-## Reglas de Desarrollo
+## Archivos Principales
 
-1. **Sprint por Sprint**: Implementar un sprint completo antes de pasar al siguiente
-2. **Validación del Usuario**: El usuario debe validar cada sprint antes de continuar
-3. **Commit después de validación**: Solo hacer commit cuando el usuario confirme que funciona
-4. **Uso de Agentes**: Usar agentes especializados para desarrollo y testing
-5. **TDD**: Escribir tests junto con la implementación
+| Archivo | Propósito |
+|---------|-----------|
+| `src/app/services/dashboard_service.py` | Estadísticas del dashboard y constantes de alerta |
+| `src/app/services/report_service.py` | Generación de reportes PDF con ReportLab |
+| `src/app/web/admin.py` | Endpoints de reportes (`/admin/reports/*`) |
+| `src/app/templates/admin/statistics.html` | Página principal de estadísticas |
+| `src/app/templates/admin/partials/statistics_content.html` | UI de reportes con selectores |
 
 ---
 
-## Sprint 1: Dashboard Cards ✅ COMPLETADO
+## Reportes PDF Disponibles
 
-### Implementado
-- [x] `src/app/services/dashboard_service.py` con constantes configurables
-- [x] Integración en `src/app/web/auth.py`
-- [x] 4 cards en `src/app/templates/dashboard.html`
-- [x] Tests completos (24 tests)
+### 1. Inventario Bajo Stock
+- **Endpoint**: `/admin/reports/low-stock/pdf`
+- **Método**: `generate_low_stock_report()`
+- **Contenido**: SKU, Producto, Stock Actual/Mín/Máx, Recomendación Compra
+- **Filtros**: Solo productos activos, excluye servicios
 
-### Constantes de Alerta
+### 2. Cuentas por Cobrar
+- **Endpoint**: `/admin/reports/accounts-receivable/pdf`
+- **Método**: `generate_accounts_receivable_report()`
+- **Contenido**: Cliente, Teléfono, Saldo, Última Actividad, Facturas Pendientes
+
+### 3. Reparaciones del Mes
+- **Endpoint**: `/admin/reports/repairs-monthly/pdf?year=YYYY&month=MM`
+- **Método**: `generate_monthly_repairs_report()`
+- **Contenido**: Lista de reparaciones, resumen por estado, totales
+
+### 4. Estado de Resultados (P&L)
+- **Endpoint**: `/admin/reports/financial-monthly/pdf?year=YYYY&month=MM`
+- **Método**: `generate_monthly_financial_report()`
+- **Contenido**:
+  - INGRESOS: Productos, Servicios, Reparaciones
+  - COSTOS: COGS productos (purchase_price), repuestos reparaciones (parts_cost)
+  - UTILIDAD BRUTA: Por línea de negocio
+  - GASTOS OPERATIVOS: Por categoría
+  - UTILIDAD NETA: Con margen porcentual
+
+---
+
+## Constantes de Alerta (Dashboard)
+
 ```python
+# src/app/services/dashboard_service.py
 REPAIRS_RECEIVED_ALERT_THRESHOLD = 5
 LOW_STOCK_ALERT_THRESHOLD = 30
 CUSTOMER_DEBT_ALERT_THRESHOLD = Decimal("1500000")
@@ -32,129 +68,29 @@ CUSTOMER_DEBT_ALERT_THRESHOLD = Decimal("1500000")
 
 ---
 
-## Sprint 2a: Página de Estadísticas en Admin ✅ COMPLETADO
+## Sprint Pendiente: Comparativa Anual
 
-### Implementado
-- [x] Rutas `/admin/statistics` en `src/app/web/admin.py`
-- [x] Template `src/app/templates/admin/statistics.html`
-- [x] Partial `src/app/templates/admin/partials/statistics_content.html`
-- [x] Enlace en sidebar de admin
+### Objetivo
+Reporte comparativo de métricas mes a mes para un año completo.
 
----
+### Funcionalidad Propuesta
+- Tabla con 12 meses mostrando: Ventas, Costos, Utilidad
+- Porcentajes de crecimiento vs mes anterior
+- Totales anuales
+- Gráficos de tendencia (opcional, requiere librería adicional)
 
-## Sprint 2b: Infraestructura de Reportes PDF ✅ COMPLETADO
-
-### Implementado
-- [x] `src/app/services/report_service.py` con ReportLab (ya instalado)
-- [x] Métodos base: `_create_header()`, `_create_table()`, `_generate_pdf()`
-- [x] UI con 3 reportes y función JavaScript para descarga forzada
-
----
-
-## Sprint 2c: Reporte Inventario Bajo Stock (PDF) ✅ COMPLETADO
-
-### Contenido del Reporte
-| Campo | Descripción |
-|-------|-------------|
-| SKU | Código del producto |
-| Nombre | Nombre del producto |
-| Categoría | Categoría del producto |
-| Stock Actual | Cantidad actual |
-| Stock Mínimo | Nivel de alerta |
-| Stock Máximo | Nivel óptimo |
-| Recomendación Compra | Stock Máximo - Stock Actual |
-
-### Implementado
-- [x] Método `generate_low_stock_report()` en report_service.py
-- [x] Endpoint `/admin/reports/low-stock/pdf`
-- [x] Botón de descarga habilitado en UI
-- [x] Filtro: solo productos activos (is_active=True), excluye servicios
-
----
-
-## Sprint 2d: Reporte Cuentas por Cobrar (PDF) ✅ COMPLETADO
-
-### Contenido del Reporte
-| Campo | Descripción |
-|-------|-------------|
-| Cliente | Nombre del cliente |
-| Teléfono | Celular de contacto |
-| Saldo Pendiente | Monto adeudado |
-| Última Actividad | Fecha última transacción |
-| Facturas Pendientes | Códigos de facturas con status pending/partial |
-
-### Implementado
-- [x] Método `generate_accounts_receivable_report()` en report_service.py
-- [x] Endpoint `/admin/reports/accounts-receivable/pdf`
-- [x] Botón de descarga habilitado en UI
-
----
-
-## Sprint 2e: Reporte Reparaciones del Mes (PDF) ✅ COMPLETADO
-
-### Contenido del Reporte
-| Sección | Descripción |
-|---------|-------------|
-| Lista de Reparaciones | N° Orden, Fecha, Cliente, Dispositivo, Estado, Costo Final |
-| Resumen por Estado | Conteo por cada estado de reparación |
-| Totales | Total de reparaciones e ingresos por reparaciones |
-
-### Implementado
-- [x] Método `generate_monthly_repairs_report()` en report_service.py
-- [x] Endpoint `/admin/reports/repairs-monthly/pdf` con parámetros year/month
-- [x] Selector de mes/año en UI con valor por defecto al mes actual
-- [x] Uso correcto de timezone con `local_date_to_utc_range()`
-
----
-
-## Sprint 3: Estado de Resultados (P&L) ✅ COMPLETADO
-
-### Contenido del Reporte
-| Sección | Descripción |
-|---------|-------------|
-| Ingresos | Venta productos, servicios, reparaciones |
-| Costos de Venta | COGS productos (purchase_price), costo repuestos reparaciones |
-| Utilidad Bruta | Por línea de negocio y total |
-| Gastos Operativos | Por categoría de gasto |
-| Utilidad Neta | Balance final (verde si positivo, rojo si negativo) |
-
-### Implementado
-- [x] Cálculo de COGS desde `Product.purchase_price × SaleItem.quantity`
-- [x] Cálculo de utilidad reparaciones: `final_cost - parts_cost`
-- [x] Separación de servicios (is_service=True) sin costo
-- [x] Margen de utilidad porcentual
-- [x] Endpoint `/admin/reports/financial-monthly/pdf`
-- [x] UI con selector mes/año
-
----
-
-## Sprints Futuros
-
-### Sprint 4: Comparativa Anual
-- Comparación mes a mes
-- Porcentajes de crecimiento
-- Gráficos de tendencia
-
----
-
-## Dependencias Identificadas
-
-**Modelos existentes a usar:**
-- `Repair` - estados y costos
-- `Product` - current_stock, minimum_stock, maximum_stock, purchase_price
-- `CustomerAccount` - account_balance
-- `Sale` - invoice_number, total_amount, sale_date
-- `Customer` - name, phone
-
-**Librería para PDFs:**
-- ReportLab (ya instalado en el proyecto)
+### Tareas
+1. [ ] Método `generate_annual_comparison_report()` en report_service
+2. [ ] Endpoint `/admin/reports/annual-comparison/pdf?year=YYYY`
+3. [ ] Selector de año en UI
+4. [ ] Tests
 
 ---
 
 ## Notas Técnicas
 
-- Reportes PDF generados con ReportLab (programático, sin templates HTML)
-- Rutas de reportes en `/admin/reports/*`
-- Acceso restringido a rol admin
-- Descarga forzada vía JavaScript fetch + blob
-- Seguir arquitectura: Web Route → Service → CRUD
+- **Timezone**: Usar `local_date_to_utc_range()` para queries por fecha
+- **PDF**: ReportLab (programático, sin templates HTML)
+- **Descarga**: JavaScript fetch + blob para forzar descarga
+- **Acceso**: Restringido a rol admin
+- **Arquitectura**: Web Route → Service → CRUD
