@@ -1,6 +1,6 @@
 """Tests for DashboardService."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
@@ -16,6 +16,7 @@ from app.services.dashboard_service import (
     REPAIRS_RECEIVED_ALERT_THRESHOLD,
     dashboard_service,
 )
+from app.utils.timezone import get_local_now
 
 
 class TestDashboardService:
@@ -460,7 +461,7 @@ class TestDashboardService:
             invoice_number="INV-DASH-001",
             customer_id=test_customer.id,
             user_id=test_user.id,
-            sale_date=datetime.now(),
+            sale_date=get_local_now(),
             subtotal=Decimal("100.00"),
             discount_amount=Decimal("0.00"),
             tax_amount=Decimal("0.00"),
@@ -485,7 +486,7 @@ class TestDashboardService:
                 invoice_number=f"INV-DASH-{i:03d}",
                 customer_id=test_customer.id,
                 user_id=test_user.id,
-                sale_date=datetime.now(),
+                sale_date=get_local_now(),
                 subtotal=Decimal("100.00"),
                 discount_amount=Decimal("0.00"),
                 tax_amount=Decimal("0.00"),
@@ -509,7 +510,7 @@ class TestDashboardService:
             invoice_number="INV-VALID-001",
             customer_id=test_customer.id,
             user_id=test_user.id,
-            sale_date=datetime.now(),
+            sale_date=get_local_now(),
             subtotal=Decimal("100.00"),
             discount_amount=Decimal("0.00"),
             tax_amount=Decimal("0.00"),
@@ -524,7 +525,7 @@ class TestDashboardService:
             invoice_number="INV-VOIDED-001",
             customer_id=test_customer.id,
             user_id=test_user.id,
-            sale_date=datetime.now(),
+            sale_date=get_local_now(),
             subtotal=Decimal("200.00"),
             discount_amount=Decimal("0.00"),
             tax_amount=Decimal("0.00"),
@@ -549,7 +550,7 @@ class TestDashboardService:
             invoice_number="INV-TODAY-001",
             customer_id=test_customer.id,
             user_id=test_user.id,
-            sale_date=datetime.now(),
+            sale_date=get_local_now(),
             subtotal=Decimal("100.00"),
             discount_amount=Decimal("0.00"),
             tax_amount=Decimal("0.00"),
@@ -564,7 +565,7 @@ class TestDashboardService:
             invoice_number="INV-YESTERDAY-001",
             customer_id=test_customer.id,
             user_id=test_user.id,
-            sale_date=datetime.now() - timedelta(days=1),
+            sale_date=get_local_now() - timedelta(days=1),
             subtotal=Decimal("500.00"),
             discount_amount=Decimal("0.00"),
             tax_amount=Decimal("0.00"),

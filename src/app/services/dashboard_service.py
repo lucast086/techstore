@@ -10,7 +10,7 @@ from app.models.customer_account import CustomerAccount
 from app.models.product import Product
 from app.models.repair import Repair
 from app.models.sale import Sale
-from app.utils.timezone import get_local_today
+from app.utils.timezone import get_local_today, local_date_to_utc_range
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +167,9 @@ class DashboardService:
     def _get_today_sales_total(self, db: Session) -> Decimal:
         """Sum of total_amount from today's non-voided sales.
 
+        Uses local timezone to determine "today" and converts to UTC range
+        for correct database comparison.
+
         Args:
             db: Database session.
 
@@ -174,10 +177,12 @@ class DashboardService:
             Total sales amount for today.
         """
         today = get_local_today()
+        utc_start, utc_end = local_date_to_utc_range(today)
         total = (
             db.query(func.sum(Sale.total_amount))
             .filter(
-                func.date(Sale.sale_date) == today,
+                Sale.sale_date >= utc_start,
+                Sale.sale_date <= utc_end,
                 Sale.is_voided == False,  # noqa: E712
             )
             .scalar()

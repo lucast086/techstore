@@ -166,6 +166,21 @@ app/
 - **Scripts exception**: E402 (imports) ignored for scripts/ directory
 - **Auto-fix**: Pre-commit will auto-fix most issues when possible
 
+### Timezone & Date Handling
+- **Almacenamiento**: Los timestamps se guardan en UTC en la base de datos
+- **Visualización**: Se convierten a timezone local (`settings.TIMEZONE`) en las vistas
+- **Queries por fecha local**: NUNCA usar `func.date(campo) == get_local_today()`.
+  Siempre usar `local_date_to_utc_range()` para convertir fecha local a rango UTC:
+  ```python
+  from app.utils.timezone import get_local_today, local_date_to_utc_range
+
+  today = get_local_today()
+  utc_start, utc_end = local_date_to_utc_range(today)
+  query.filter(Model.datetime_field >= utc_start, Model.datetime_field <= utc_end)
+  ```
+- **Tests**: Usar `get_local_now()` de `app.utils.timezone` en lugar de `datetime.now()` para crear datos de prueba con timestamps
+- **Referencia**: Ver `app/utils/timezone.py` para todas las utilidades de timezone
+
 ### Feature Implementation
 - **ALWAYS follow TDD approach**: See `docs/feature-implementation-guide.md`
 - **4-Layer Architecture**: Service → Schema → API → Web

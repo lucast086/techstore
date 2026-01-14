@@ -1,0 +1,216 @@
+<div class="admin-statistics">
+  <!-- Page Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Estadísticas del Negocio</h1>
+    <p class="text-gray-600 mt-1">
+      Resumen general de las métricas clave del sistema
+    </p>
+  </div>
+
+  <!-- Stats Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Reparaciones Recibidas -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 {% if stats.repairs_received_alert %}border-red-500{% else %}border-yellow-500{% endif %}">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Reparaciones Recibidas</p>
+          <p class="text-3xl font-bold {% if stats.repairs_received_alert %}text-red-600{% else %}text-gray-900{% endif %} mt-1">{{ stats.repairs_received }}</p>
+          {% if stats.repairs_received_alert %}
+          <p class="text-xs text-red-500 mt-1">Requiere atención</p>
+          {% else %}
+          <p class="text-xs text-gray-500 mt-1">Pendientes de diagnóstico</p>
+          {% endif %}
+        </div>
+        <div class="{% if stats.repairs_received_alert %}bg-red-100{% else %}bg-yellow-100{% endif %} p-3 rounded-lg">
+          <svg class="w-8 h-8 {% if stats.repairs_received_alert %}text-red-600{% else %}text-yellow-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <a href="/repairs?status=received" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          Ver reparaciones →
+        </a>
+      </div>
+    </div>
+
+    <!-- Stock Bajo -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 {% if stats.low_stock_alert %}border-red-500{% else %}border-orange-500{% endif %}">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Productos Stock Bajo</p>
+          <p class="text-3xl font-bold {% if stats.low_stock_alert %}text-red-600{% else %}text-gray-900{% endif %} mt-1">{{ stats.low_stock_count }}</p>
+          {% if stats.out_of_stock_count > 0 %}
+          <p class="text-xs text-red-500 mt-1">{{ stats.out_of_stock_count }} sin stock</p>
+          {% else %}
+          <p class="text-xs text-gray-500 mt-1">Requieren reposición</p>
+          {% endif %}
+        </div>
+        <div class="{% if stats.low_stock_alert %}bg-red-100{% else %}bg-orange-100{% endif %} p-3 rounded-lg">
+          <svg class="w-8 h-8 {% if stats.low_stock_alert %}text-red-600{% else %}text-orange-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <a href="/products?stock_status=low_stock" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          Ver productos →
+        </a>
+      </div>
+    </div>
+
+    <!-- Deuda Clientes -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 {% if stats.debt_alert %}border-red-500{% else %}border-blue-500{% endif %}">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Deuda Clientes</p>
+          <p class="text-3xl font-bold {% if stats.debt_alert %}text-red-600{% else %}text-gray-900{% endif %} mt-1">S/ {{ "%.2f"|format(stats.customer_debt_total) }}</p>
+          {% if stats.debt_alert %}
+          <p class="text-xs text-red-500 mt-1">Supera el límite</p>
+          {% else %}
+          <p class="text-xs text-gray-500 mt-1">Total cuentas por cobrar</p>
+          {% endif %}
+        </div>
+        <div class="{% if stats.debt_alert %}bg-red-100{% else %}bg-blue-100{% endif %} p-3 rounded-lg">
+          <svg class="w-8 h-8 {% if stats.debt_alert %}text-red-600{% else %}text-blue-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <a href="/customers?filter=with_debt" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          Ver clientes →
+        </a>
+      </div>
+    </div>
+
+    <!-- Ventas del Día -->
+    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Ventas del Día</p>
+          <p class="text-3xl font-bold text-gray-900 mt-1">S/ {{ "%.2f"|format(stats.today_sales_total) }}</p>
+          <p class="text-xs text-gray-500 mt-1">Total facturado hoy</p>
+        </div>
+        <div class="bg-green-100 p-3 rounded-lg">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-100">
+        <a href="/sales" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+          Ver ventas →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Available Reports (PDF Downloads) -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="p-6 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Reportes PDF</h2>
+        <p class="text-sm text-gray-500 mt-1">Descarga reportes en formato PDF</p>
+      </div>
+      <div class="p-6">
+        <div class="space-y-3">
+          <!-- Reporte Inventario Bajo Stock -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-700">Inventario Bajo Stock</span>
+                <p class="text-xs text-gray-500">Productos con stock bajo y recomendación de compra</p>
+              </div>
+            </div>
+            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Próximamente</span>
+          </div>
+
+          <!-- Reporte Cuentas por Cobrar -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-700">Cuentas por Cobrar</span>
+                <p class="text-xs text-gray-500">Clientes con deuda, contacto y facturas asociadas</p>
+              </div>
+            </div>
+            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Próximamente</span>
+          </div>
+
+          <!-- Reporte Reparaciones del Mes -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-700">Reparaciones del Mes</span>
+                <p class="text-xs text-gray-500">Lista de reparaciones y conteo por estado</p>
+              </div>
+            </div>
+            <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Próximamente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coming Soon - Future Reports -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="p-6 border-b border-gray-200">
+        <h2 class="text-lg font-semibold text-gray-900">Próximamente</h2>
+        <p class="text-sm text-gray-500 mt-1">Funcionalidades en desarrollo</p>
+      </div>
+      <div class="p-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-500">Informe Mensual Financiero</span>
+                <p class="text-xs text-gray-400">Ventas, gastos y ganancia del mes</p>
+              </div>
+            </div>
+            <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Futuro</span>
+          </div>
+
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-500">Comparativa Anual</span>
+                <p class="text-xs text-gray-400">Tendencias y crecimiento mes a mes</p>
+              </div>
+            </div>
+            <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Futuro</span>
+          </div>
+
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg opacity-60 cursor-not-allowed">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+              </svg>
+              <div>
+                <span class="font-medium text-gray-500">Gráficos de Tendencia</span>
+                <p class="text-xs text-gray-400">Visualización de métricas en el tiempo</p>
+              </div>
+            </div>
+            <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Futuro</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

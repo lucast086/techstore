@@ -648,3 +648,81 @@ async def admin_categories_delete(
         return templates.TemplateResponse(
             "admin/partials/error.html", {"request": request, "error": str(e)}
         )
+
+
+@router.get(
+    "/statistics",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
+)
+async def admin_statistics(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_async_session),
+) -> HTMLResponse:
+    """Render statistics overview page.
+
+    Args:
+        request: FastAPI request object.
+        current_user: Currently authenticated admin user.
+        db: Database session.
+
+    Returns:
+        HTML response with statistics overview page.
+    """
+    from app.services.dashboard_service import dashboard_service
+
+    stats = dashboard_service.get_dashboard_stats(db)
+
+    context = {
+        "request": request,
+        "current_user": current_user,
+        "stats": stats,
+        "page_title": "Estadísticas",
+        "breadcrumbs": [
+            {"name": "Admin", "url": "/admin"},
+            {"name": "Estadísticas", "url": "/admin/statistics", "active": True},
+        ],
+    }
+
+    logger.info(f"Statistics page accessed by admin: {current_user.email}")
+
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse(
+            "admin/partials/statistics_content.html", context
+        )
+
+    return templates.TemplateResponse("admin/statistics.html", context)
+
+
+@router.get(
+    "/statistics/content",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_web_role(["admin"]))],
+)
+async def admin_statistics_partial(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user_from_cookie)],
+    db: Session = Depends(get_async_session),
+) -> HTMLResponse:
+    """Render statistics partial for HTMX.
+
+    Args:
+        request: FastAPI request object.
+        current_user: Currently authenticated admin user.
+        db: Database session.
+
+    Returns:
+        HTML response with statistics content partial.
+    """
+    from app.services.dashboard_service import dashboard_service
+
+    stats = dashboard_service.get_dashboard_stats(db)
+
+    context = {
+        "request": request,
+        "current_user": current_user,
+        "stats": stats,
+    }
+
+    return templates.TemplateResponse("admin/partials/statistics_content.html", context)
