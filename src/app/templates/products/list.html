@@ -86,6 +86,32 @@ block content %}
             </select>
           </div>
 
+          <!-- Status Filter (Active/Inactive) -->
+          <div>
+            <label
+              for="status"
+              class="block text-sm font-medium text-gray-700"
+            >
+              Estado
+            </label>
+            <select
+              id="status"
+              name="status"
+              class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              onchange="document.getElementById('filter-form').submit()"
+            >
+              <option value="active" {% if status == "active" or not status %}selected{% endif %}>
+                Activos
+              </option>
+              <option value="inactive" {% if status == "inactive" %}selected{% endif %}>
+                Inactivos
+              </option>
+              <option value="all" {% if status == "all" %}selected{% endif %}>
+                Todos
+              </option>
+            </select>
+          </div>
+
           <!-- Stock Estado Filter -->
           <div>
             <label

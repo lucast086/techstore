@@ -30,6 +30,7 @@ async def products_list(
     search: str = "",
     category_id: str = "",
     stock_status: str = "all",
+    status: str = "active",
     sort_by: str = "name",
     sort_order: str = "asc",
     view: str = "table",
@@ -72,12 +73,20 @@ async def products_list(
     except ValueError:
         view_mode = ViewMode.TABLE
 
+    # Convert status filter to is_active boolean
+    if status == "active":
+        is_active_filter = True
+    elif status == "inactive":
+        is_active_filter = False
+    else:  # "all"
+        is_active_filter = None
+
     # Build filter params
     filters = ProductFilter(
         search=search_term,
         category_ids=[cat_id] if cat_id else [],
         stock_status=stock_enum,
-        is_active=True,  # Only show active products by default
+        is_active=is_active_filter,
     )
 
     # Build list params
@@ -115,6 +124,7 @@ async def products_list(
             "search": search,
             "category_id": category_id,
             "stock_status": stock_status,
+            "status": status,
             "sort_by": sort_by,
             "sort_order": sort_order,
             "view": view,
@@ -162,13 +172,16 @@ async def create_product(
     minimum_stock: int = Form(0),
     maximum_stock: Optional[int] = Form(None),
     location: Optional[str] = Form(None),
-    is_active: bool = Form(True),
+    is_active: str = Form("true"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
     """Handle product creation."""
     service = ProductService(db)
     category_service = CategoryService(db)
+
+    # Convert is_active from form string to boolean
+    is_active_bool = is_active == "true"
 
     # Log incoming form data for debugging
     logger.info("[CREATE PRODUCT] Incoming form data:")
@@ -197,7 +210,7 @@ async def create_product(
             minimum_stock=minimum_stock,
             maximum_stock=maximum_stock,
             location=location,
-            is_active=is_active,
+            is_active=is_active_bool,
         )
 
         # Create product
@@ -379,7 +392,7 @@ async def update_product(
     minimum_stock: int = Form(0),
     maximum_stock: Optional[int] = Form(None),
     location: Optional[str] = Form(None),
-    is_active: bool = Form(True),
+    is_active: str = Form("true"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user_from_cookie),
 ):
@@ -389,8 +402,12 @@ async def update_product(
     service = ProductService(db)
     category_service = CategoryService(db)
 
+    # Convert is_active from form string to boolean
+    is_active_bool = is_active == "true"
+
     logger.info(f"[UPDATE PRODUCT] Updating product {product_id}")
     logger.info(f"  SKU: {sku}, Name: {name}, Category: {category_id}")
+    logger.info(f"  is_active: {is_active} -> {is_active_bool}")
 
     try:
         # Create update data
@@ -411,7 +428,7 @@ async def update_product(
             minimum_stock=minimum_stock,
             maximum_stock=maximum_stock,
             location=location,
-            is_active=is_active,
+            is_active=is_active_bool,
         )
 
         # Update product

@@ -333,3 +333,100 @@ class TestProductWebRoutes:
         # Try to create product
         response = client.post("/products/create", data={}, follow_redirects=False)
         assert response.status_code == 401
+
+    def test_create_product_inactive(self, authenticated_client, test_category):
+        """Test creating a product with is_active set to false."""
+        form_data = {
+            "sku": "INACTIVE-PROD-001",
+            "name": "Inactive Test Product",
+            "category_id": str(test_category.id),
+            "purchase_price": "100.00",
+            "first_sale_price": "150.00",
+            "second_sale_price": "140.00",
+            "third_sale_price": "130.00",
+            "current_stock": "10",
+            "minimum_stock": "5",
+            "is_active": "false",
+        }
+
+        response = authenticated_client.post(
+            "/products/create", data=form_data, follow_redirects=False
+        )
+
+        assert response.status_code == 201
+        assert "Producto creado exitosamente" in response.text
+
+        # Verify product was created as inactive
+        from app.database import SessionLocal
+
+        db = SessionLocal()
+        product = db.query(Product).filter_by(sku="INACTIVE-PROD-001").first()
+        assert product is not None
+        assert product.is_active is False
+        db.close()
+
+    def test_update_product_set_inactive(
+        self, authenticated_client, test_products, test_category, db_session
+    ):
+        """Test updating a product to set it inactive."""
+        # Get an active product
+        active_product = next(p for p in test_products if p.is_active)
+
+        form_data = {
+            "sku": active_product.sku,
+            "name": active_product.name,
+            "category_id": str(test_category.id),
+            "purchase_price": "100.00",
+            "first_sale_price": "150.00",
+            "second_sale_price": "140.00",
+            "third_sale_price": "130.00",
+            "current_stock": "10",
+            "minimum_stock": "5",
+            "is_active": "false",
+        }
+
+        response = authenticated_client.post(
+            f"/products/{active_product.id}/edit",
+            data=form_data,
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 200
+        assert "Producto actualizado exitosamente" in response.text
+
+        # Verify product is now inactive
+        db_session.refresh(active_product)
+        assert active_product.is_active is False
+
+    def test_update_product_set_active(
+        self, authenticated_client, test_products, test_category, db_session
+    ):
+        """Test updating a product to set it active."""
+        # Get an inactive product
+        inactive_product = next(p for p in test_products if not p.is_active)
+
+        form_data = {
+            "sku": inactive_product.sku,
+            "name": inactive_product.name,
+            "category_id": str(test_category.id),
+            "purchase_price": "100.00",
+            "first_sale_price": "150.00",
+            "second_sale_price": "140.00",
+            "third_sale_price": "130.00",
+            "current_stock": "10",
+            "minimum_stock": "5",
+            "is_active": "true",
+        }
+
+        response = authenticated_client.post(
+            f"/products/{inactive_product.id}/edit",
+            data=form_data,
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 200
+        assert "Producto actualizado exitosamente" in response.text
+
+        # Verify product is now active
+        db_session.refresh(inactive_product)
+        assert inactive_product.is_active is True
