@@ -496,7 +496,8 @@ async def process_payment(
                 if form_data.get(f"method_enabled_{method}"):
                     amount = Decimal(form_data.get(f"method_amount_{method}", "0"))
                     if amount > 0:
-                        reference = form_data.get(f"method_reference_{method}")
+                        # Convert empty string to None for proper validation
+                        reference = form_data.get(f"method_reference_{method}") or None
                         payment_methods.append(
                             PaymentMethodDetail(
                                 payment_method=method,

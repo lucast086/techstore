@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.crud.base import CRUDBase
 from app.models.cash_closing import CashClosing
 from app.models.expense import Expense
+from app.models.payment import Payment, PaymentType
 from app.models.sale import Sale
 from app.schemas.cash_closing import CashClosingCreate, CashClosingUpdate, DailySummary
 from app.utils.timezone import local_date_to_utc_range
@@ -247,8 +248,6 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
         # IMPORTANT: Only count payments for PREVIOUS debts, not payments for same-day sales
         # Payments with sale_id = NULL are standalone debt payments
         # Payments with sale_id != NULL are payments for sales (already counted in sales)
-        from app.models.payment import Payment, PaymentType
-
         debt_payments_by_method = (
             db.query(Payment.payment_method, func.sum(Payment.amount).label("amount"))
             .filter(Payment.created_at >= utc_start)
@@ -274,6 +273,26 @@ class CRUDCashClosing(CRUDBase[CashClosing, CashClosingCreate, CashClosingUpdate
                 debt_payments_transfer = amount
             elif row.payment_method == "card":
                 debt_payments_card = amount
+
+        # Handle mixed debt payments separately - aggregate their breakdown columns
+        mixed_debt_payments = (
+            db.query(Payment)
+            .filter(Payment.created_at >= utc_start)
+            .filter(Payment.created_at <= utc_end)
+            .filter(Payment.payment_type == PaymentType.payment)
+            .filter(Payment.voided == False)  # noqa: E712
+            .filter(Payment.sale_id.is_(None))
+            .filter(Payment.payment_method == "mixed")
+            .all()
+        )
+
+        for payment in mixed_debt_payments:
+            if payment.cash_amount:
+                debt_payments_cash += payment.cash_amount
+            if payment.transfer_amount:
+                debt_payments_transfer += payment.transfer_amount
+            if payment.card_amount:
+                debt_payments_card += payment.card_amount
 
         debt_payments_total = (
             debt_payments_cash + debt_payments_transfer + debt_payments_card

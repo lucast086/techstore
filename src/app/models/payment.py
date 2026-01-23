@@ -63,6 +63,11 @@ class Payment(BaseModel):
     reference_number = Column(String(100), nullable=True)
     notes = Column(Text, nullable=True)
 
+    # Mixed payment breakdown (only used when payment_method is "mixed")
+    cash_amount = Column(Numeric(10, 2), nullable=True)
+    transfer_amount = Column(Numeric(10, 2), nullable=True)
+    card_amount = Column(Numeric(10, 2), nullable=True)
+
     # Receipt info
     receipt_number = Column(String(50), unique=True, nullable=False, index=True)
 
