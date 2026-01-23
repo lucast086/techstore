@@ -152,9 +152,23 @@ class PaymentService:
             notes=full_notes,
         )
 
-        return self.process_payment(
+        payment = self.process_payment(
             db, customer_id, sale_id, payment_data, user_id, allow_overpayment
         )
+
+        # Store breakdown amounts in dedicated columns for cash closing reports
+        for pm in payment_methods:
+            if pm.payment_method == "cash":
+                payment.cash_amount = pm.amount
+            elif pm.payment_method == "transfer":
+                payment.transfer_amount = pm.amount
+            elif pm.payment_method == "card":
+                payment.card_amount = pm.amount
+
+        db.commit()
+        db.refresh(payment)
+
+        return payment
 
     def validate_payment_amount(
         self,
